@@ -43,6 +43,7 @@
     <javaVersion>1.8</javaVersion>
     <jhttpcVersion>1.0</jhttpcVersion>
     <propulsorVersion>0.1-SNAPSHOT</propulsorVersion>
+    <galleyVersion>0.10.4-SNAPSHOT</galleyVersion>
   </properties>
 
   <modules>
@@ -60,6 +61,33 @@
         <version>17</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jboss.pnc.causeway</groupId>
+        <artifactId>causeway-model-java</artifactId>
+        <version>0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.pnc.causeway</groupId>
+        <artifactId>causeway-core</artifactId>
+        <version>0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.pnc.causeway</groupId>
+        <artifactId>causeway-rest</artifactId>
+        <version>0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.pnc.causeway</groupId>
+        <artifactId>causeway-launcher</artifactId>
+        <version>0.1-SNAPSHOT</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.commonjava.maven.galley</groupId>
+        <artifactId>galley-cdi-embedder</artifactId>
+        <version>${galleyVersion}</version>
       </dependency>
 
       <dependency>

@@ -50,7 +50,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.propulsor</groupId>
-      <artifactId>propulsor-rest</artifactId>
+      <artifactId>propulsor-resteasy</artifactId>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
