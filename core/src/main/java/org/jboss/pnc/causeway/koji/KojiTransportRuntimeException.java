@@ -1,14 +1,15 @@
-package org.jboss.pnc.causeway;
+package org.jboss.pnc.causeway.koji;
 
+import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.text.MessageFormat;
 
 /**
- * Created by jdcasey on 11/10/15.
+ * Created by jdcasey on 11/13/15.
  */
-public class CausewayException
-    extends Exception
+public class KojiTransportRuntimeException
+        extends RuntimeException
 {
     private static final long serialVersionUID = 1L;
 
@@ -16,12 +17,12 @@ public class CausewayException
 
     private transient String formattedMessage;
 
-    public CausewayException(String format, Throwable cause, Object... params) {
+    public KojiTransportRuntimeException(String format, Throwable cause, Object... params) {
         super(format, cause);
         this.params = params;
     }
 
-    public CausewayException(String format, Object... params) {
+    public KojiTransportRuntimeException(String format, Object... params) {
         super(format);
         this.params = params;
     }

@@ -41,7 +41,7 @@
   <properties>
     <projectOwner>Red Hat, Inc.</projectOwner>
     <javaVersion>1.8</javaVersion>
-    <jhttpcVersion>1.0</jhttpcVersion>
+    <jhttpcVersion>1.1-SNAPSHOT</jhttpcVersion>
     <propulsorVersion>0.1-SNAPSHOT</propulsorVersion>
     <galleyVersion>0.10.4-SNAPSHOT</galleyVersion>
   </properties>
@@ -115,6 +115,11 @@
         <artifactId>cdi-api</artifactId>
         <version>1.2</version>
         <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.xmlrpc</groupId>
+        <artifactId>xmlrpc-client</artifactId>
+        <version>3.1.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.util</groupId>

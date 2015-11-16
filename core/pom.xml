@@ -49,6 +49,14 @@
       <artifactId>configuration-dotconf</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.maven.galley</groupId>
+      <artifactId>galley-cdi-embedder</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.xmlrpc</groupId>
+      <artifactId>xmlrpc-client</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
     </dependency>
@@ -59,10 +67,6 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.maven.galley</groupId>
-      <artifactId>galley-cdi-embedder</artifactId>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -78,46 +82,13 @@
     </dependency>
   </dependencies>
   
-  <build>
+<!--   <build>
     <resources>
       <resource>
         <directory>src/main/resources</directory>
         <filtering>true</filtering>
       </resource>
     </resources>
-    <pluginManagement>
-      <plugins>
-        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-        <plugin>
-          <groupId>org.eclipse.m2e</groupId>
-          <artifactId>lifecycle-mapping</artifactId>
-          <version>1.0.0</version>
-          <configuration>
-            <lifecycleMappingMetadata>
-              <pluginExecutions>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>
-                      org.codehaus.enunciate
-                    </groupId>
-                    <artifactId>
-                      maven-enunciate-slim-plugin
-                    </artifactId>
-                    <versionRange>[1.24,)</versionRange>
-                    <goals>
-                      <goal>docs</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore />
-                  </action>
-                </pluginExecution>
-              </pluginExecutions>
-            </lifecycleMappingMetadata>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
     <plugins>
       <plugin>
         <groupId>ru.concerteza.buildnumber</groupId>
@@ -155,4 +126,5 @@
       </plugin>
     </plugins>
   </build>
+ -->
 </project>

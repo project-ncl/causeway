@@ -38,9 +38,11 @@ public class CausewayConfig
 
     private SiteConfig kojiSiteConfig;
 
+    private Integer kojiTimeout;
+
     public Boolean getKojiTrustSelfSigned()
     {
-        return kojiTrustSelfSigned;
+        return kojiTrustSelfSigned == null ? false : kojiTrustSelfSigned;
     }
 
     @ConfigName( "koji.trust.self-signed" )
@@ -145,6 +147,8 @@ public class CausewayConfig
                 builder.withTrustType( SiteTrustType.TRUST_SELF_SIGNED );
             }
 
+            builder.withRequestTimeoutSeconds( getKojiTimeout() );
+
             kojiSiteConfig = builder.build();
         }
 
@@ -159,5 +163,15 @@ public class CausewayConfig
     public File getConfigDir()
     {
         return configDir;
+    }
+
+    public void setKojiTimeout( Integer kojiTimeout )
+    {
+        this.kojiTimeout = kojiTimeout;
+    }
+
+    public Integer getKojiTimeout()
+    {
+        return kojiTimeout == null ? 10 : kojiTimeout;
     }
 }
