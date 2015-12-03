@@ -44,6 +44,7 @@
     <jhttpcVersion>1.1-SNAPSHOT</jhttpcVersion>
     <propulsorVersion>0.1-SNAPSHOT</propulsorVersion>
     <galleyVersion>0.10.4-SNAPSHOT</galleyVersion>
+    <rwxVersion>0.2.2-SNAPSHOT</rwxVersion>
   </properties>
 
   <modules>
@@ -82,6 +83,22 @@
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-launcher</artifactId>
         <version>0.1-SNAPSHOT</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.commonjava.rwx</groupId>
+        <artifactId>rwx-bindings</artifactId>
+        <version>${rwxVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.rwx</groupId>
+        <artifactId>rwx-core</artifactId>
+        <version>${rwxVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.rwx</groupId>
+        <artifactId>rwx-http</artifactId>
+        <version>${rwxVersion}</version>
       </dependency>
 
       <dependency>

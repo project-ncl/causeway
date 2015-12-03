@@ -53,14 +53,6 @@
       <artifactId>galley-cdi-embedder</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.apache.xmlrpc</groupId>
-      <artifactId>xmlrpc-client</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-    </dependency>
-    <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
     </dependency>
@@ -79,6 +71,18 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.rwx</groupId>
+      <artifactId>rwx-bindings</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.rwx</groupId>
+      <artifactId>rwx-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.rwx</groupId>
+      <artifactId>rwx-http</artifactId>
     </dependency>
   </dependencies>
   
