@@ -7,19 +7,21 @@ import org.commonjava.rwx.http.httpclient4.HC4SyncObjectClient;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.util.UrlUtils;
 import org.jboss.pnc.causeway.config.CausewayConfig;
-import org.jboss.pnc.causeway.koji.model.KojiBindery;
 import org.jboss.pnc.causeway.koji.model.KojiSessionInfo;
 import org.jboss.pnc.causeway.koji.model.KojiUserInfo;
-import org.jboss.pnc.causeway.koji.model.LoggedInUserRequest;
-import org.jboss.pnc.causeway.koji.model.LoggedInUserResponse;
-import org.jboss.pnc.causeway.koji.model.LoginRequest;
-import org.jboss.pnc.causeway.koji.model.LoginResponse;
-import org.jboss.pnc.causeway.koji.model.LogoutRequest;
-import org.jboss.pnc.causeway.koji.model.LogoutResponse;
+import org.jboss.pnc.causeway.koji.model.messages.ApiVersionRequest;
+import org.jboss.pnc.causeway.koji.model.messages.ApiVersionResponse;
+import org.jboss.pnc.causeway.koji.model.messages.LoggedInUserRequest;
+import org.jboss.pnc.causeway.koji.model.messages.LoginRequest;
+import org.jboss.pnc.causeway.koji.model.messages.LoginResponse;
+import org.jboss.pnc.causeway.koji.model.messages.LogoutRequest;
+import org.jboss.pnc.causeway.koji.model.messages.LogoutResponse;
+import org.jboss.pnc.causeway.koji.model.messages.UserResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.IOException;
@@ -60,17 +62,30 @@ public class KojiClient
 
     private static final RequestModifier STANDARD_REQUEST_MODIFIER = (request)->{
         request.setHeader( ACCEPT_ENCODING_HEADER, IDENTITY_ENCODING_VALUE );
+        Logger logger = LoggerFactory.getLogger( KojiClient.class );
+        logger.debug( "\n\n\n\nTarget URI: {}\n\n\n\n", request.getURI() );
     };
 
-    private UrlBuilder standardUrlBuilder( KojiSessionInfo session )
+    private static final UrlBuilder NO_OP_URL_BUILDER = (url) -> url;
+
+    private UrlBuilder sessionUrlBuilder( KojiSessionInfo session )
     {
         return (url)-> {
+            if ( session == null )
+            {
+                return url;
+            }
+
             Map<String, String> params = new HashMap<>();
             params.put( SESSION_ID_PARAM, Integer.toString( session.getSessionId() ) );
             params.put( SESSION_KEY_PARAM, session.getSessionKey() );
             params.put( CALL_NUMBER_PARAM, Integer.toString( callCount.getAndIncrement() ) );
 
-            return UrlUtils.buildUrl( url, params );
+            String result = UrlUtils.buildUrl( url, params );
+
+            Logger logger = LoggerFactory.getLogger( KojiClient.class );
+            logger.debug( "\n\n\n\nBuild URL: {}\n\n\n\n", result );
+            return result;
         };
     }
 
@@ -86,23 +101,61 @@ public class KojiClient
         setup();
     }
 
+    @PreDestroy
+    public synchronized void teardown()
+    {
+        if ( xmlrpcClient != null )
+        {
+            xmlrpcClient.close();
+            xmlrpcClient = null;
+        }
+    }
+
     @PostConstruct
     public void setup()
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
         try
         {
             xmlrpcClient = new HC4SyncObjectClient( httpFactory, bindery, config.getKojiSiteConfig() );
         }
         catch ( IOException e )
         {
-            Logger logger = LoggerFactory.getLogger( getClass() );
             logger.error( "Cannot construct koji HTTP site-config: " + e.getMessage(), e );
+            xmlrpcClient.close();
+            xmlrpcClient = null;
+        }
+
+        if ( xmlrpcClient != null )
+        {
+            try
+            {
+                ApiVersionResponse response =
+                        xmlrpcClient.call( new ApiVersionRequest(), ApiVersionResponse.class, NO_OP_URL_BUILDER,
+                                           STANDARD_REQUEST_MODIFIER );
+
+                if ( 1 != response.getApiVersion() )
+                {
+                    logger.error( "Cannot connect to koji at: " + config.getKojiURL() + ". API Version reported is '"
+                                          + response.getApiVersion() + "' but this client only supports version 1." );
+                    xmlrpcClient.close();
+                    xmlrpcClient = null;
+                }
+            }
+            catch ( XmlRpcException e )
+            {
+                logger.error( "Cannot retrieve koji API version from: " + config.getKojiURL() + ". (Reason: " + e.getMessage() + ")", e );
+                xmlrpcClient.close();
+                xmlrpcClient = null;
+            }
         }
     }
 
     public KojiSessionInfo login()
             throws KojiClientException
     {
+        checkConnection();
+
         try
         {
             LoginResponse loginResponse = xmlrpcClient.call( new LoginRequest(), LoginResponse.class, ( url ) -> {
@@ -117,13 +170,21 @@ public class KojiClient
         }
     }
 
+    public KojiUserInfo getUserInfo()
+            throws KojiClientException
+    {
+        return getUserInfo( null );
+    }
+
     public KojiUserInfo getUserInfo( KojiSessionInfo session )
             throws KojiClientException
     {
+        checkConnection();
+
         try
         {
-            LoggedInUserResponse response = xmlrpcClient.call( new LoggedInUserRequest(), LoggedInUserResponse.class,
-                                                               standardUrlBuilder( session ), STANDARD_REQUEST_MODIFIER );
+            UserResponse response = xmlrpcClient.call( new LoggedInUserRequest(), UserResponse.class,
+                                                       sessionUrlBuilder( session ), STANDARD_REQUEST_MODIFIER );
 
             return response == null ? null : response.getUserInfo();
         }
@@ -136,14 +197,26 @@ public class KojiClient
     public void logout( KojiSessionInfo session )
             throws KojiClientException
     {
-        try
+        if ( xmlrpcClient != null )
         {
-            LogoutResponse response = xmlrpcClient.call( new LogoutRequest(), LogoutResponse.class,
-                                                               standardUrlBuilder( session ), STANDARD_REQUEST_MODIFIER );
+            try
+            {
+                LogoutResponse response = xmlrpcClient.call( new LogoutRequest(), LogoutResponse.class,
+                                                             sessionUrlBuilder( session ), STANDARD_REQUEST_MODIFIER );
+            }
+            catch ( XmlRpcException e )
+            {
+                throw new KojiClientException( "Failed to logout: %s", e, e.getMessage() );
+            }
         }
-        catch ( XmlRpcException e )
+    }
+
+    private void checkConnection()
+            throws KojiClientException
+    {
+        if ( xmlrpcClient == null )
         {
-            throw new KojiClientException( "Failed to logout: %s", e, e.getMessage() );
+            throw new KojiClientException( "Connection to koji at %s is closed. Perhaps it failed to initialize?", config.getKojiURL() );
         }
     }
 

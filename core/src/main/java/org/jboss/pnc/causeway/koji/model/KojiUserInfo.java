@@ -22,13 +22,22 @@ public class KojiUserInfo
     @DataKey( "name" )
     private String userName;
 
-    @KeyRefs( { "status", "usertype", "id", "name" } )
-    public KojiUserInfo( int status, int userType, int userId, String userName )
+    @DataKey( "krb_principal" )
+    private String kerberosPrincipal;
+
+    @KeyRefs( { "status", "usertype", "id", "name", "krb_principal" } )
+    public KojiUserInfo( int status, int userType, int userId, String userName, String kerberosPrincipal )
     {
         this.status = status;
         this.userType = userType;
         this.userId = userId;
         this.userName = userName;
+        this.kerberosPrincipal = kerberosPrincipal;
+    }
+
+    public String getKerberosPrincipal()
+    {
+        return kerberosPrincipal;
     }
 
     public int getStatus()

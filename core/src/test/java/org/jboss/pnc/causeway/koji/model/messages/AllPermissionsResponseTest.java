@@ -1,11 +1,13 @@
-package org.jboss.pnc.causeway.koji.model;
+package org.jboss.pnc.causeway.koji.model.messages;
 
 import org.commonjava.rwx.estream.model.Event;
 import org.commonjava.rwx.impl.estream.EventStreamGeneratorImpl;
 import org.commonjava.rwx.impl.estream.EventStreamParserImpl;
-import org.commonjava.rwx.impl.stax.StaxParser;
+import org.jboss.pnc.causeway.koji.model.KojiPermission;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -14,30 +16,30 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Created by jdcasey on 12/3/15.
  */
-public class LoggedInUserRequestTest
-    extends AbstractKojiModelTest
+public class AllPermissionsResponseTest
+        extends AbstractKojiMessageTest
 {
-
-    private static final String CAPTURED_XML = "<?xml version='1.0'?>\n"
-            + "<methodCall><methodName>getLoggedInUser</methodName><params></params></methodCall>";
 
     @Test
     public void verifyVsCapturedHttpRequest()
             throws Exception
     {
         EventStreamParserImpl eventParser = new EventStreamParserImpl();
-        bindery.render( eventParser, new LoggedInUserRequest() );
+        bindery.render( eventParser, newResponse() );
 
         List<Event<?>> objectEvents = eventParser.getEvents();
         eventParser.clearEvents();
 
-        StaxParser parser = new StaxParser(CAPTURED_XML);
-        parser.parse(eventParser);
-
-        List<Event<?>> capturedEvents = eventParser.getEvents();
-        eventParser.clearEvents();
+        List<Event<?>> capturedEvents = parseEvents( "getAllPerms-response.xml" );
 
         assertEquals( objectEvents, capturedEvents );
+    }
+
+    private AllPermissionsResponse newResponse()
+    {
+        return new AllPermissionsResponse( new HashSet<>(
+                Arrays.asList( new KojiPermission( 1, "admin" ), new KojiPermission( 2, "build" ),
+                               new KojiPermission( 3, "repo" ) ) ) );
     }
 
     @Test
@@ -45,12 +47,12 @@ public class LoggedInUserRequestTest
             throws Exception
     {
         EventStreamParserImpl eventParser = new EventStreamParserImpl();
-        bindery.render( eventParser, new LoggedInUserRequest() );
+        bindery.render( eventParser, newResponse() );
 
         List<Event<?>> objectEvents = eventParser.getEvents();
         EventStreamGeneratorImpl generator = new EventStreamGeneratorImpl( objectEvents );
 
-        LoggedInUserRequest parsed = bindery.parse( generator, LoggedInUserRequest.class );
+        AllPermissionsRequest parsed = bindery.parse( generator, AllPermissionsRequest.class );
         assertNotNull( parsed );
     }
 }
