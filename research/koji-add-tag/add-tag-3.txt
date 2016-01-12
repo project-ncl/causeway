@@ -1,0 +1,33 @@
+POST /kojihub?session-id=2&session-key=1-KfAA4bCdbnp12TTg7kq&callnum=1 HTTP/1.1
+Host: 172.17.0.6:443
+Accept-Encoding: identity
+User-Agent: koji/1.7
+Content-Type: text/xml
+Content-Length: 156
+
+<?xml version='1.0'?>
+<methodCall>
+	<methodName>hasPerm</methodName>
+	<params>
+		<param>
+			<value><string>admin</string></value>
+		</param>
+	</params>
+</methodCall>
+
+HTTP/1.1 200 OK
+Date: Mon, 11 Jan 2016 21:51:38 GMT
+Server: Apache/2.2.15 (CentOS)
+Content-Length: 129
+Connection: close
+Content-Type: text/xml
+
+<?xml version='1.0'?>
+<methodResponse>
+	<params>
+		<param>
+			<value><boolean>1</boolean></value>
+		</param>
+	</params>
+</methodResponse>
+

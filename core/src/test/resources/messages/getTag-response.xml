@@ -37,7 +37,7 @@
           <member>
             <name>arches</name>
             <value>
-              <string>x86_64</string>
+              <string>x86_64 i386</string>
             </value>
           </member>
           <member>

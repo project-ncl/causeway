@@ -23,6 +23,8 @@ import org.jboss.pnc.causeway.koji.model.messages.AllPermissionsRequest;
 import org.jboss.pnc.causeway.koji.model.messages.AllPermissionsResponse;
 import org.jboss.pnc.causeway.koji.model.messages.ApiVersionRequest;
 import org.jboss.pnc.causeway.koji.model.messages.ApiVersionResponse;
+import org.jboss.pnc.causeway.koji.model.messages.CheckPermissionRequest;
+import org.jboss.pnc.causeway.koji.model.messages.ConfirmationResponse;
 import org.jboss.pnc.causeway.koji.model.messages.LoggedInUserRequest;
 import org.jboss.pnc.causeway.koji.model.messages.LoginRequest;
 import org.jboss.pnc.causeway.koji.model.messages.LoginResponse;
@@ -54,7 +56,8 @@ public class KojiBindery
         Class<?>[] classes =
                 { LoginRequest.class, LoginResponse.class, ApiVersionRequest.class, ApiVersionResponse.class,
                         LoggedInUserRequest.class, UserResponse.class, LogoutRequest.class, LogoutResponse.class,
-                        TagRequest.class, TagResponse.class, AllPermissionsRequest.class, AllPermissionsResponse.class };
+                        TagRequest.class, TagResponse.class, AllPermissionsRequest.class, AllPermissionsResponse.class,
+                        CheckPermissionRequest.class, ConfirmationResponse.class };
 
         return new ReflectionMapper().loadRecipes( classes );
     }

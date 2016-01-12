@@ -16,11 +16,15 @@
 package org.jboss.pnc.causeway.koji.model.messages;
 
 import org.commonjava.rwx.estream.model.Event;
+import org.commonjava.rwx.impl.LoggingXmlRpcListener;
 import org.commonjava.rwx.impl.estream.EventStreamGeneratorImpl;
 import org.commonjava.rwx.impl.estream.EventStreamParserImpl;
 import org.jboss.pnc.causeway.koji.model.KojiTagInfo;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -42,7 +46,8 @@ public class TagResponseTest
             throws Exception
     {
         EventStreamParserImpl eventParser = new EventStreamParserImpl();
-        bindery.render( eventParser, newResponse() );
+        LoggingXmlRpcListener parser = new LoggingXmlRpcListener( eventParser );
+        bindery.render( parser, newResponse() );
 
         List<Event<?>> objectEvents = eventParser.getEvents();
         eventParser.clearEvents();
@@ -56,22 +61,30 @@ public class TagResponseTest
     public void roundTrip()
             throws Exception
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "START RENDER" );
         EventStreamParserImpl eventParser = new EventStreamParserImpl();
-        bindery.render( eventParser, newResponse() );
+        LoggingXmlRpcListener parser = new LoggingXmlRpcListener( eventParser );
+        bindery.render( parser, newResponse() );
+
+        logger.info( "END RENDER" );
 
         List<Event<?>> objectEvents = eventParser.getEvents();
         EventStreamGeneratorImpl generator = new EventStreamGeneratorImpl( objectEvents );
 
+        logger.info( "START PARSE" );
         TagResponse parsed = bindery.parse( generator, TagResponse.class );
+        logger.info( "END PARSE" );
         assertNotNull( parsed );
 
         KojiTagInfo tagInfo = parsed.getTagInfo();
+        assertNotNull( tagInfo );
 
         assertThat( tagInfo.getName(), equalTo( TAG ) );
     }
 
     private TagResponse newResponse()
     {
-        return new TagResponse( new KojiTagInfo( 1001, "test-tag", "admin", 1, "x86_64", true, true, true ) );
+        return new TagResponse( new KojiTagInfo( 1001, "test-tag", "admin", 1, Collections.singletonList("x86_64"), true, true, true ) );
     }
 }
