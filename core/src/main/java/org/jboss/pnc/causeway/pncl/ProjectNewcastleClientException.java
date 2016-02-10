@@ -13,35 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.pnc.causeway.boot;
+package org.jboss.pnc.causeway.pncl;
 
-import org.commonjava.propulsor.boot.BootOptions;
+import org.jboss.pnc.causeway.CausewayException;
+
+import java.io.NotSerializableException;
+import java.io.Serializable;
+import java.text.MessageFormat;
 
 /**
  * Created by jdcasey on 11/10/15.
  */
-public class CausewayBootOptions
-    extends BootOptions
+public class ProjectNewcastleClientException
+        extends CausewayException
 {
-    public static final String CAUSEWAY_CONFIG_SYSPROP = "causeway.config";
+    private static final long serialVersionUID = 1L;
 
-    private static final String CAUSEWAY_HOME_SYSPROP = "causeway.home";
-
-    @Override
-    public String getHomeSystemProperty()
-    {
-        return CAUSEWAY_HOME_SYSPROP;
+    public ProjectNewcastleClientException( String format, Throwable cause, Object... params) {
+        super(format, cause, params);
     }
 
-    @Override
-    public String getConfigSystemProperty()
-    {
-        return CAUSEWAY_CONFIG_SYSPROP;
+    public ProjectNewcastleClientException( String format, Object... params) {
+        super(format, params);
     }
 
-    @Override
-    public String getHomeEnvar()
-    {
-        return "CAUSEWAY_HOME";
-    }
 }

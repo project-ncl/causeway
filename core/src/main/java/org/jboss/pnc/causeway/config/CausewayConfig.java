@@ -22,9 +22,16 @@ import org.commonjava.util.jhttpc.model.SiteTrustType;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
+import org.jboss.pnc.causeway.boot.CausewayBootOptions;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.join;
 
 /**
  * Created by jdcasey on 11/10/15.
@@ -32,8 +39,29 @@ import java.io.IOException;
 @SectionName( ConfigurationSectionListener.DEFAULT_SECTION )
 public class CausewayConfig
 {
+    public static final String CAUSEWAY_CONFIG_DIR_SYSPROP = "causeway.config.dir";
+
+    public static final String CLIENT_CERT_PEM_PASSWORD_OPTION = "koji.client.pem.password";
+
+    public static final String PNCL_URL_OPTION = "pncl.url";
+
+    public static final String KOJI_URL_OPTION = "koji.url";
+
+    public static final String DEFAULT_CAUSEWAY_CONFIG = "/etc/causeway/main.conf";
+
+    public static final String DEFAULT_SSL_SERVER_PEM_FILE = "server.pem";
+
+    public static final String DEFAULT_SSL_CLIENT_PEM_FILE = "client.pem";
+
+    public static final Boolean DEFAULT_SSL_TRUST_SELF_SIGNED = Boolean.FALSE;
 
     public static final String KOJI_SITE_ID = "koji";
+
+    private static final String PNCL_SITE_ID = "pncl";
+
+    private static final String SSL_SUBDIR = "ssl";
+
+    private static final Integer DEFAULT_HTTP_TIMEOUT_SECS = Integer.valueOf( 10 );
 
     private boolean configured;
 
@@ -51,9 +79,15 @@ public class CausewayConfig
 
     private File configDir;
 
-    private SiteConfig kojiSiteConfig;
+    private Integer httpTimeout;
 
     private Integer kojiTimeout;
+
+    private Integer pnclTimeout;
+
+    private SiteConfig kojiSiteConfig;
+
+    private SiteConfig pnclSiteConfig;
 
     public Boolean getKojiTrustSelfSigned()
     {
@@ -63,7 +97,7 @@ public class CausewayConfig
     @ConfigName( "koji.trust.self-signed" )
     public void setKojiTrustSelfSigned( Boolean kojiTrustSelfSigned )
     {
-        this.kojiTrustSelfSigned = kojiTrustSelfSigned;
+        this.kojiTrustSelfSigned = kojiTrustSelfSigned == null ? DEFAULT_SSL_TRUST_SELF_SIGNED : kojiTrustSelfSigned;
     }
 
     public String getKojiClientCertificatePassword()
@@ -71,7 +105,7 @@ public class CausewayConfig
         return kojiClientCertificatePassword;
     }
 
-    @ConfigName( "koji.client.pem.password" )
+    @ConfigName( CausewayConfig.CLIENT_CERT_PEM_PASSWORD_OPTION )
     public void setKojiClientCertificatePassword( String kojiClientCertificatePassword )
     {
         this.kojiClientCertificatePassword = kojiClientCertificatePassword;
@@ -80,7 +114,10 @@ public class CausewayConfig
     public String getKojiClientKeyCertificateFile()
     {
         checkConfigured();
-        return kojiClientKeyCertificateFile;
+        return kojiClientKeyCertificateFile == null ?
+                Paths.get( getConfigDir().getPath(), SSL_SUBDIR,
+                           DEFAULT_SSL_CLIENT_PEM_FILE ).toString() :
+                kojiClientKeyCertificateFile;
     }
 
     @ConfigName( "koji.client.pem.file" )
@@ -92,7 +129,10 @@ public class CausewayConfig
     public String getKojiServerCertificateFile()
     {
         checkConfigured();
-        return kojiServerCertificateFile;
+        return kojiServerCertificateFile == null ?
+                Paths.get( getConfigDir().getPath(), SSL_SUBDIR,
+                           DEFAULT_SSL_SERVER_PEM_FILE ).toString() :
+                kojiServerCertificateFile;
     }
 
     @ConfigName( "koji.server.pem.file" )
@@ -107,7 +147,7 @@ public class CausewayConfig
         return kojiURL;
     }
 
-    @ConfigName( "koji.url" )
+    @ConfigName( CausewayConfig.KOJI_URL_OPTION )
     public void setKojiURL( String kojiURL )
     {
         this.kojiURL = kojiURL;
@@ -119,7 +159,7 @@ public class CausewayConfig
         return pnclURL;
     }
 
-    @ConfigName( "pncl.url" )
+    @ConfigName( CausewayConfig.PNCL_URL_OPTION )
     public void setPnclURL( String pnclURL )
     {
         this.pnclURL = pnclURL;
@@ -170,6 +210,22 @@ public class CausewayConfig
         return kojiSiteConfig;
     }
 
+    public synchronized SiteConfig getPnclSiteConfig()
+    {
+        if ( pnclSiteConfig == null )
+        {
+            SiteConfigBuilder builder = new SiteConfigBuilder( PNCL_SITE_ID, getPnclURL() );
+
+            // TODO: SSL?
+
+            builder.withRequestTimeoutSeconds( getPnclTimeout() );
+
+            pnclSiteConfig = builder.build();
+        }
+
+        return pnclSiteConfig;
+    }
+
     public void setConfigDir( File configDir )
     {
         this.configDir = configDir;
@@ -180,6 +236,18 @@ public class CausewayConfig
         return configDir;
     }
 
+    public Integer getHttpTimeout()
+    {
+        return httpTimeout == null ? DEFAULT_HTTP_TIMEOUT_SECS : httpTimeout;
+    }
+
+    @ConfigName( "http.timeout.secs" )
+    public void setHttpTimeout( Integer httpTimeout )
+    {
+        this.httpTimeout = httpTimeout;
+    }
+
+    @ConfigName( "koji.timeout.secs" )
     public void setKojiTimeout( Integer kojiTimeout )
     {
         this.kojiTimeout = kojiTimeout;
@@ -187,6 +255,43 @@ public class CausewayConfig
 
     public Integer getKojiTimeout()
     {
-        return kojiTimeout == null ? 10 : kojiTimeout;
+        return kojiTimeout == null ? getHttpTimeout() : kojiTimeout;
+    }
+
+    public Integer getPnclTimeout()
+    {
+        return pnclTimeout == null ? getHttpTimeout() : pnclTimeout;
+    }
+
+    @ConfigName( "pncl.timeout.secs" )
+    public void setPnclTimeout( Integer pnclTimeout )
+    {
+        this.pnclTimeout = pnclTimeout;
+    }
+
+    public String getValidationErrors()
+    {
+        List<String> errors = new ArrayList<>();
+        if ( isEmpty( getKojiClientCertificatePassword() ) )
+        {
+            errors.add( String.format( "Koji SSL password '%s' is required.", CLIENT_CERT_PEM_PASSWORD_OPTION ) );
+        }
+
+        if ( isEmpty( getPnclURL() ) )
+        {
+            errors.add( String.format( "Project Newcastle URL '%s' is required.", PNCL_URL_OPTION ) );
+        }
+
+        if ( isEmpty( getKojiURL() ) )
+        {
+            errors.add( String.format( "Koji URL '%s' is required.", KOJI_URL_OPTION ) );
+        }
+
+        if ( !errors.isEmpty() )
+        {
+            return join( errors, "\n" );
+        }
+
+        return null;
     }
 }

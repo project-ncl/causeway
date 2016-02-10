@@ -25,6 +25,7 @@ import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
 import org.jboss.pnc.causeway.boot.CausewayBootOptions;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,11 +33,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.apache.commons.lang.StringUtils.isNotEmpty;
+
 /**
  * Created by jdcasey on 11/10/15.
  */
+@ApplicationScoped
 public class CausewayConfigurator
-    implements Configurator
+        implements Configurator
 {
     @Inject
     private CausewayConfig causewayConfig;
@@ -48,7 +52,7 @@ public class CausewayConfigurator
         String config = options.getConfig();
         if ( StringUtils.isEmpty( config ) )
         {
-            config = CausewayBootOptions.DEFAULT_CAUSEWAY_CONFIG;
+            config = CausewayConfig.DEFAULT_CAUSEWAY_CONFIG;
         }
 
         File configFile = new File( config );
@@ -56,6 +60,8 @@ public class CausewayConfigurator
         {
             configFile = new File( configFile, "main.conf" );
         }
+
+        System.setProperty( CausewayConfig.CAUSEWAY_CONFIG_DIR_SYSPROP, configFile.getParentFile().getAbsolutePath() );
 
         if ( !configFile.exists() )
         {
@@ -81,5 +87,11 @@ public class CausewayConfigurator
         }
 
         causewayConfig.configurationDone();
+
+        String validationErrors = causewayConfig.getValidationErrors();
+        if ( isNotEmpty( validationErrors ) )
+        {
+            throw new ConfiguratorException( "Causeway configuration is not complete!\n\n%s", validationErrors );
+        }
     }
 }

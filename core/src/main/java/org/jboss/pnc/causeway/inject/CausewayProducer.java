@@ -15,7 +15,6 @@
  */
 package org.jboss.pnc.causeway.inject;
 
-import org.commonjava.rwx.http.httpclient4.HC4SyncObjectClient;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
@@ -43,8 +42,6 @@ public class CausewayProducer
 
     private HttpFactory httpFactory;
 
-    private HC4SyncObjectClient xmlrpcClient;
-
     protected CausewayProducer(){}
 
     public CausewayProducer(CausewayConfig config){
@@ -70,13 +67,6 @@ public class CausewayProducer
         {
             httpFactory.close();
         }
-    }
-
-    @Produces
-    @Default
-    public HC4SyncObjectClient getXmlrpcClient()
-    {
-        return xmlrpcClient;
     }
 
     @Produces

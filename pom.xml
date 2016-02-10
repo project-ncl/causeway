@@ -92,12 +92,6 @@
       </dependency>
       
       <dependency>
-        <groupId>org.commonjava.maven.galley</groupId>
-        <artifactId>galley-cdi-embedder</artifactId>
-        <version>${galleyVersion}</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.commonjava.propulsor</groupId>
         <artifactId>propulsor-core</artifactId>
         <version>${propulsorVersion}</version>
@@ -117,6 +111,7 @@
         <artifactId>jhttpc</artifactId>
         <version>${jhttpcVersion}</version>
       </dependency>
+
       <dependency>
         <groupId>javax.enterprise</groupId>
         <artifactId>cdi-api</artifactId>
