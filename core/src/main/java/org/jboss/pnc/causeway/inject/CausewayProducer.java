@@ -61,11 +61,14 @@ public class CausewayProducer
 
     @PreDestroy
     public void close()
-            throws IOException
     {
         if ( httpFactory != null )
         {
-            httpFactory.close();
+            try {
+                httpFactory.close();
+            } catch (IOException e) {
+                throw new RuntimeException("Close httpFactory error " + e.getMessage(), e);
+            }
         }
     }
 
