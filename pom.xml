@@ -59,7 +59,7 @@
       <dependency>
         <groupId>org.commonjava.boms</groupId>
         <artifactId>web-commons-bom</artifactId>
-        <version>17</version>
+        <version>18-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -123,6 +123,7 @@
         <artifactId>xmlrpc-client</artifactId>
         <version>3.1.3</version>
       </dependency>
+
       <dependency>
         <groupId>org.commonjava.util</groupId>
         <artifactId>http-testserver</artifactId>
@@ -136,10 +137,12 @@
     <dependency>
       <groupId>javax.enterprise</groupId>
       <artifactId>cdi-api</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

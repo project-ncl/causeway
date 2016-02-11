@@ -13,27 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.pnc.causeway.pncl;
+package org.jboss.pnc.causeway.pncclient;
 
 import org.jboss.pnc.causeway.CausewayException;
-
-import java.io.NotSerializableException;
-import java.io.Serializable;
-import java.text.MessageFormat;
 
 /**
  * Created by jdcasey on 11/10/15.
  */
-public class ProjectNewcastleClientException
+public class PncClientException
         extends CausewayException
 {
     private static final long serialVersionUID = 1L;
 
-    public ProjectNewcastleClientException( String format, Throwable cause, Object... params) {
+    public PncClientException(String format, Throwable cause, Object... params) {
         super(format, cause, params);
     }
 
-    public ProjectNewcastleClientException( String format, Object... params) {
+    public PncClientException(String format, Object... params) {
         super(format, params);
     }
 

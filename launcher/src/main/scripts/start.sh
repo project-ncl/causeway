@@ -32,7 +32,7 @@ CAUSEWAY_LOGCONF_DIR=${CAUSEWAY_LOGCONF_DIR:-${BASEDIR}/etc/causeway/logging}
 echo "Loading logging config from: ${CAUSEWAY_LOGCONF_DIR}"
 
 CP="${CAUSEWAY_LOCALLIB_DIR}:${CAUSEWAY_LOGCONF_DIR}"
-for f in $(find $BASEDIR/lib/causeway-embedder-*.jar -type f)
+for f in $(find $BASEDIR/lib/*.jar -type f)
 do
   CP=${CP}:${f}
 done
@@ -57,7 +57,7 @@ test -f ${CAUSEWAY_ENV} && source ${CAUSEWAY_ENV}
 #JAVA_DEBUG_OPTS="-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
 JAVA_OPTS="$JAVA_OPTS $JAVA_DEBUG_OPTS"
 
-MAIN_CLASS=
+MAIN_CLASS=org.commonjava.propulsor.boot.Booter
 
 "$JAVA" ${JAVA_OPTS} -cp "${CP}" -Dcauseway.home="${BASEDIR}" -Dcauseway.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
 ret=$?

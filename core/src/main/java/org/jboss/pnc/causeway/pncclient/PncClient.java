@@ -1,19 +1,13 @@
-package org.jboss.pnc.causeway.pncl;
+package org.jboss.pnc.causeway.pncclient;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
+import java.io.IOException;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.JHttpCException;
 import org.jboss.pnc.causeway.config.CausewayConfig;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.Consumer;
 
 import static org.apache.http.client.utils.HttpClientUtils.closeQuietly;
 
@@ -21,7 +15,7 @@ import static org.apache.http.client.utils.HttpClientUtils.closeQuietly;
  * Created by jdcasey on 2/9/16.
  */
 @ApplicationScoped
-public class ProjectNewcastleClient
+public class PncClient
 {
     private static final String BUILD_RECORDS_PER_RELEASE_RESOURCE = "/some/path/to/a/rest/call";
 
@@ -30,7 +24,7 @@ public class ProjectNewcastleClient
     private CausewayConfig config;
 
     @Inject
-    public ProjectNewcastleClient( CausewayConfig config, HttpFactory httpFactory )
+    public PncClient(CausewayConfig config, HttpFactory httpFactory )
     {
         this.config = config;
         this.httpFactory = httpFactory;
@@ -53,7 +47,7 @@ public class ProjectNewcastleClient
 //    }
 
     private void withClient( ClientCommands commands )
-            throws ProjectNewcastleClientException
+            throws PncClientException
     {
         CloseableHttpClient client = null;
         try
@@ -63,11 +57,11 @@ public class ProjectNewcastleClient
         }
         catch ( JHttpCException e )
         {
-            throw new ProjectNewcastleClientException( "Failed to create HTTP client to communicate with Project Newcastle.", e );
+            throw new PncClientException( "Failed to create HTTP client to communicate with Project Newcastle.", e );
         }
         catch ( IOException e )
         {
-            throw new ProjectNewcastleClientException( "Communication with Project Newcastle server failed.", e );
+            throw new PncClientException( "Communication with Project Newcastle server failed.", e );
         }
         finally
         {
@@ -83,9 +77,9 @@ public class ProjectNewcastleClient
 
     public class ClientCommandResult
     {
-        private ProjectNewcastleClientException error;
+        private PncClientException error;
 
-        public ClientCommandResult( ProjectNewcastleClientException error )
+        public ClientCommandResult( PncClientException error )
         {
             this.error = error;
         }
@@ -95,7 +89,7 @@ public class ProjectNewcastleClient
         }
 
         public ClientCommandResult throwError()
-                throws ProjectNewcastleClientException
+                throws PncClientException
         {
             if ( error != null )
             {
