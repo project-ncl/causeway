@@ -2,7 +2,7 @@ package org.jboss.pnc.causeway.rest;
 
 import org.commonjava.propulsor.deploy.resteasy.RestResources;
 import org.jboss.pnc.causeway.CausewayException;
-import org.jboss.pnc.causeway.ctl.ImportController;
+import org.jboss.pnc.causeway.ctl.PncImportController;
 import org.jboss.pnc.causeway.model.ProductReleaseImportResult;
 
 import javax.enterprise.context.RequestScoped;
@@ -23,11 +23,11 @@ public class ImportResource
 {
 
     @Inject
-    private ImportController controller;
+    private PncImportController controller;
 
     @GET
     @Path( "/product/release/{releaseId}" )
-    public ProductReleaseImportResult importProductRelease( @PathParam( "releaseId" ) int releaseId )
+    public ProductReleaseImportResult importProductRelease(@PathParam( "releaseId" ) int releaseId )
     {
         try
         {

@@ -1,23 +1,22 @@
 package org.jboss.pnc.causeway.ctl;
 
-import org.jboss.pnc.causeway.CausewayException;
-import org.jboss.pnc.causeway.model.ProductReleaseImportResult;
-import org.jboss.pnc.causeway.pncl.ProjectNewcastleClient;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.Set;
+
+import org.jboss.pnc.causeway.CausewayException;
+import org.jboss.pnc.causeway.model.ProductReleaseImportResult;
+import org.jboss.pnc.causeway.pncclient.PncClient;
 
 /**
  * Created by jdcasey on 2/9/16.
  */
 @ApplicationScoped
-public class ImportController
+public class PncImportController
 {
-    private ProjectNewcastleClient pnclClient;
+    private PncClient pnclClient;
 
     @Inject
-    public ImportController( ProjectNewcastleClient pnclClient )
+    public PncImportController(PncClient pnclClient )
     {
         this.pnclClient = pnclClient;
     }
