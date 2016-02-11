@@ -15,25 +15,24 @@
  */
 package org.jboss.pnc.causeway.config;
 
+import static org.apache.commons.lang.StringUtils.isNotEmpty;
+
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.propulsor.boot.BootOptions;
 import org.commonjava.propulsor.config.Configurator;
 import org.commonjava.propulsor.config.ConfiguratorException;
 import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.annotation.SectionName;
+import org.commonjava.web.config.ConfigurationListener;
+import org.commonjava.web.config.DefaultConfigurationListener;
+import org.commonjava.web.config.DefaultConfigurationRegistry;
 import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
-import org.commonjava.web.config.section.ConfigurationSectionListener;
-import org.jboss.pnc.causeway.boot.CausewayBootOptions;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-
-import static org.apache.commons.lang.StringUtils.isNotEmpty;
 
 /**
  * Created by jdcasey on 11/10/15.
@@ -74,7 +73,10 @@ public class CausewayConfigurator
 
         try (InputStream in = new FileInputStream( configFile ))
         {
-            new DotConfConfigurationReader( causewayConfig ).loadConfiguration( in );
+            DefaultConfigurationListener configurationListener = new DefaultConfigurationListener().with(causewayConfig);
+            DefaultConfigurationRegistry configurationRegistry = new DefaultConfigurationRegistry(new ConfigurationListener[]{configurationListener});
+            new DotConfConfigurationReader(configurationRegistry).loadConfiguration( in );
+            configurationListener.getSectionListeners().values().iterator().next().getConfiguration();
         }
         catch ( ConfigurationException e )
         {
