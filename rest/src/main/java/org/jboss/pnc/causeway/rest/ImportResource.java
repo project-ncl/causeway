@@ -1,5 +1,7 @@
 package org.jboss.pnc.causeway.rest;
 
+import static org.jboss.pnc.causeway.rest.Constants.IMPORT_PATH;
+
 import org.commonjava.propulsor.deploy.resteasy.RestResources;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.ctl.PncImportController;
@@ -17,7 +19,7 @@ import javax.ws.rs.core.Response;
  * Created by jdcasey on 2/9/16.
  */
 @RequestScoped
-@Path( "/import" )
+@Path( IMPORT_PATH)
 public class ImportResource
         implements RestResources
 {

@@ -1,18 +1,18 @@
 package org.jboss.pnc.causeway.rest;
 
-import java.util.List;
-
-import javax.enterprise.context.ApplicationScoped;
+import static java.util.Arrays.asList;
+import static org.jboss.pnc.causeway.rest.Constants.IMPORT_PATH;
 
 import org.commonjava.propulsor.deploy.resteasy.ResteasyAppConfig;
 
-import static java.util.Arrays.asList;
+import javax.enterprise.context.ApplicationScoped;
+import java.util.List;
 
 @ApplicationScoped
 public class CausewayResteasyAppConfig implements ResteasyAppConfig {
 
     @Override
     public List<String> getJaxRsMappings() {
-        return asList();//FIXME
+        return asList(IMPORT_PATH + "/*");
     }
 }

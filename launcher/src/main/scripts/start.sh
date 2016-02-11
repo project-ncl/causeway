@@ -28,6 +28,7 @@ BASEDIR=`dirname ${BASEDIR}`
 
 CAUSEWAY_LOCALLIB_DIR=${CAUSEWAY_LOCALLIB_DIR:-${BASEDIR}/lib/local}
 CAUSEWAY_LOGCONF_DIR=${CAUSEWAY_LOGCONF_DIR:-${BASEDIR}/etc/causeway/logging}
+CAUSEWAY_CONFIG=${CAUSEWAY_CONFIG:-${BASEDIR}/etc/main.conf}
 
 echo "Loading logging config from: ${CAUSEWAY_LOGCONF_DIR}"
 
@@ -59,7 +60,7 @@ JAVA_OPTS="$JAVA_OPTS $JAVA_DEBUG_OPTS"
 
 MAIN_CLASS=org.commonjava.propulsor.boot.Booter
 
-"$JAVA" ${JAVA_OPTS} -cp "${CP}" -Dcauseway.home="${BASEDIR}" -Dcauseway.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
+"$JAVA" ${JAVA_OPTS} -cp "${CP}" -Dcauseway.home="${BASEDIR}" -Dcauseway.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS}  -f ${CAUSEWAY_CONFIG} "$@"
 ret=$?
 if [ $ret == 0 -o $ret == 130 ]; then
   exit 0
