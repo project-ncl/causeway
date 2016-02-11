@@ -1,15 +1,15 @@
 package org.jboss.pnc.causeway.pncclient;
 
-import java.io.IOException;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import static org.apache.http.client.utils.HttpClientUtils.closeQuietly;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.JHttpCException;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 
-import static org.apache.http.client.utils.HttpClientUtils.closeQuietly;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.io.IOException;
 
 /**
  * Created by jdcasey on 2/9/16.
@@ -19,9 +19,9 @@ public class PncClient
 {
     private static final String BUILD_RECORDS_PER_RELEASE_RESOURCE = "/some/path/to/a/rest/call";
 
-    private HttpFactory httpFactory;
+    private final HttpFactory httpFactory;
 
-    private CausewayConfig config;
+    private final CausewayConfig config;
 
     @Inject
     public PncClient(CausewayConfig config, HttpFactory httpFactory )
