@@ -45,6 +45,8 @@
     <propulsorVersion>0.1-SNAPSHOT</propulsorVersion>
     <galleyVersion>0.10.4-SNAPSHOT</galleyVersion>
     <kojijiVersion>1.0-SNAPSHOT</kojijiVersion>
+    <configVersion>0.7.2-SNAPSHOT</configVersion>
+    <resteasyVersion>3.0.9.Final</resteasyVersion>
   </properties>
 
   <modules>
@@ -106,6 +108,18 @@
         <artifactId>propulsor-resteasy</artifactId>
         <version>${propulsorVersion}</version>
       </dependency>
+
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>configuration-api</artifactId>
+        <version>${configVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>configuration-dotconf</artifactId>
+        <version>${configVersion}</version>
+      </dependency>
+
       <dependency>
         <groupId>org.commonjava.util</groupId>
         <artifactId>jhttpc</artifactId>
@@ -117,11 +131,6 @@
         <artifactId>cdi-api</artifactId>
         <version>1.2</version>
         <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.xmlrpc</groupId>
-        <artifactId>xmlrpc-client</artifactId>
-        <version>3.1.3</version>
       </dependency>
 
       <dependency>
@@ -138,6 +147,10 @@
       <groupId>javax.enterprise</groupId>
       <artifactId>cdi-api</artifactId>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.weld.se</groupId>
+      <artifactId>weld-se</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

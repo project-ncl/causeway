@@ -24,6 +24,7 @@ import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
 import org.jboss.pnc.causeway.boot.CausewayBootOptions;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -36,6 +37,7 @@ import static org.apache.commons.lang.StringUtils.join;
 /**
  * Created by jdcasey on 11/10/15.
  */
+@ApplicationScoped
 @SectionName( ConfigurationSectionListener.DEFAULT_SECTION )
 public class CausewayConfig
 {

@@ -15,6 +15,7 @@
  */
 package org.jboss.pnc.causeway.inject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
@@ -35,16 +36,21 @@ import java.io.IOException;
  */
 @ApplicationScoped
 public class CausewayProducer
-    implements Closeable
+        implements Closeable
 {
     @Inject
     private CausewayConfig config;
 
     private HttpFactory httpFactory;
 
-    protected CausewayProducer(){}
+    private ObjectMapper objectMapper;
 
-    public CausewayProducer(CausewayConfig config){
+    protected CausewayProducer()
+    {
+    }
+
+    public CausewayProducer( CausewayConfig config )
+    {
         this.config = config;
         setup();
     }
@@ -57,6 +63,7 @@ public class CausewayProducer
 
         httpFactory = new HttpFactory( passwords );
 
+        objectMapper = new ObjectMapper();
     }
 
     @PreDestroy
@@ -64,10 +71,13 @@ public class CausewayProducer
     {
         if ( httpFactory != null )
         {
-            try {
+            try
+            {
                 httpFactory.close();
-            } catch (IOException e) {
-                throw new RuntimeException("Close httpFactory error " + e.getMessage(), e);
+            }
+            catch ( IOException e )
+            {
+                throw new RuntimeException( "Close httpFactory error " + e.getMessage(), e );
             }
         }
     }
@@ -77,5 +87,12 @@ public class CausewayProducer
     public HttpFactory getHttpFactory()
     {
         return httpFactory;
+    }
+
+    @Produces
+    @Default
+    public ObjectMapper getObjectMapper()
+    {
+        return objectMapper;
     }
 }

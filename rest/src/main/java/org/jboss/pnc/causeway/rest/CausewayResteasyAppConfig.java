@@ -13,6 +13,8 @@ public class CausewayResteasyAppConfig implements ResteasyAppConfig {
 
     @Override
     public List<String> getJaxRsMappings() {
-        return asList();//FIXME
+        // Just map everything for now...until we have some static content to serve that needs the UI servlet from the
+        // propulsor-undertow module.
+        return asList( "/*" );
     }
 }

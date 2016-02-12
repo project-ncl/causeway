@@ -51,7 +51,10 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>runtime</scope>
       <excludes>
-        <exclude>org.jboss.pnc.causeway:causeway-launcher*</exclude>
+        <exclude>org.jboss.pnc.causeway*</exclude>
+        <exclude>com.redhat*</exclude>
+        <exclude>org.jboss.pnc*</exclude>
+        <exclude>org.commonjava*</exclude>
       </excludes>
       <outputDirectory>lib/thirdparty</outputDirectory>
     </dependencySet>
