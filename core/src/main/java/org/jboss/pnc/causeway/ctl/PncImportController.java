@@ -7,6 +7,9 @@ import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.model.ProductReleaseImportResult;
 import org.jboss.pnc.causeway.pncclient.PncClient;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 /**
  * Created by jdcasey on 2/9/16.
  */
@@ -33,6 +36,6 @@ public class PncImportController
         // 2c.    If not, run a Koji build import using the artifacts + metadata, and collect the result (error or
         //        resulting brew build id)
         // 3. Assemble a ProductReleaseImportResult from the collected information and return it
-        return null;
+        return new ProductReleaseImportResult( new HashMap<>(), new HashSet<>() );
     }
 }

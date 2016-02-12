@@ -18,12 +18,19 @@ import javax.ws.rs.core.Response;
  */
 @RequestScoped
 @Path( "/import" )
-public class ImportResource
+public class PncImportResource
         implements RestResources
 {
 
     @Inject
     private PncImportController controller;
+
+    @GET
+    @Path( "test/{variable}" )
+    public Response testResponse( @PathParam( "variable" ) String var )
+    {
+        return Response.ok( var ).build();
+    }
 
     @GET
     @Path( "/product/release/{releaseId}" )

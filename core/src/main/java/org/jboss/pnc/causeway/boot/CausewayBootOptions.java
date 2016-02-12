@@ -17,15 +17,23 @@ package org.jboss.pnc.causeway.boot;
 
 import org.commonjava.propulsor.boot.BootOptions;
 
+import java.io.File;
+
 /**
  * Created by jdcasey on 11/10/15.
  */
 public class CausewayBootOptions
-    extends BootOptions
+        extends BootOptions
 {
     public static final String CAUSEWAY_CONFIG_SYSPROP = "causeway.config";
 
     private static final String CAUSEWAY_HOME_SYSPROP = "causeway.home";
+
+    @Override
+    public String getApplicationName()
+    {
+        return "Causeway Newcastle-Koji Bridge";
+    }
 
     @Override
     public String getHomeSystemProperty()
@@ -43,5 +51,11 @@ public class CausewayBootOptions
     public String getHomeEnvar()
     {
         return "CAUSEWAY_HOME";
+    }
+
+    public String getConfig()
+    {
+        String config = getSpecifiedConfig();
+        return config == null ? new File( getHomeDir(), "etc/main.conf" ).getPath() : config;
     }
 }
