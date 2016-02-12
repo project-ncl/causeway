@@ -54,6 +54,8 @@
     <module>core</module>
     <module>rest</module>
     <module>launcher</module>
+    <module>tck</module>
+    <module>ftest</module>
   </modules>
 
   <dependencyManagement>
@@ -85,6 +87,12 @@
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-launcher</artifactId>
         <version>0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.pnc.causeway</groupId>
+        <artifactId>causeway-tck</artifactId>
+        <version>0.1-SNAPSHOT</version>
+        <scope>test</scope>
       </dependency>
 
       <dependency>
@@ -147,10 +155,6 @@
       <groupId>javax.enterprise</groupId>
       <artifactId>cdi-api</artifactId>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.weld.se</groupId>
-      <artifactId>weld-se</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
