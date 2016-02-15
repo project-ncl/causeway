@@ -1,15 +1,17 @@
 package org.jboss.pnc.causeway.pncclient;
 
-import java.io.IOException;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import static org.apache.http.client.utils.HttpClientUtils.closeQuietly;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.JHttpCException;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 
-import static org.apache.http.client.utils.HttpClientUtils.closeQuietly;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by jdcasey on 2/9/16.
@@ -30,7 +32,7 @@ public class PncClient
         this.httpFactory = httpFactory;
     }
 
-//    public Set<BuildRecord> getBuildRecordIdsForRelease( Integer releaseId )
+//    public Set<BuildRecord> findBuildIdsOfRelease( Integer releaseId )
 //            throws ProjectNewcastleClientException
 //    {
 //        Set<BuildRecord> result = new HashSet<>();
@@ -67,6 +69,15 @@ public class PncClient
         {
             closeQuietly( client );
         }
+    }
+
+    public Set<Long> findBuildIdsOfRelease(long releaseId) {
+        return new HashSet<>();
+    }
+
+
+    public PncBuild findBuild(Long buildId) {
+        return null;
     }
 
     public interface ClientCommands

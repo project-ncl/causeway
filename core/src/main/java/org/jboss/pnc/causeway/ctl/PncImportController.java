@@ -1,41 +1,82 @@
 package org.jboss.pnc.causeway.ctl;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
 import org.jboss.pnc.causeway.CausewayException;
+import org.jboss.pnc.causeway.brewclient.BrewClient;
+import org.jboss.pnc.causeway.model.BuildImportResult;
+import org.jboss.pnc.causeway.model.BrewBuild;
+import org.jboss.pnc.causeway.model.BrewNVR;
 import org.jboss.pnc.causeway.model.ProductReleaseImportResult;
+import org.jboss.pnc.causeway.pncclient.PncBuild;
 import org.jboss.pnc.causeway.pncclient.PncClient;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.util.Set;
 
-/**
- * Created by jdcasey on 2/9/16.
- */
 @ApplicationScoped
 public class PncImportController
 {
-    private PncClient pnclClient;
+    private final PncClient pncClient;
+    private final BrewClient brewClient;
 
     @Inject
-    public PncImportController(PncClient pnclClient )
+    public PncImportController(PncClient pnclClient, BrewClient brewClient)
     {
-        this.pnclClient = pnclClient;
+        this.pncClient = pnclClient;
+        this.brewClient = brewClient;
     }
 
-    public ProductReleaseImportResult importProductRelease( int releaseId )
+    public ProductReleaseImportResult importProductRelease(long releaseId)
             throws CausewayException
     {
-//        Set<BuildRecord> records = pnclClient.getBuildRecordIdsForRelease( releaseId );
+        Set<Long> buildIds = findAndAssertBuildIds(releaseId);
 
-        // 1. Retrieve the build records for the given product release id, from PNC
-        // 2. For each, retrieve the build metadata and list of output artifacts from PNC
-        // 2a.    Generate a Brew NVR from the build metadata / artifacts
-        // 2b.    Check if the build already exists in brew...if so, log as successful import (?)
-        // 2c.    If not, run a Koji build import using the artifacts + metadata, and collect the result (error or
-        //        resulting brew build id)
-        // 3. Assemble a ProductReleaseImportResult from the collected information and return it
-        return new ProductReleaseImportResult( new HashMap<>(), new HashSet<>() );
+        ProductReleaseImportResult productReleaseImportResult = new ProductReleaseImportResult();
+        for (Long buildId : buildIds) {
+            BuildImportResult importResult = importBuild(buildId);
+            productReleaseImportResult.addResult(buildId, importResult);
+        }
+
+        return productReleaseImportResult;
     }
+
+    private Set<Long> findAndAssertBuildIds(long releaseId) throws CausewayException {
+        Set<Long> buildIds;
+        try {
+            buildIds = pncClient.findBuildIdsOfRelease(releaseId);
+        } catch (Exception e) {
+            throw new CausewayException(messagePncReleaseNotFound(releaseId, e), e);
+        }
+        if (buildIds == null || buildIds.size() == 0) {
+            throw new CausewayException(messageReleaseWithoutBuildConfigurations(releaseId));
+        }
+        return buildIds;
+    }
+
+    private BuildImportResult importBuild(Long buildId) {
+        PncBuild build = pncClient.findBuild(buildId);
+        if (build == null) {
+            return new BuildImportResult(null, messageBuildNotFound(buildId));
+        }
+        BrewNVR nvr = build.createNVR();
+        BrewBuild brewBuild = brewClient.findBrewBuildOfNVR(nvr);
+        if ( brewBuild != null ) {
+            // FIXME clarify behavior - if the build already exists in brew log as successful import ?
+            return new BuildImportResult(brewBuild, null);
+        }
+        return brewClient.importBuild(nvr, build);
+    }
+
+    static String messagePncReleaseNotFound(long releaseId, Exception e) {
+        return "Can not find PNC release " + releaseId + " - " + e.getMessage();
+    }
+
+    static String messageReleaseWithoutBuildConfigurations(long releaseId) {
+        return "Release " + releaseId + " does not contain any build configurations";
+    }
+
+    static String messageBuildNotFound(Long buildId) {
+        return "PNC build id " + buildId + " not found";
+    }
+
 }

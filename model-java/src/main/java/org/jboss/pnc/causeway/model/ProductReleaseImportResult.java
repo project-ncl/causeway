@@ -1,31 +1,30 @@
 package org.jboss.pnc.causeway.model;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Created by jdcasey on 2/9/16.
- */
 public class ProductReleaseImportResult
 {
-    private Map<Integer, String> importErrors;
+    private final Map<Long, String> importErrors;
 
-    private Set<ImportedBuild> importedBuilds;
+    private final Set<ImportedBuild> importedBuilds;
 
-    public ProductReleaseImportResult( Map<Integer, String> importErrors, Set<ImportedBuild> importedBuilds )
+    public ProductReleaseImportResult( Map<Long, String> importErrors, Set<ImportedBuild> importedBuilds )
     {
         this.importErrors = importErrors;
         this.importedBuilds = importedBuilds;
     }
 
-    public Map<Integer, String> getImportErrors()
+    public ProductReleaseImportResult()
     {
-        return importErrors;
+        this(new HashMap<>(), new HashSet<>());
     }
 
-    public void setImportErrors( Map<Integer, String> importErrors )
+    public Map<Long, String> getImportErrors()
     {
-        this.importErrors = importErrors;
+        return importErrors;
     }
 
     public Set<ImportedBuild> getImportedBuilds()
@@ -33,8 +32,12 @@ public class ProductReleaseImportResult
         return importedBuilds;
     }
 
-    public void setImportedBuilds( Set<ImportedBuild> importedBuilds )
-    {
-        this.importedBuilds = importedBuilds;
+    public void addResult(long buildId, BuildImportResult importResult) {
+        if (importResult.brewBuild != null) {
+            importedBuilds.add(new ImportedBuild(buildId, importResult.brewBuild));
+        }
+        if (importResult.error != null) {
+            importErrors.put(buildId, importResult.error);
+        }
     }
 }
