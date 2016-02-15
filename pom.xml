@@ -48,6 +48,7 @@
     <configVersion>0.7.2-SNAPSHOT</configVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <pncVersion>0.8-SNAPSHOT</pncVersion>
+    <mockitoVersion>1.10.19</mockitoVersion>
   </properties>
 
   <modules>
@@ -151,6 +152,12 @@
         <groupId>org.commonjava.util</groupId>
         <artifactId>http-testserver</artifactId>
         <version>1.1</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-all</artifactId>
+        <version>${mockitoVersion}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
