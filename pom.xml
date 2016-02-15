@@ -47,6 +47,7 @@
     <kojijiVersion>1.0-SNAPSHOT</kojijiVersion>
     <configVersion>0.7.2-SNAPSHOT</configVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
+    <pncVersion>0.8-SNAPSHOT</pncVersion>
   </properties>
 
   <modules>
@@ -93,6 +94,11 @@
         <artifactId>causeway-tck</artifactId>
         <version>0.1-SNAPSHOT</version>
         <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.pnc</groupId>
+        <artifactId>rest-model</artifactId>
+        <version>${pncVersion}</version>
       </dependency>
 
       <dependency>
