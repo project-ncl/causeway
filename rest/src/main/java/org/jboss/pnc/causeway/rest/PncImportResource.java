@@ -13,9 +13,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-/**
- * Created by jdcasey on 2/9/16.
- */
 @RequestScoped
 @Path( "/import" )
 public class PncImportResource
