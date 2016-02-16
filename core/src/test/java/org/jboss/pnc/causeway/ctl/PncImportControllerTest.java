@@ -45,14 +45,14 @@ public class PncImportControllerTest {
 
         Set<Long> buildIds = new HashSet<>();
         buildIds.add(buildId);
-        when(pncClient.findBuildIdsOfRelease(releaseId)).thenReturn(buildIds);
+        when(pncClient.findBuildIdsOfProductRelease(releaseId.intValue())).thenReturn(buildIds);
         PncBuild pncBuild = new PncBuild();
         when(pncClient.findBuild(buildId)).thenReturn(pncBuild);
         BrewBuild brewBuild = new BrewBuild(createRandomLong(), new BrewNVR(createRandomString(), createRandomString(), createRandomString()));
         BuildImportResult buildImportResult = new BuildImportResult(brewBuild, null);
         when(brewClient.importBuild(pncBuild.createNVR(), pncBuild)).thenReturn(buildImportResult);
 
-        ProductReleaseImportResult importResult = importController.importProductRelease(releaseId);
+        ProductReleaseImportResult importResult = importController.importProductRelease(releaseId, false);
 
         assertEquals(0, importResult.getImportErrors().size());
     }
@@ -64,9 +64,9 @@ public class PncImportControllerTest {
 
         Set<Long> buildIds = new HashSet<>();
         buildIds.add(buildId);
-        when(pncClient.findBuildIdsOfRelease(releaseId)).thenReturn(buildIds);
+        when(pncClient.findBuildIdsOfProductRelease(releaseId.intValue())).thenReturn(buildIds);
 
-        ProductReleaseImportResult importResult = importController.importProductRelease(releaseId);
+        ProductReleaseImportResult importResult = importController.importProductRelease(releaseId, false);
 
         assertEquals(1, importResult.getImportErrors().size());
         assertEquals(messageBuildNotFound(buildId), importResult.getImportErrors().get(buildId));
@@ -77,10 +77,10 @@ public class PncImportControllerTest {
         Long releaseId = createRandomLong();
 
         Set<Long> buildIds = new HashSet<>();
-        when(pncClient.findBuildIdsOfRelease(releaseId)).thenReturn(buildIds);
+        when(pncClient.findBuildIdsOfProductRelease(releaseId.intValue())).thenReturn(buildIds);
 
         try {
-            importController.importProductRelease(releaseId);
+            importController.importProductRelease(releaseId, false);
             fail("Expected exception");
         } catch (Exception e) {
             assertEquals(CausewayException.class, e.getClass());
@@ -92,9 +92,9 @@ public class PncImportControllerTest {
     public void testUknownProductReleaseImportReturnsError() throws Exception {
         Long releaseId = createRandomLong();
 
-        when(pncClient.findBuildIdsOfRelease(releaseId)).thenThrow(new IllegalArgumentException("Not found")); //FIXME no idea ATM what will be thrown if configuration will not be found
+        when(pncClient.findBuildIdsOfProductRelease(releaseId.intValue())).thenThrow(new IllegalArgumentException("Not found")); //FIXME no idea ATM what will be thrown if configuration will not be found
         try {
-            importController.importProductRelease(releaseId);
+            importController.importProductRelease(releaseId, false);
             fail("Expected exception");
         } catch (Exception e) {
             assertEquals(CausewayException.class, e.getClass());

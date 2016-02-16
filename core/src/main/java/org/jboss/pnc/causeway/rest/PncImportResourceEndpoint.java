@@ -27,11 +27,11 @@ public class PncImportResourceEndpoint
         return Response.ok( var ).build();
     }
 
-    public ProductReleaseImportResult importProductRelease(int releaseId )
+    public ProductReleaseImportResult importProductRelease(int releaseId, boolean dryRun)
     {
         try
         {
-            return controller.importProductRelease( releaseId );
+            return controller.importProductRelease(releaseId, dryRun);
         }
         catch ( CausewayException e )
         {

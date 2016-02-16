@@ -2,6 +2,7 @@ package org.jboss.pnc.causeway.pncclient;
 
 import static org.junit.Assert.assertEquals;
 
+import org.jboss.pnc.causeway.pncclient.PncClient.ProductReleaseEndpoint;
 import org.jboss.pnc.rest.restmodel.ProductReleaseRest;
 import org.jboss.pnc.rest.restmodel.response.Singleton;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
@@ -10,9 +11,6 @@ import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 
@@ -50,11 +48,4 @@ public class PncClientIntegrationTest {
     }
 
 
-    @Path("/product-releases")
-    public interface ProductReleaseEndpoint {
-
-        @GET
-        @Path("/{id}")
-        public Singleton<ProductReleaseRest> getEntity(@PathParam("id") int productReleaseId);
-    }
 }

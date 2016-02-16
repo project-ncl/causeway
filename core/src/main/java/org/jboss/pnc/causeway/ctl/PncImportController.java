@@ -26,14 +26,14 @@ public class PncImportController
         this.brewClient = brewClient;
     }
 
-    public ProductReleaseImportResult importProductRelease(long releaseId)
+    public ProductReleaseImportResult importProductRelease(long releaseId, boolean dryRun)
             throws CausewayException
     {
         Set<Long> buildIds = findAndAssertBuildIds(releaseId);
 
         ProductReleaseImportResult productReleaseImportResult = new ProductReleaseImportResult();
         for (Long buildId : buildIds) {
-            BuildImportResult importResult = importBuild(buildId);
+            BuildImportResult importResult = importBuild(buildId, dryRun);
             productReleaseImportResult.addResult(buildId, importResult);
         }
 
@@ -43,7 +43,7 @@ public class PncImportController
     private Set<Long> findAndAssertBuildIds(long releaseId) throws CausewayException {
         Set<Long> buildIds;
         try {
-            buildIds = pncClient.findBuildIdsOfRelease(releaseId);
+            buildIds = pncClient.findBuildIdsOfProductRelease(new Long(releaseId).intValue());
         } catch (Exception e) {
             throw new CausewayException(messagePncReleaseNotFound(releaseId, e), e);
         }
@@ -53,7 +53,7 @@ public class PncImportController
         return buildIds;
     }
 
-    private BuildImportResult importBuild(Long buildId) {
+    private BuildImportResult importBuild(Long buildId, boolean dryRun) {
         PncBuild build = pncClient.findBuild(buildId);
         if (build == null) {
             return new BuildImportResult(null, messageBuildNotFound(buildId));
