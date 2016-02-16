@@ -1,4 +1,4 @@
-package org.jboss.pnc.causeway.model;
+package org.jboss.pnc.causeway.rest;
 
 import java.util.HashMap;
 import java.util.HashSet;

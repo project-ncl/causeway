@@ -30,11 +30,20 @@
   <dependencies>
     <dependency>
       <groupId>org.jboss.pnc.causeway</groupId>
+      <artifactId>causeway-rest</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.pnc.causeway</groupId>
       <artifactId>causeway-model-java</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.util</groupId>
       <artifactId>jhttpc</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.commonjava.propulsor</groupId>
+      <artifactId>propulsor-resteasy</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.propulsor</groupId>

@@ -8,10 +8,10 @@ import static org.mockito.Mockito.when;
 
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
-import org.jboss.pnc.causeway.model.BrewBuild;
-import org.jboss.pnc.causeway.model.BrewNVR;
-import org.jboss.pnc.causeway.model.BuildImportResult;
-import org.jboss.pnc.causeway.model.ProductReleaseImportResult;
+import org.jboss.pnc.causeway.rest.BrewBuild;
+import org.jboss.pnc.causeway.rest.BrewNVR;
+import org.jboss.pnc.causeway.rest.BuildImportResult;
+import org.jboss.pnc.causeway.rest.ProductReleaseImportResult;
 import org.jboss.pnc.causeway.pncclient.PncBuild;
 import org.jboss.pnc.causeway.pncclient.PncClient;
 import org.jboss.weld.exceptions.IllegalArgumentException;

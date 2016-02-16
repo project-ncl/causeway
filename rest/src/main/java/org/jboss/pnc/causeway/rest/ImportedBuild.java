@@ -1,4 +1,4 @@
-package org.jboss.pnc.causeway.model;
+package org.jboss.pnc.causeway.rest;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

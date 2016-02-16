@@ -1,12 +1,11 @@
 package org.jboss.pnc.causeway.rest;
 
-import java.util.List;
-
-import javax.enterprise.context.ApplicationScoped;
+import static java.util.Arrays.asList;
 
 import org.commonjava.propulsor.deploy.resteasy.ResteasyAppConfig;
 
-import static java.util.Arrays.asList;
+import javax.enterprise.context.ApplicationScoped;
+import java.util.List;
 
 @ApplicationScoped
 public class CausewayResteasyAppConfig implements ResteasyAppConfig {
