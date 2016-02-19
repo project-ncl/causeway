@@ -20,8 +20,6 @@ public class PncImportResourceEndpoint
     @Inject
     private PncImportController controller;
 
-    @GET
-    @Path( "test/{variable}" )
     public Response testResponse( @PathParam( "variable" ) String var )
     {
         return Response.ok( var ).build();
