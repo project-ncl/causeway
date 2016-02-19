@@ -80,6 +80,12 @@
     <dependency>
       <groupId>org.jboss.pnc</groupId>
       <artifactId>rest-model</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.ws.rs</groupId>
+          <artifactId>jsr311-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency><!-- FIXME remove when resolved https://projects.engineering.redhat.com/browse/NCL-1644 -->
       <groupId>org.jboss.pnc</groupId>
