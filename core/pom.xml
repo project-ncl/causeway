@@ -163,4 +163,27 @@
     </plugins>
   </build>
  -->
+  <profiles>
+    <profile>
+      <id>disable-pnc-it</id>
+      <activation>
+        <property>
+          <name>disable-pnc-it</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/PncClientIT.java</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
