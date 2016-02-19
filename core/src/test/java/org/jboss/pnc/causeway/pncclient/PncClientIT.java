@@ -14,7 +14,7 @@ import org.junit.Test;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 
-public class PncClientIntegrationTest {
+public class PncClientIT {
     private ResteasyClient client;
     private String pncUrl;
     private Integer productReleaseId;
@@ -42,9 +42,8 @@ public class PncClientIntegrationTest {
         ResteasyWebTarget target = client.target(pncUrl);
         ProductReleaseEndpoint endpoint = target.proxy(ProductReleaseEndpoint.class);
 
-        Singleton<ProductReleaseRest> responseEntity = endpoint.getEntity(productReleaseId);
-
-        assertEquals(productReleaseId, responseEntity.getContent().getId());
+        ProductReleaseRest productRelease = endpoint.getEntity(productReleaseId).getContent();
+        assertEquals(productReleaseId, productRelease.getId());
     }
 
 

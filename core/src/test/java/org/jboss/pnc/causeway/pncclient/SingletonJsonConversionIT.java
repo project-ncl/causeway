@@ -14,7 +14,7 @@ import java.util.Random;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class SingletonJsonConversionIntegrationTest {
+public class SingletonJsonConversionIT {
 
     private final Random generator = new Random();
 
