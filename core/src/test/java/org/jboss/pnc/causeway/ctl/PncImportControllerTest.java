@@ -8,21 +8,21 @@ import static org.mockito.Mockito.when;
 
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
+import org.jboss.pnc.causeway.pncclient.PncBuild;
+import org.jboss.pnc.causeway.pncclient.PncClient;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.BuildImportResult;
 import org.jboss.pnc.causeway.rest.ProductReleaseImportResult;
-import org.jboss.pnc.causeway.pncclient.PncBuild;
-import org.jboss.pnc.causeway.pncclient.PncClient;
 import org.jboss.weld.exceptions.IllegalArgumentException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 
 public class PncImportControllerTest {
 
@@ -41,9 +41,9 @@ public class PncImportControllerTest {
     @Test
     public void testProductReleaseWithBuildConfiguratiuonsIsImported() throws Exception {
         Long releaseId = createRandomLong();
-        Long buildId = createRandomLong();
+        Integer buildId = createRandomInt();
 
-        Set<Long> buildIds = new HashSet<>();
+        Collection<Integer> buildIds = new HashSet<>();
         buildIds.add(buildId);
         when(pncClient.findBuildIdsOfProductRelease(releaseId.intValue())).thenReturn(buildIds);
         PncBuild pncBuild = new PncBuild();
@@ -60,23 +60,23 @@ public class PncImportControllerTest {
     @Test
     public void testProductReleaseImportsFailsWhenBuildConfigurationsNotFound() throws Exception {
         Long releaseId = createRandomLong();
-        Long buildId = createRandomLong();
+        Integer buildId = createRandomInt();
 
-        Set<Long> buildIds = new HashSet<>();
+        Collection<Integer> buildIds = new HashSet<>();
         buildIds.add(buildId);
         when(pncClient.findBuildIdsOfProductRelease(releaseId.intValue())).thenReturn(buildIds);
 
         ProductReleaseImportResult importResult = importController.importProductRelease(releaseId, false);
 
         assertEquals(1, importResult.getImportErrors().size());
-        assertEquals(messageBuildNotFound(buildId), importResult.getImportErrors().get(buildId));
+        assertEquals(messageBuildNotFound(buildId), importResult.getImportErrors().get(buildId.longValue()));
     }
 
     @Test
     public void testProductReleaseWithoutBuildConfigurationsResultsInError() throws Exception {
         Long releaseId = createRandomLong();
 
-        Set<Long> buildIds = new HashSet<>();
+        Collection<Integer> buildIds = new HashSet<>();
         when(pncClient.findBuildIdsOfProductRelease(releaseId.intValue())).thenReturn(buildIds);
 
         try {
@@ -101,6 +101,9 @@ public class PncImportControllerTest {
         }
     }
 
+    public static Integer createRandomInt() {
+        return new Random().nextInt();
+    }
     public static Long createRandomLong() {
         return new Random().nextLong();
     }

@@ -1,5 +1,7 @@
 package org.jboss.pnc.causeway.pncclient;
 
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import org.jboss.pnc.causeway.pncclient.PncClient.ProductReleaseEndpoint;
@@ -13,6 +15,7 @@ import org.junit.Test;
 
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+import java.util.Collection;
 
 public class PncClientIT {
     private ResteasyClient client;
@@ -42,8 +45,10 @@ public class PncClientIT {
         ResteasyWebTarget target = client.target(pncUrl);
         ProductReleaseEndpoint endpoint = target.proxy(ProductReleaseEndpoint.class);
 
-        ProductReleaseRest productRelease = endpoint.getEntity(productReleaseId).getContent();
-        assertEquals(productReleaseId, productRelease.getId());
+        Singleton<Collection<Integer>> productRelease = (Singleton<Collection<Integer>>) endpoint.getAllBuildsInDistributedRecordsetOfProductRelease (productReleaseId).getEntity();
+
+        Collection<Integer> ids = productRelease.getContent();
+        assertArrayEquals(asList(1).toArray(), ids.toArray());
     }
 
 

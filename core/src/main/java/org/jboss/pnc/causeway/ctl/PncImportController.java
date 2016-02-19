@@ -11,6 +11,7 @@ import org.jboss.pnc.causeway.pncclient.PncClient;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.Collection;
 import java.util.Set;
 
 @ApplicationScoped
@@ -29,19 +30,19 @@ public class PncImportController
     public ProductReleaseImportResult importProductRelease(long releaseId, boolean dryRun)
             throws CausewayException
     {
-        Set<Long> buildIds = findAndAssertBuildIds(releaseId);
+        Collection<Integer> buildIds = findAndAssertBuildIds(releaseId);
 
         ProductReleaseImportResult productReleaseImportResult = new ProductReleaseImportResult();
-        for (Long buildId : buildIds) {
+        for (Integer buildId : buildIds) {
             BuildImportResult importResult = importBuild(buildId, dryRun);
-            productReleaseImportResult.addResult(buildId, importResult);
+            productReleaseImportResult.addResult(buildId.longValue(), importResult);
         }
 
         return productReleaseImportResult;
     }
 
-    private Set<Long> findAndAssertBuildIds(long releaseId) throws CausewayException {
-        Set<Long> buildIds;
+    private Collection<Integer> findAndAssertBuildIds(long releaseId) throws CausewayException {
+        Collection<Integer> buildIds;
         try {
             buildIds = pncClient.findBuildIdsOfProductRelease(new Long(releaseId).intValue());
         } catch (Exception e) {
@@ -53,7 +54,7 @@ public class PncImportController
         return buildIds;
     }
 
-    private BuildImportResult importBuild(Long buildId, boolean dryRun) {
+    private BuildImportResult importBuild(Integer buildId, boolean dryRun) {
         PncBuild build = pncClient.findBuild(buildId);
         if (build == null) {
             return new BuildImportResult(null, messageBuildNotFound(buildId));
@@ -75,7 +76,7 @@ public class PncImportController
         return "Release " + releaseId + " does not contain any build configurations";
     }
 
-    static String messageBuildNotFound(Long buildId) {
+    static String messageBuildNotFound(Integer buildId) {
         return "PNC build id " + buildId + " not found";
     }
 
