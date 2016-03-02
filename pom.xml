@@ -165,6 +165,11 @@
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc</groupId>
+        <artifactId>spi</artifactId>
+        <version>${pncVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.pnc</groupId>
         <artifactId>rest-model</artifactId>
         <version>${pncVersion}</version>
       </dependency>
