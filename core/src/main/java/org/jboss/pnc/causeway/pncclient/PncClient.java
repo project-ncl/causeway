@@ -8,16 +8,18 @@ import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.JHttpCException;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.config.CausewayConfig;
-import org.jboss.pnc.rest.restmodel.response.Singleton;
+import org.jboss.pnc.rest.restmodel.response.Page;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Collection;
@@ -89,9 +91,18 @@ public class PncClient
 
     public Collection<Integer> findBuildIdsOfProductRelease(int productReleaseId) throws CausewayException {
         ProductReleaseEndpoint productReleaseEndpoint = restEndpointProxyFactory.createRestEndpoint(ProductReleaseEndpoint.class);
-        Response response = productReleaseEndpoint.getAllBuildsInDistributedRecordsetOfProductRelease(productReleaseId);
-        if (response.getStatus() == SC_OK ) {
-            return ((Singleton<Collection<Integer>>) response.getEntity()).getContent();
+        Response response = null;
+        try {
+            response = productReleaseEndpoint.getAllBuildsInDistributedRecordsetOfProductRelease(productReleaseId);
+            if (response.getStatus() == SC_OK) {
+                Page<Integer> idsWrapper = ((Page<Integer>) response.readEntity(new GenericType<Page<Integer>>() {
+                }));
+                return idsWrapper.getContent();
+            }
+        } finally {
+            if (response != null) {
+                response.close();
+            }
         }
         throw new CausewayException("Can not read build ids for product release " + productReleaseId + " - response " + response.getStatus());
     }
@@ -149,12 +160,17 @@ public class PncClient
 
 
     @Path("/product-releases")
+    @Consumes("application/json")
     public interface ProductReleaseEndpoint { //FIXME remove when resolved https://projects.engineering.redhat.com/browse/NCL-1645
 
         @GET
-        @Path("/{id}/allDistributedBuildIds")
+        @Path("/{id}/distributed-build-records-ids")
         public Response getAllBuildsInDistributedRecordsetOfProductRelease(
                 @PathParam("id") Integer id);
+        @GET
+        @Path("/{id}")
+        public Response getSpecific(@PathParam("id") Integer id);
+
     }
 
 }

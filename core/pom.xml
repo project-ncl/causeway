@@ -92,6 +92,10 @@
       <artifactId>model</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.jboss.pnc</groupId>
+      <artifactId>spi</artifactId>
+    </dependency><!-- END OF FIXME -->
+    <dependency>
       <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-client</artifactId>
     </dependency>
@@ -115,6 +119,10 @@
     <dependency>
       <groupId>args4j</groupId>
       <artifactId>args4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock</artifactId>
     </dependency>
   </dependencies>
   

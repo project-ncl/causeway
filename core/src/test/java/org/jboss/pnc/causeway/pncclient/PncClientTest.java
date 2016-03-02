@@ -8,14 +8,16 @@ import static org.mockito.Mockito.when;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.PncClient.ProductReleaseEndpoint;
+import org.jboss.pnc.rest.provider.collection.CollectionInfo;
 import org.jboss.pnc.rest.restmodel.ProductMilestoneRest;
 import org.jboss.pnc.rest.restmodel.ProductReleaseRest;
-import org.jboss.pnc.rest.restmodel.response.Singleton;
+import org.jboss.pnc.rest.restmodel.response.Page;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.Random;
@@ -47,13 +49,14 @@ public class PncClientTest {
         int productReleaseId = createRandomInt();
         Integer buildRecord1 = createRandomInt();
         Integer buildRecord2 = createRandomInt();
-        when(response.getEntity()).thenReturn(new Singleton<>(asList(buildRecord1, buildRecord2)));
         when(response.getStatus()).thenReturn(SC_OK);
+        Collection<Integer> expectedIds = asList(buildRecord1, buildRecord2);
+        when(response.readEntity(new GenericType<Page<Integer>>(){})).thenReturn(new Page<Integer>(new CollectionInfo<Integer>(0, expectedIds.size(), 1, expectedIds)));
         when(productReleaseEndpoint.getAllBuildsInDistributedRecordsetOfProductRelease(productReleaseId)).thenReturn(response);
 
         Collection<Integer> ids = client.findBuildIdsOfProductRelease(productReleaseId);
 
-        assertArrayEquals(asList(buildRecord1, buildRecord2).toArray(), ids.toArray());
+        assertArrayEquals(expectedIds.toArray(), ids.toArray());
     }
 
     private ProductReleaseRest createProductRelease(int productReleaseId) {
