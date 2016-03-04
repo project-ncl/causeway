@@ -30,11 +30,20 @@
   <dependencies>
     <dependency>
       <groupId>org.jboss.pnc.causeway</groupId>
+      <artifactId>causeway-rest</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.pnc.causeway</groupId>
       <artifactId>causeway-model-java</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.util</groupId>
       <artifactId>jhttpc</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.commonjava.propulsor</groupId>
+      <artifactId>propulsor-resteasy</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.propulsor</groupId>
@@ -69,6 +78,33 @@
       <artifactId>jackson-databind</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.jboss.pnc</groupId>
+      <artifactId>rest-model</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.ws.rs</groupId>
+          <artifactId>jsr311-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency><!-- FIXME remove when resolved https://projects.engineering.redhat.com/browse/NCL-1644 -->
+      <groupId>org.jboss.pnc</groupId>
+      <artifactId>model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.pnc</groupId>
+      <artifactId>spi</artifactId>
+    </dependency><!-- END OF FIXME -->
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-jackson2-provider</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
@@ -83,6 +119,10 @@
     <dependency>
       <groupId>args4j</groupId>
       <artifactId>args4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock</artifactId>
     </dependency>
   </dependencies>
   
@@ -131,4 +171,27 @@
     </plugins>
   </build>
  -->
+  <profiles>
+    <profile>
+      <id>disable-pnc-it</id>
+      <activation>
+        <property>
+          <name>disable-pnc-it</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/PncClientIT.java</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

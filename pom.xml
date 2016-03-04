@@ -149,6 +149,32 @@
       </dependency>
 
       <dependency>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>resteasy-client</artifactId>
+        <version>${resteasyVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>resteasy-jackson2-provider</artifactId>
+        <version>${resteasyVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.pnc</groupId>
+        <artifactId>model</artifactId>
+        <version>${pncVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.pnc</groupId>
+        <artifactId>spi</artifactId>
+        <version>${pncVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.pnc</groupId>
+        <artifactId>rest-model</artifactId>
+        <version>${pncVersion}</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.commonjava.util</groupId>
         <artifactId>http-testserver</artifactId>
         <version>1.1</version>
@@ -158,6 +184,12 @@
         <groupId>org.mockito</groupId>
         <artifactId>mockito-all</artifactId>
         <version>${mockitoVersion}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.github.tomakehurst</groupId>
+        <artifactId>wiremock</artifactId>
+        <version>1.57</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
@@ -180,4 +212,25 @@
       <scope>runtime</scope>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration combine.children="append">
+          <includes>
+            <include>**/*IT.java</include>
+          </includes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

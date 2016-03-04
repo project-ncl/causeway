@@ -1,6 +1,6 @@
 package org.jboss.pnc.causeway.pncclient;
 
-import org.jboss.pnc.causeway.model.BrewNVR;
+import org.jboss.pnc.causeway.rest.BrewNVR;
 
 public final class PncBuild {
 
