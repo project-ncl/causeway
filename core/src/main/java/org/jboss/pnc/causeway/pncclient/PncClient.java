@@ -8,6 +8,8 @@ import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.JHttpCException;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.config.CausewayConfig;
+import org.jboss.pnc.causeway.pncclient.PncBuild.PncArtifact;
+import org.jboss.pnc.rest.restmodel.ArtifactRest;
 import org.jboss.pnc.rest.restmodel.response.Page;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
@@ -16,9 +18,11 @@ import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -31,6 +35,7 @@ import java.util.Collection;
 public class PncClient
 {
     private static final String BUILD_RECORDS_PER_RELEASE_RESOURCE = "/some/path/to/a/rest/call";
+    public static final int MAX_ARTIFACTS = 20000;
 
     private final HttpFactory httpFactory;
 
@@ -90,10 +95,10 @@ public class PncClient
     }
 
     public Collection<Integer> findBuildIdsOfProductRelease(int productReleaseId) throws CausewayException {
-        ProductReleaseEndpoint productReleaseEndpoint = restEndpointProxyFactory.createRestEndpoint(ProductReleaseEndpoint.class);
         Response response = null;
         try {
-            response = productReleaseEndpoint.getAllBuildsInDistributedRecordsetOfProductRelease(productReleaseId);
+            ProductReleaseEndpoint endpoint = restEndpointProxyFactory.createRestEndpoint(ProductReleaseEndpoint.class);
+            response = endpoint.getAllBuildsInDistributedRecordsetOfProductRelease(productReleaseId);
             if (response.getStatus() == SC_OK) {
                 Page<Integer> idsWrapper = ((Page<Integer>) response.readEntity(new GenericType<Page<Integer>>() {
                 }));
@@ -104,7 +109,7 @@ public class PncClient
                 response.close();
             }
         }
-        throw new CausewayException("Can not read build ids for product release " + productReleaseId + " - response " + response.getStatus());
+        throw new CausewayException("Can not read build ids for product release " + productReleaseId + ( response == null ? "" : " - response " + response.getStatus()));
     }
 
     static class RestEndpointProxyFactory {
@@ -123,8 +128,32 @@ public class PncClient
     }
 
 
-    public PncBuild findBuild(Integer buildId) {
-        return null;
+    public PncBuild findBuild(Integer buildId) throws CausewayException {
+        Response response = null;
+        try {
+            BuildRecordEndpoint endpoint = restEndpointProxyFactory.createRestEndpoint(BuildRecordEndpoint.class);
+            response = endpoint.getArtifacts(buildId, 0, MAX_ARTIFACTS, "", "");
+            if (response.getStatus() == SC_OK) {
+                PncBuild build = new PncBuild();
+                Collection<ArtifactRest> artifactRests = ((Page<ArtifactRest>) response.readEntity(new GenericType<Page<ArtifactRest>>() {})).getContent();
+                for(ArtifactRest artifactRest : artifactRests) {
+                    String type = artifactRest.getType();
+                    PncArtifact artifact = new PncArtifact("maven", artifactRest.getIdentifier(), artifactRest.getFilename(), artifactRest.getChecksum());
+                    if ("BINARY_BUILT".equals(type)) {
+                        build.buildArtifacts.add(artifact);
+                    }
+                    if ("BINARY_IMPORTED".equals(type)) {
+                        build.dependencies.add(artifact);
+                    }
+                }
+                return build;
+            }
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
+        throw new CausewayException("Can read info for build id " + buildId + ( response == null ? "" : " - response " + response.getStatus()));
     }
 
     public interface ClientCommands
@@ -158,6 +187,12 @@ public class PncClient
         }
     }
 
+    public static final String PAGE_INDEX_QUERY_PARAM = "pageIndex";
+    public static final String PAGE_INDEX_DEFAULT_VALUE = "0";
+    public static final String PAGE_SIZE_QUERY_PARAM = "pageSize";
+    public static final String PAGE_SIZE_DEFAULT_VALUE = "50";
+    public static final String SORTING_QUERY_PARAM = "sort";
+    public static final String QUERY_QUERY_PARAM = "q";
 
     @Path("/product-releases")
     @Consumes("application/json")
@@ -171,6 +206,19 @@ public class PncClient
         @Path("/{id}")
         public Response getSpecific(@PathParam("id") Integer id);
 
+    }
+
+    @Path("/build-records")
+    @Consumes("application/json")
+    public interface BuildRecordEndpoint { //FIXME remove when resolved https://projects.engineering.redhat.com/browse/NCL-1645
+
+        @GET
+        @Path("/{id}/artifacts")
+        public Response getArtifacts(@PathParam("id") Integer id,
+                                     @QueryParam(PAGE_INDEX_QUERY_PARAM) @DefaultValue(PAGE_INDEX_DEFAULT_VALUE) int pageIndex,
+                                     @QueryParam(PAGE_SIZE_QUERY_PARAM) @DefaultValue(PAGE_SIZE_DEFAULT_VALUE) int pageSize,
+                                     @QueryParam(SORTING_QUERY_PARAM) String sort,
+                                     @QueryParam(QUERY_QUERY_PARAM) String q);
     }
 
 }

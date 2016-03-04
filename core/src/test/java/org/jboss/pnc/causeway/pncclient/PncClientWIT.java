@@ -5,10 +5,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static java.util.Arrays.asList;
+import static org.apache.commons.lang.StringUtils.join;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
+import org.apache.commons.io.IOUtils;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.PncClient.ProductReleaseEndpoint;
 import org.jboss.pnc.rest.restmodel.ProductReleaseRest;
@@ -16,7 +18,7 @@ import org.jboss.pnc.rest.restmodel.response.Page;
 import org.jboss.pnc.rest.restmodel.response.Singleton;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -27,6 +29,9 @@ import org.mockito.MockitoAnnotations;
 
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Collection;
 
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
@@ -59,6 +64,13 @@ public class PncClientWIT {
         when(config.getPnclURL()).thenReturn(pncUrl);
     }
 
+    @After
+    public void tearDown() throws Exception {
+        if (client != null) {
+            client.close();
+        }
+    }
+
     @AfterClass
     public static void after () {
         if (wireMockRule != null)
@@ -71,15 +83,12 @@ public class PncClientWIT {
         stubFor(get(urlEqualTo(CONTEXT_URL + relativeUrl))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
-                        .withBody("{\"content\":{\"id\":1,\"version\":\"1.0.0.GA\",\"releaseDate\":null,\"downloadUrl\":null,\"issueTrackerUrl\":null,\"productVersionId\":1,\"productMilestoneId\":1,\"supportLevel\":\"EARLYACCESS\"}}")));
+                        .withBody(readResponseBodyFromTemplate("product-releases-1.json"))));
 
-        ResteasyWebTarget target = client.target(pncUrl + relativeUrl);
-        Response response = target.request().get();
-
+        Response response = client.target(pncUrl + relativeUrl).request().get();
         Singleton<ProductReleaseRest> responseEntity = response.readEntity(new GenericType<Singleton<ProductReleaseRest>>() {});
 
         assertEquals(productReleaseId, responseEntity.getContent().getId());
-        response.close();
     }
 
     @Test
@@ -88,9 +97,9 @@ public class PncClientWIT {
         stubFor(get(urlEqualTo(CONTEXT_URL + relativeUrl))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
-                        .withBody("{\"content\":{\"id\":1,\"version\":\"1.0.0.GA\",\"releaseDate\":null,\"downloadUrl\":null,\"issueTrackerUrl\":null,\"productVersionId\":1,\"productMilestoneId\":1,\"supportLevel\":\"EARLYACCESS\"}}")));
-        ResteasyWebTarget target = client.target(pncUrl);
-        ProductReleaseEndpoint endpoint = target.proxy(ProductReleaseEndpoint.class);
+                        .withBody(readResponseBodyFromTemplate("product-releases-1.json"))));
+
+        ProductReleaseEndpoint endpoint = client.target(pncUrl).proxy(ProductReleaseEndpoint.class);
         Response response = endpoint.getSpecific(productReleaseId);
         ProductReleaseRest entity = ((Singleton<ProductReleaseRest>) response.readEntity(new GenericType<Singleton<ProductReleaseRest>>() {})).getContent();
 
@@ -98,51 +107,58 @@ public class PncClientWIT {
     }
 
     @Test
-    public void testReadProductReleaseBuildConfigIds() throws Exception {
+    public void testReadProductReleaseBuildConfigurations() throws Exception {
         String relativeUrl = "/product-releases/" + productReleaseId + "/distributed-build-records-ids";
         stubFor(get(urlEqualTo(CONTEXT_URL + relativeUrl))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody("{\"pageIndex\":0,\"pageSize\":1,\"totalPages\":1,\"content\":[1]}")));
-        ResteasyWebTarget target = client.target(pncUrl + relativeUrl);
-        Response response = target.request().get();
 
-        Page<Integer> responseEntity = response.readEntity(new GenericType<Page<Integer>>() {});
-
-        assertArrayEquals(asList(1).toArray(), responseEntity.getContent().toArray());
-        response.close();
-    }
-
-    @Test
-    public void testReadProductReleaseBuildConfigurationsUsingProxy() throws Exception {
-        String relativeUrl = "/product-releases/" + productReleaseId + "/distributed-build-records-ids";
-        stubFor(get(urlEqualTo(CONTEXT_URL + relativeUrl))
-                .willReturn(aResponse()
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("{\"pageIndex\":0,\"pageSize\":1,\"totalPages\":1,\"content\":[1]}")));
-        ResteasyWebTarget target = client.target(pncUrl);
-        ProductReleaseEndpoint endpoint = target.proxy(ProductReleaseEndpoint.class);
-
+        ProductReleaseEndpoint endpoint = client.target(pncUrl).proxy(ProductReleaseEndpoint.class);
         Response response = endpoint.getAllBuildsInDistributedRecordsetOfProductRelease(productReleaseId);
         Page<Integer> ids = ((Page<Integer>) response.readEntity(new GenericType<Page<Integer>>() {}));
 
         assertArrayEquals(asList(1).toArray(), ids.getContent().toArray());
-        target.getResteasyClient().close();
     }
 
     @Test
-    public void testClientReadProductReleaseBuildConfigurationsUsingProxy() throws Exception {
+    public void testReadProductReleaseBuildIds() throws Exception {
         String relativeUrl = "/product-releases/" + productReleaseId + "/distributed-build-records-ids";
         stubFor(get(urlEqualTo(CONTEXT_URL + relativeUrl))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody("{\"pageIndex\":0,\"pageSize\":1,\"totalPages\":1,\"content\":[1]}")));
-        ResteasyWebTarget target = client.target(pncUrl);
-        ProductReleaseEndpoint endpoint = target.proxy(ProductReleaseEndpoint.class);
 
         Collection<Integer> ids = pncClient.findBuildIdsOfProductRelease(productReleaseId);
 
         assertArrayEquals(asList(1).toArray(), ids.toArray());
-        target.getResteasyClient().close();
+    }
+
+
+    @Test
+    public void testReadBuildArtifacts() throws Exception {
+        Integer buildId = 61;
+        String relativeUrl = "/build-records/" + buildId + "/artifacts?pageIndex=0&pageSize=" + PncClient.MAX_ARTIFACTS + "&sort=&q=";
+        stubFor(get(urlEqualTo(CONTEXT_URL + relativeUrl))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(readResponseBodyFromTemplate("build-records-61-artifacts-1.json"))));
+
+        PncBuild pncBuild = pncClient.findBuild(buildId);
+
+        assertEquals(3, pncBuild.buildArtifacts.size());
+        assertEquals(1, pncBuild.dependencies.size());
+        //FIXME nvr, build environment, actual files
+    }
+
+    private String readResponseBodyFromTemplate(String name) throws IOException {
+        String folderName = getClass().getPackage().getName().replace(".", "/");
+        try (InputStream inputStream = getContextClassLoader().getResourceAsStream(folderName + "/" + name)) {
+            return join(IOUtils.readLines(inputStream, Charset.forName("utf-8")), "\n");
+        }
+    }
+
+    private ClassLoader getContextClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
     }
 }
