@@ -54,7 +54,7 @@ public class PncImportController
         return buildIds;
     }
 
-    private BuildImportResult importBuild(Integer buildId, boolean dryRun) {
+    private BuildImportResult importBuild(Integer buildId, boolean dryRun) throws CausewayException {
         PncBuild build = pncClient.findBuild(buildId);
         if (build == null) {
             return new BuildImportResult(null, messageBuildNotFound(buildId));
