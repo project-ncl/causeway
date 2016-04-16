@@ -24,7 +24,7 @@ public class SingletonJsonConversionIT {
 
         String json = convertToJson(new Singleton<>(productMilestone));
 
-        String expectedJson = "{\"content\":{\"id\":" + productMilestone.getId() + ",\"version\":null,\"endDate\":null,\"startingDate\":null,\"plannedEndDate\":null,\"downloadUrl\":null,\"issueTrackerUrl\":null,\"productVersionId\":null,\"performedBuildRecordSetId\":null,\"distributedBuildRecordSetId\":null,\"productReleaseId\":null}}";
+        String expectedJson = "{\"content\":{\"id\":" + productMilestone.getId() + ",\"version\":null,\"endDate\":null,\"startingDate\":null,\"plannedEndDate\":null,\"downloadUrl\":null,\"issueTrackerUrl\":null,\"productVersionId\":null,\"performedBuilds\":null,\"distributedArtifactIds\":null,\"productReleaseId\":null}}";
         assertEquals(expectedJson, json);
     }
 

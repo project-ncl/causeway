@@ -10,9 +10,8 @@
       "checksum": "250116a8586829ff037f2a6031156d317dc181e7294ccee79bd09f6a1c232446",
       "filename": "liquibase-cdi-3.4.1.redhat-1.jar",
       "deployUrl": "http://10.19.208.31:8180/api/hosted/build_org-liquibase-liquibase-parent-3-4-1_20160229.0444/org/liquibase/liquibase-cdi/3.4.1.redhat-1/liquibase-cdi-3.4.1.redhat-1.jar",
-      "type": "BUILT",
       "dependantBuildRecordIds": [],
-      "type": "BINARY_BUILT"
+      "artifactQuality": "BUILT"
     },
     {
       "id": 1091,
@@ -21,9 +20,8 @@
       "checksum": "8dfcc7a9385d2b7c484dcd6e73806b61ce48fa9d923db4d22427de54ba4e1820",
       "filename": "liquibase-cdi-3.4.1.redhat-1-sources.jar",
       "deployUrl": "http://10.19.208.31:8180/api/hosted/build_org-liquibase-liquibase-parent-3-4-1_20160229.0444/org/liquibase/liquibase-cdi/3.4.1.redhat-1/liquibase-cdi-3.4.1.redhat-1-sources.jar",
-      "type": "BUILT",
       "dependantBuildRecordIds": [],
-      "type": "BINARY_BUILT"
+      "artifactQuality": "BUILT"
     },
     {
       "id": 1092,
@@ -32,9 +30,8 @@
       "checksum": "0f98627d6f2a4d8f0dda8cfea70e7fe057636c2d24ee1e6aeaa122ed35a28cfc",
       "filename": "liquibase-cdi-3.4.1.redhat-1.pom",
       "deployUrl": "http://10.19.208.31:8180/api/hosted/build_org-liquibase-liquibase-parent-3-4-1_20160229.0444/org/liquibase/liquibase-cdi/3.4.1.redhat-1/liquibase-cdi-3.4.1.redhat-1.pom",
-      "type": "BUILT",
       "dependantBuildRecordIds": [],
-      "type": "BINARY_BUILT"
+      "artifactQuality": "BUILT"
     },
     {
       "id": 358,
@@ -43,10 +40,8 @@
       "checksum": "5d802713d7bc980b4c6e51b8e6e1b6b0",
       "filename": "buildmetadata-maven-plugin-1.7.0.pom",
       "deployUrl": "http://10.19.208.31:8180/api/hosted/shared-imports/com/redhat/rcm/maven/plugin/buildmetadata-maven-plugin/1.7.0/buildmetadata-maven-plugin-1.7.0.pom",
-      "type": "IMPORTED",
-      "dependantBuildRecordIds": [
-      ],
-      "type": "BINARY_IMPORTED"
+      "dependantBuildRecordIds": [],
+      "artifactQuality": "IMPORTED"
     }
   ]
 }

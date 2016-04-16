@@ -1,5 +1,7 @@
 package org.jboss.pnc.causeway.ctl;
 
+import static java.util.stream.Collectors.toList;
+
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.rest.BuildImportResult;
@@ -13,6 +15,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class PncImportController

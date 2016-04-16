@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang.StringUtils.join;
+import static org.jboss.pnc.causeway.pncclient.PncClient.extractIds;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
@@ -13,6 +14,7 @@ import static org.mockito.Mockito.when;
 import org.apache.commons.io.IOUtils;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.PncClient.ProductReleaseEndpoint;
+import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 import org.jboss.pnc.rest.restmodel.ProductReleaseRest;
 import org.jboss.pnc.rest.restmodel.response.Page;
 import org.jboss.pnc.rest.restmodel.response.Singleton;
@@ -112,13 +114,13 @@ public class PncClientWIT {
         stubFor(get(urlEqualTo(CONTEXT_URL + relativeUrl))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
-                        .withBody("{\"pageIndex\":0,\"pageSize\":1,\"totalPages\":1,\"content\":[1]}")));
+                        .withBody(readResponseBodyFromTemplate("product-release-distributed-build-records-ids-1.json"))));
 
         ProductReleaseEndpoint endpoint = client.target(pncUrl).proxy(ProductReleaseEndpoint.class);
         Response response = endpoint.getAllBuildsInDistributedRecordsetOfProductRelease(productReleaseId);
-        Page<Integer> ids = ((Page<Integer>) response.readEntity(new GenericType<Page<Integer>>() {}));
+        Page<BuildRecordRest> ids = ((Page<BuildRecordRest>) response.readEntity(new GenericType<Page<BuildRecordRest>>() {}));
 
-        assertArrayEquals(asList(1).toArray(), ids.getContent().toArray());
+        assertArrayEquals(asList(1, 2).toArray(), extractIds(ids.getContent()).toArray());
     }
 
     @Test
@@ -127,11 +129,11 @@ public class PncClientWIT {
         stubFor(get(urlEqualTo(CONTEXT_URL + relativeUrl))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
-                        .withBody("{\"pageIndex\":0,\"pageSize\":1,\"totalPages\":1,\"content\":[1]}")));
+                        .withBody(readResponseBodyFromTemplate("product-release-distributed-build-records-ids-1.json"))));
 
         Collection<Integer> ids = pncClient.findBuildIdsOfProductRelease(productReleaseId);
 
-        assertArrayEquals(asList(1).toArray(), ids.toArray());
+        assertArrayEquals(asList(1, 2).toArray(), ids.toArray());
     }
 
 
