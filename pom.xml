@@ -47,7 +47,7 @@
     <kojijiVersion>1.0-SNAPSHOT</kojijiVersion>
     <configVersion>0.7.2-SNAPSHOT</configVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
-    <pncVersion>0.8-SNAPSHOT</pncVersion>
+    <pncVersion>0.9-SNAPSHOT</pncVersion>
     <mockitoVersion>1.10.19</mockitoVersion>
   </properties>
 

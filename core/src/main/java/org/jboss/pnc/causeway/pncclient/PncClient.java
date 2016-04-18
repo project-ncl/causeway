@@ -1,6 +1,8 @@
 package org.jboss.pnc.causeway.pncclient;
 
+import static java.util.stream.Collectors.toList;
 import static org.apache.http.client.utils.HttpClientUtils.closeQuietly;
+import static org.jboss.pnc.model.ArtifactQuality.IMPORTED;
 import static org.jboss.resteasy.util.HttpResponseCodes.SC_OK;
 
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -9,7 +11,9 @@ import org.commonjava.util.jhttpc.JHttpCException;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.PncBuild.PncArtifact;
+import org.jboss.pnc.model.ArtifactQuality;
 import org.jboss.pnc.rest.restmodel.ArtifactRest;
+import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 import org.jboss.pnc.rest.restmodel.response.Page;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
@@ -27,6 +31,7 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by jdcasey on 2/9/16.
@@ -100,9 +105,8 @@ public class PncClient
             ProductReleaseEndpoint endpoint = restEndpointProxyFactory.createRestEndpoint(ProductReleaseEndpoint.class);
             response = endpoint.getAllBuildsInDistributedRecordsetOfProductRelease(productReleaseId);
             if (response.getStatus() == SC_OK) {
-                Page<Integer> idsWrapper = ((Page<Integer>) response.readEntity(new GenericType<Page<Integer>>() {
-                }));
-                return idsWrapper.getContent();
+                Page<BuildRecordRest> wrapper = ((Page<BuildRecordRest>) response.readEntity(new GenericType<Page<BuildRecordRest>>() {}));
+                return extractIds(wrapper.getContent());
             }
         } finally {
             if (response != null) {
@@ -111,6 +115,11 @@ public class PncClient
         }
         throw new CausewayException("Can not read build ids for product release " + productReleaseId + ( response == null ? "" : " - response " + response.getStatus()));
     }
+
+    static List<Integer> extractIds(Collection<BuildRecordRest> content) {
+        return content.stream().map(record -> record.getId()).collect(toList());
+    }
+
 
     static class RestEndpointProxyFactory {
         private final ResteasyClient client;
@@ -137,13 +146,12 @@ public class PncClient
                 PncBuild build = new PncBuild();
                 Collection<ArtifactRest> artifactRests = ((Page<ArtifactRest>) response.readEntity(new GenericType<Page<ArtifactRest>>() {})).getContent();
                 for(ArtifactRest artifactRest : artifactRests) {
-                    String type = artifactRest.getType();
+                    ArtifactQuality artifactQuality = artifactRest.getArtifactQuality();
                     PncArtifact artifact = new PncArtifact("maven", artifactRest.getIdentifier(), artifactRest.getFilename(), artifactRest.getChecksum());
-                    if ("BINARY_BUILT".equals(type)) {
-                        build.buildArtifacts.add(artifact);
-                    }
-                    if ("BINARY_IMPORTED".equals(type)) {
+                    if (IMPORTED.equals(artifactQuality)) {
                         build.dependencies.add(artifact);
+                    } else {
+                        build.buildArtifacts.add(artifact);
                     }
                 }
                 return build;
