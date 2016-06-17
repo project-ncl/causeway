@@ -43,9 +43,9 @@
     <javaVersion>1.8</javaVersion>
     <jhttpcVersion>1.2-SNAPSHOT</jhttpcVersion>
     <propulsorVersion>0.1-SNAPSHOT</propulsorVersion>
-    <galleyVersion>0.10.4-SNAPSHOT</galleyVersion>
+    <galleyVersion>0.13.0</galleyVersion>
     <kojijiVersion>1.0-SNAPSHOT</kojijiVersion>
-    <configVersion>0.7.2-SNAPSHOT</configVersion>
+    <configVersion>0.8</configVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <pncVersion>0.9-SNAPSHOT</pncVersion>
     <mockitoVersion>1.10.19</mockitoVersion>
@@ -95,11 +95,6 @@
         <artifactId>causeway-tck</artifactId>
         <version>0.1-SNAPSHOT</version>
         <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.pnc</groupId>
-        <artifactId>rest-model</artifactId>
-        <version>${pncVersion}</version>
       </dependency>
 
       <dependency>
