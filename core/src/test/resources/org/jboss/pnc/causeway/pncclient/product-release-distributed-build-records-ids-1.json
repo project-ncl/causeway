@@ -21,7 +21,7 @@
       "liveLogsUri": null,
       "buildConfigSetRecordId": null,
       "buildContentId": null,
-      "productMilestoneId": null,
+      "productMilestoneId": 1,
       "user": {
         "id": 1,
         "email": "demo-user@pnc.com",
@@ -64,14 +64,14 @@
           "id": 1,
           "name": "Demo Environment 1",
           "description": "Basic Java and Maven Environment",
-          "systemImageRepositoryUrl": null,
+          "systemImageRepositoryUrl": "my.registry/newcastle",
           "attributes": {
             "JDK": "1.7.0",
             "OS": "Linux"
           },
-          "buildType": "JAVA",
-          "imageRepositoryUrl": null,
-          "imageId": "12345678"
+          "systemImageType": "DOCKER_IMAGE",
+          "imageId": "12345678",
+          "imageRepositoryUrl": "my.registry/newcastle"
         }
       }
     },
@@ -137,14 +137,14 @@
           "id": 1,
           "name": "Demo Environment 1",
           "description": "Basic Java and Maven Environment",
-          "systemImageRepositoryUrl": null,
+          "systemImageRepositoryUrl": "my.registry/newcastle",
           "attributes": {
             "JDK": "1.7.0",
             "OS": "Linux"
           },
-          "buildType": "JAVA",
-          "imageRepositoryUrl": null,
-          "imageId": "12345678"
+          "systemImageType": "DOCKER_IMAGE",
+          "imageId": "12345678",
+          "imageRepositoryUrl": "my.registry/newcastle"
         }
       }
     }
