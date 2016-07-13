@@ -31,7 +31,7 @@ public class PncClientIT {
     @Before
     public void setUp() throws Exception {
         client = new ResteasyClientBuilder().build();
-        pncUrl = "http://ncl-nightly.stage.engineering.redhat.com/pnc-rest/rest";
+        pncUrl = System.getProperty("PNC_URL", "http://pnc-host/pnc-rest/rest");
         productReleaseId = 1;
     }
 
