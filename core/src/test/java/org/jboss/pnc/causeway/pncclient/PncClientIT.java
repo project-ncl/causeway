@@ -31,7 +31,7 @@ public class PncClientIT {
     @Before
     public void setUp() throws Exception {
         client = new ResteasyClientBuilder().build();
-        pncUrl = "http://ncl-nightly.stage.engineering.redhat.com/pnc-rest/rest";
+        pncUrl = "http://pnc-orch-master-nightly.cloud.pnc.devel.engineering.redhat.com/pnc-rest/rest";
         productReleaseId = 1;
     }
 
