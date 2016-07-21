@@ -7,3 +7,9 @@ Alternatively you can set the value by setting system property PNC_URL (eg. -DPN
 
 ## Disabling integration tests for PNC
 Integration tests for PNC can be disabled by setting -Ddisable-pnc-it
+
+## Dependencies
+To compile causeway you need to compile:
+ * https://github.com/Commonjava/propulsor
+   * https://github.com/Commonjava/jhttpc
+ * https://github.com/project-ncl/pnc
