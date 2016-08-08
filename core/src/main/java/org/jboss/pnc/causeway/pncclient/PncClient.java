@@ -1,8 +1,8 @@
 package org.jboss.pnc.causeway.pncclient;
 
 import static java.util.stream.Collectors.toList;
+
 import static org.apache.http.client.utils.HttpClientUtils.closeQuietly;
-import static org.jboss.pnc.model.ArtifactQuality.IMPORTED;
 import static org.jboss.resteasy.util.HttpResponseCodes.SC_OK;
 
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -11,7 +11,6 @@ import org.commonjava.util.jhttpc.JHttpCException;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.PncBuild.PncArtifact;
-import org.jboss.pnc.model.ArtifactQuality;
 import org.jboss.pnc.rest.restmodel.ArtifactRest;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 import org.jboss.pnc.rest.restmodel.response.Page;
@@ -29,6 +28,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -136,32 +136,47 @@ public class PncClient
         }
     }
 
-
     public PncBuild findBuild(Integer buildId) throws CausewayException {
-        Response response = null;
+        Response responseBuilt = null;
+        Response responseDepend = null;
         try {
             BuildRecordEndpoint endpoint = restEndpointProxyFactory.createRestEndpoint(BuildRecordEndpoint.class);
-            response = endpoint.getArtifacts(buildId, 0, MAX_ARTIFACTS, "", "");
-            if (response.getStatus() == SC_OK) {
-                PncBuild build = new PncBuild();
-                Collection<ArtifactRest> artifactRests = ((Page<ArtifactRest>) response.readEntity(new GenericType<Page<ArtifactRest>>() {})).getContent();
-                for(ArtifactRest artifactRest : artifactRests) {
-                    ArtifactQuality artifactQuality = artifactRest.getArtifactQuality();
-                    PncArtifact artifact = new PncArtifact("maven", artifactRest.getIdentifier(), artifactRest.getFilename(), artifactRest.getChecksum());
-                    if (IMPORTED.equals(artifactQuality)) {
-                        build.dependencies.add(artifact);
-                    } else {
-                        build.buildArtifacts.add(artifact);
-                    }
-                }
-                return build;
+
+            responseBuilt = endpoint.getBuiltArtifacts(buildId, 0, MAX_ARTIFACTS, "", "");
+            if (responseBuilt.getStatus() != SC_OK) {
+                throw new CausewayException("Can read info for build id " + buildId + " - responseBuilt " + responseBuilt.getStatus());
             }
+            Collection<ArtifactRest> artifactRestsBuilt = ((Page<ArtifactRest>) responseBuilt.readEntity(new GenericType<Page<ArtifactRest>>() {})).getContent();
+            responseBuilt.close();
+            responseBuilt = null;
+
+            responseDepend = endpoint.getDependencyArtifacts(buildId, 0, MAX_ARTIFACTS, "", "");
+            if (responseDepend.getStatus() != SC_OK) {
+                throw new CausewayException("Can read info for build id " + buildId  + " - responseDepend " + responseDepend.getStatus());
+            }
+            Collection<ArtifactRest> artifactRestsDepend = ((Page<ArtifactRest>) responseDepend.readEntity(new GenericType<Page<ArtifactRest>>() {})).getContent();
+            responseDepend.close();
+            responseDepend = null;
+
+            PncBuild build = new PncBuild();
+
+            for (ArtifactRest artifactRest : artifactRestsBuilt) {
+                PncArtifact artifact = new PncArtifact("maven", artifactRest.getIdentifier(), artifactRest.getFilename(), artifactRest.getChecksum());
+                build.buildArtifacts.add(artifact);
+            }
+            for (ArtifactRest artifactRest : artifactRestsDepend) {
+                PncArtifact artifact = new PncArtifact("maven", artifactRest.getIdentifier(), artifactRest.getFilename(), artifactRest.getChecksum());
+                build.dependencies.add(artifact);
+            }
+            return build;
         } finally {
-            if (response != null) {
-                response.close();
+            if (responseBuilt != null) {
+                responseBuilt.close();
+            }
+            if (responseDepend != null) {
+                responseDepend.close();
             }
         }
-        throw new CausewayException("Can read info for build id " + buildId + ( response == null ? "" : " - response " + response.getStatus()));
     }
 
     public interface ClientCommands
@@ -223,10 +238,26 @@ public class PncClient
         @GET
         @Path("/{id}/artifacts")
         public Response getArtifacts(@PathParam("id") Integer id,
-                                     @QueryParam(PAGE_INDEX_QUERY_PARAM) @DefaultValue(PAGE_INDEX_DEFAULT_VALUE) int pageIndex,
-                                     @QueryParam(PAGE_SIZE_QUERY_PARAM) @DefaultValue(PAGE_SIZE_DEFAULT_VALUE) int pageSize,
-                                     @QueryParam(SORTING_QUERY_PARAM) String sort,
-                                     @QueryParam(QUERY_QUERY_PARAM) String q);
+                @QueryParam(PAGE_INDEX_QUERY_PARAM) @DefaultValue(PAGE_INDEX_DEFAULT_VALUE) int pageIndex,
+                @QueryParam(PAGE_SIZE_QUERY_PARAM) @DefaultValue(PAGE_SIZE_DEFAULT_VALUE) int pageSize,
+                @QueryParam(SORTING_QUERY_PARAM) String sort,
+                @QueryParam(QUERY_QUERY_PARAM) String q);
+
+        @GET
+        @Path("/{id}/built-artifacts")
+        public Response getBuiltArtifacts(@PathParam("id") Integer id,
+                @QueryParam(PAGE_INDEX_QUERY_PARAM) @DefaultValue(PAGE_INDEX_DEFAULT_VALUE) int pageIndex,
+                @QueryParam(PAGE_SIZE_QUERY_PARAM) @DefaultValue(PAGE_SIZE_DEFAULT_VALUE) int pageSize,
+                @QueryParam(SORTING_QUERY_PARAM) String sort,
+                @QueryParam(QUERY_QUERY_PARAM) String q);
+
+        @GET
+        @Path("/{id}/dependency-artifacts")
+        public Response getDependencyArtifacts(@PathParam("id") Integer id,
+                @QueryParam(PAGE_INDEX_QUERY_PARAM) @DefaultValue(PAGE_INDEX_DEFAULT_VALUE) int pageIndex,
+                @QueryParam(PAGE_SIZE_QUERY_PARAM) @DefaultValue(PAGE_SIZE_DEFAULT_VALUE) int pageSize,
+                @QueryParam(SORTING_QUERY_PARAM) String sort,
+                @QueryParam(QUERY_QUERY_PARAM) String q);
     }
 
 }

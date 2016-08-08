@@ -4,7 +4,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+
 import static java.util.Arrays.asList;
+
 import static org.apache.commons.lang.StringUtils.join;
 import static org.jboss.pnc.causeway.pncclient.PncClient.extractIds;
 import static org.junit.Assert.assertArrayEquals;
@@ -31,13 +33,13 @@ import org.mockito.MockitoAnnotations;
 
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Collection;
 
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
-
 
 public class PncClientWIT {
     public static final String CONTEXT_URL = "/pnc-rest/rest";
@@ -140,16 +142,23 @@ public class PncClientWIT {
     @Test
     public void testReadBuildArtifacts() throws Exception {
         Integer buildId = 61;
-        String relativeUrl = "/build-records/" + buildId + "/artifacts?pageIndex=0&pageSize=" + PncClient.MAX_ARTIFACTS + "&sort=&q=";
-        stubFor(get(urlEqualTo(CONTEXT_URL + relativeUrl))
+
+        String relativeBuiltUrl = "/build-records/" + buildId + "/built-artifacts?pageIndex=0&pageSize=" + PncClient.MAX_ARTIFACTS + "&sort=&q=";
+        stubFor(get(urlEqualTo(CONTEXT_URL + relativeBuiltUrl))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
-                        .withBody(readResponseBodyFromTemplate("build-records-61-artifacts-1.json"))));
+                        .withBody(readResponseBodyFromTemplate("build-records-61-built-artifacts-1.json"))));
+
+        String relativeDependencyUrl = "/build-records/" + buildId + "/dependency-artifacts?pageIndex=0&pageSize=" + PncClient.MAX_ARTIFACTS + "&sort=&q=";
+        stubFor(get(urlEqualTo(CONTEXT_URL + relativeDependencyUrl))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(readResponseBodyFromTemplate("build-records-61-dependency-artifacts-1.json"))));
 
         PncBuild pncBuild = pncClient.findBuild(buildId);
 
         assertEquals(3, pncBuild.buildArtifacts.size());
-        assertEquals(1, pncBuild.dependencies.size());
+        assertEquals(3, pncBuild.dependencies.size());
         //FIXME nvr, build environment, actual files
     }
 
