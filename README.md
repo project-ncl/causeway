@@ -13,3 +13,4 @@ To compile causeway you need to compile:
  * https://github.com/Commonjava/propulsor
    * https://github.com/Commonjava/jhttpc
  * https://github.com/project-ncl/pnc
+ * https://github.com/release-engineering/kojiji
