@@ -46,7 +46,7 @@ public class PncImportControllerTest {
         Collection<Integer> buildIds = new HashSet<>();
         buildIds.add(buildId);
         when(pncClient.findBuildIdsOfProductRelease(releaseId.intValue())).thenReturn(buildIds);
-        PncBuild pncBuild = new PncBuild();
+        PncBuild pncBuild = new PncBuild(0);
         when(pncClient.findBuild(buildId)).thenReturn(pncBuild);
         BrewBuild brewBuild = new BrewBuild(createRandomLong(), new BrewNVR(createRandomString(), createRandomString(), createRandomString()));
         BuildImportResult buildImportResult = new BuildImportResult(brewBuild, null);

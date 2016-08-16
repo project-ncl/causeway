@@ -14,6 +14,7 @@ import org.jboss.pnc.causeway.pncclient.PncBuild.PncArtifact;
 import org.jboss.pnc.rest.restmodel.ArtifactRest;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 import org.jboss.pnc.rest.restmodel.response.Page;
+import org.jboss.pnc.rest.restmodel.response.Singleton;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
@@ -136,6 +137,24 @@ public class PncClient
         }
     }
 
+    public BuildRecordRest findBuild(int buildId) throws CausewayException{
+        Response response = null;
+        try {
+            BuildRecordEndpoint endpoint = restEndpointProxyFactory.createRestEndpoint(BuildRecordEndpoint.class);
+
+            response = endpoint.getSpecific(buildId);
+
+            if (response.getStatus() == SC_OK) {
+                return response.readEntity(new GenericType<Singleton<BuildRecordRest>>() {}).getContent();
+            }
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
+        throw new CausewayException("Can read info for build id " + buildId + ( response == null ? "" : " - response " + response.getStatus()));
+    }
+
     public PncBuild findBuild(Integer buildId) throws CausewayException {
         Response responseBuilt = null;
         Response responseDepend = null;
@@ -158,14 +177,14 @@ public class PncClient
             responseDepend.close();
             responseDepend = null;
 
-            PncBuild build = new PncBuild();
+            PncBuild build = new PncBuild(buildId);
 
             for (ArtifactRest artifactRest : artifactRestsBuilt) {
-                PncArtifact artifact = new PncArtifact("maven", artifactRest.getIdentifier(), artifactRest.getFilename(), artifactRest.getChecksum());
+                PncArtifact artifact = new PncArtifact("maven", artifactRest.getIdentifier(), artifactRest.getFilename(), artifactRest.getChecksum(), artifactRest.getDeployUrl());
                 build.buildArtifacts.add(artifact);
             }
             for (ArtifactRest artifactRest : artifactRestsDepend) {
-                PncArtifact artifact = new PncArtifact("maven", artifactRest.getIdentifier(), artifactRest.getFilename(), artifactRest.getChecksum());
+                PncArtifact artifact = new PncArtifact("maven", artifactRest.getIdentifier(), artifactRest.getFilename(), artifactRest.getChecksum(), artifactRest.getDeployUrl());
                 build.dependencies.add(artifact);
             }
             return build;
@@ -258,6 +277,10 @@ public class PncClient
                 @QueryParam(PAGE_SIZE_QUERY_PARAM) @DefaultValue(PAGE_SIZE_DEFAULT_VALUE) int pageSize,
                 @QueryParam(SORTING_QUERY_PARAM) String sort,
                 @QueryParam(QUERY_QUERY_PARAM) String q);
+
+        @GET
+        @Path("/{id}")
+        public Response getSpecific(@PathParam("id") Integer id);
     }
 
 }
