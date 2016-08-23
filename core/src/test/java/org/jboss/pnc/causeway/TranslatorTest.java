@@ -13,7 +13,6 @@ import static org.mockito.Mockito.when;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.client.core.Indy;
 import org.jboss.pnc.causeway.brewclient.BuildTranslator;
-import org.jboss.pnc.causeway.brewclient.IndyProducer;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
@@ -49,7 +48,7 @@ public class TranslatorTest {
 
     @Rule
     public WireMockClassRule instanceRule = wireMockRule;
-    private PncClient pncClient;
+    private PncClientImpl pncClient;
     @Mock
     private CausewayConfig config;
 
@@ -60,7 +59,7 @@ public class TranslatorTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        pncClient = new PncClient(config, null);
+        pncClient = new PncClientImpl(config, null);
         client = new ResteasyClientBuilder().build();
         indy = new Indy("http://localhost:"  + port + INDY_CONTEXT_URL).connect();
         pncUrl = "http://localhost:"  + port + CONTEXT_URL;
@@ -89,13 +88,13 @@ public class TranslatorTest {
     public void testReadBuildArtifacts() throws Exception {
         Integer buildId = 61;
 
-        String relativeBuiltUrl = "/build-records/" + buildId + "/built-artifacts?pageIndex=0&pageSize=" + PncClient.MAX_ARTIFACTS + "&sort=&q=";
+        String relativeBuiltUrl = "/build-records/" + buildId + "/built-artifacts?pageIndex=0&pageSize=" + PncClientImpl.MAX_ARTIFACTS + "&sort=&q=";
         stubFor(get(urlEqualTo(CONTEXT_URL + relativeBuiltUrl))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody(readResponseBodyFromTemplate("pncclient/build-records-61-built-artifacts-1.json"))));
 
-        String relativeDependencyUrl = "/build-records/" + buildId + "/dependency-artifacts?pageIndex=0&pageSize=" + PncClient.MAX_ARTIFACTS + "&sort=&q=";
+        String relativeDependencyUrl = "/build-records/" + buildId + "/dependency-artifacts?pageIndex=0&pageSize=" + PncClientImpl.MAX_ARTIFACTS + "&sort=&q=";
         stubFor(get(urlEqualTo(CONTEXT_URL + relativeDependencyUrl))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")

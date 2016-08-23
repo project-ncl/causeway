@@ -22,9 +22,9 @@ import org.commonjava.util.jhttpc.model.SiteTrustType;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
-import org.jboss.pnc.causeway.boot.CausewayBootOptions;
 
 import javax.enterprise.context.ApplicationScoped;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -48,6 +48,8 @@ public class CausewayConfig
     public static final String PNCL_URL_OPTION = "pncl.url";
 
     public static final String KOJI_URL_OPTION = "koji.url";
+
+    public static final String INDY_URL_OPTION = "indy.url";
 
     public static final String DEFAULT_CAUSEWAY_CONFIG = "/etc/causeway/main.conf";
 
@@ -76,6 +78,8 @@ public class CausewayConfig
     private Boolean kojiTrustSelfSigned;
 
     private String kojiURL;
+
+    private String indyURL;
 
     private String pnclURL;
 
@@ -159,6 +163,18 @@ public class CausewayConfig
     {
         checkConfigured();
         return pnclURL;
+    }
+
+    @ConfigName( CausewayConfig.INDY_URL_OPTION )
+    public void setIndyURL( String indyURL )
+    {
+        this.indyURL = indyURL;
+    }
+
+    public String getIndyURL()
+    {
+        checkConfigured();
+        return indyURL;
     }
 
     @ConfigName( CausewayConfig.PNCL_URL_OPTION )

@@ -35,10 +35,12 @@
     <dependency>
       <groupId>org.jboss.pnc.causeway</groupId>
       <artifactId>causeway-core</artifactId>
+      <type>ejb</type>
     </dependency>
     <dependency>
       <groupId>org.jboss.pnc.causeway</groupId>
       <artifactId>causeway-rest</artifactId>
+      <type>ejb</type>
     </dependency>
     <dependency>
       <groupId>org.commonjava.util</groupId>

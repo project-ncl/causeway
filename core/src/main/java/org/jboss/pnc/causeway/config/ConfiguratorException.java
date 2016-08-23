@@ -13,28 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.pnc.causeway.brewclient;
+package org.jboss.pnc.causeway.config;
 
-import org.commonjava.indy.client.core.Indy;
-import org.commonjava.indy.client.core.IndyClientException;
-
-import javax.enterprise.inject.Disposes;
-import javax.enterprise.inject.Produces;
-
+import org.jboss.pnc.causeway.CausewayException;
 
 /**
  *
  * @author Honza Brázdil <jbrazdil@redhat.com>
  */
-public class IndyProducer {
-    private final String indyHost = "http://pnc-indy-branch-nightly.cloud.pnc.devel.engineering.redhat.com/api";
+public class ConfiguratorException extends CausewayException{
 
-    @Produces
-    public Indy create() throws IndyClientException {
-        return new Indy(indyHost).connect();
+    public ConfiguratorException(String format, Throwable cause, Object... params) {
+        super(format, cause, params);
     }
 
-    public void close(@Disposes Indy indy) {
-        indy.close();
+    public ConfiguratorException(String format, Object... params) {
+        super(format, params);
     }
+
 }

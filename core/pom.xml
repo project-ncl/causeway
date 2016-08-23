@@ -25,12 +25,14 @@
   </parent>
   
   <artifactId>causeway-core</artifactId>
+  <packaging>ejb</packaging>
   <name>Causeway :: Core Implementation</name>
   
   <dependencies>
     <dependency>
       <groupId>org.jboss.pnc.causeway</groupId>
       <artifactId>causeway-rest</artifactId>
+      <type>ejb</type>
     </dependency>
     <dependency>
       <groupId>org.jboss.pnc.causeway</groupId>
@@ -42,17 +44,11 @@
     </dependency>
 
     <dependency>
-      <groupId>org.commonjava.propulsor</groupId>
-      <artifactId>propulsor-resteasy</artifactId>
+      <groupId>org.jboss.spec</groupId>
+      <artifactId>jboss-javaee-7.0</artifactId>
+      <type>pom</type>
     </dependency>
-    <dependency>
-      <groupId>org.commonjava.propulsor</groupId>
-      <artifactId>propulsor-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.propulsor</groupId>
-      <artifactId>propulsor-undertow</artifactId>
-    </dependency>
+
     <dependency>
       <groupId>org.commonjava.util</groupId>
       <artifactId>configuration-api</artifactId>
@@ -100,10 +96,6 @@
       <artifactId>resteasy-client</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-jackson2-provider</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.redhat.red.build</groupId>
       <artifactId>kojiji</artifactId>
     </dependency>
@@ -119,10 +111,6 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>args4j</groupId>
-      <artifactId>args4j</artifactId>
     </dependency>
     <dependency>
       <groupId>com.github.tomakehurst</groupId>

@@ -42,7 +42,6 @@
     <projectOwner>Red Hat, Inc.</projectOwner>
     <javaVersion>1.8</javaVersion>
     <jhttpcVersion>1.2</jhttpcVersion>
-    <propulsorVersion>0.1-SNAPSHOT</propulsorVersion>
     <galleyVersion>0.13.0</galleyVersion>
     <kojijiVersion>1.0-SNAPSHOT</kojijiVersion>
     <configVersion>0.8</configVersion>
@@ -56,10 +55,21 @@
     <module>model-java</module>
     <module>core</module>
     <module>rest</module>
-    <module>launcher</module>
+    <module>web</module>
+    <module>application</module>
     <module>tck</module>
     <module>ftest</module>
   </modules>
+
+  <repositories>
+    <repository>
+      <id>mrrc</id>
+      <url>http://maven.repository.redhat.com/techpreview/all</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
+  </repositories>
 
   <dependencyManagement>
     <dependencies>
@@ -72,6 +82,20 @@
       </dependency>
 
       <dependency>
+        <groupId>org.jboss.bom</groupId>
+        <artifactId>jboss-eap-javaee7-with-tools</artifactId>
+        <version>7.0.0.GA</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.spec</groupId>
+        <artifactId>jboss-javaee-7.0</artifactId>
+        <version>1.0.3.Final</version>
+        <type>pom</type>
+      </dependency>
+
+      <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-model-java</artifactId>
         <version>0.1-SNAPSHOT</version>
@@ -79,16 +103,19 @@
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-core</artifactId>
+        <type>ejb</type>
         <version>0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-rest</artifactId>
+        <type>ejb</type>
         <version>0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
-        <artifactId>causeway-launcher</artifactId>
+        <artifactId>causeway-web</artifactId>
+        <type>war</type>
         <version>0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
@@ -96,28 +123,6 @@
         <artifactId>causeway-tck</artifactId>
         <version>0.1-SNAPSHOT</version>
         <scope>test</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>com.redhat.red.build</groupId>
-        <artifactId>kojiji</artifactId>
-        <version>${kojijiVersion}</version>
-      </dependency>
-      
-      <dependency>
-        <groupId>org.commonjava.propulsor</groupId>
-        <artifactId>propulsor-core</artifactId>
-        <version>${propulsorVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.propulsor</groupId>
-        <artifactId>propulsor-undertow</artifactId>
-        <version>${propulsorVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.propulsor</groupId>
-        <artifactId>propulsor-resteasy</artifactId>
-        <version>${propulsorVersion}</version>
       </dependency>
 
       <dependency>
@@ -134,6 +139,12 @@
         <groupId>org.commonjava.maven.atlas</groupId>
         <artifactId>atlas-identities</artifactId>
         <version>0.15.2</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-servlets</artifactId>
+        <version>9.3.11.v20160721</version>
       </dependency>
 
       <dependency>
@@ -155,16 +166,6 @@
         <scope>provided</scope>
       </dependency>
 
-      <dependency>
-        <groupId>org.jboss.resteasy</groupId>
-        <artifactId>resteasy-client</artifactId>
-        <version>${resteasyVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.resteasy</groupId>
-        <artifactId>resteasy-jackson2-provider</artifactId>
-        <version>${resteasyVersion}</version>
-      </dependency>
       <dependency>
         <groupId>org.jboss.pnc</groupId>
         <artifactId>model</artifactId>
@@ -229,6 +230,23 @@
     </dependency>
   </dependencies>
   <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-ejb-plugin</artifactId>
+          <version>2.5.1</version>
+          <configuration>
+            <ejbVersion>3.1</ejbVersion>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>2.5</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -246,6 +264,24 @@
             <include>**/*IT.java</include>
           </includes>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-best-practices</id>
+            <configuration>
+              <rules>
+                <requireNoRepositories>
+                  <banRepositories>
+                      false
+                  </banRepositories>
+                </requireNoRepositories>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

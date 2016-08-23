@@ -15,7 +15,8 @@
  */
 package org.jboss.pnc.causeway.inject;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.commonjava.indy.client.core.Indy;
+import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
@@ -26,8 +27,10 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
+
 import java.io.Closeable;
 import java.io.IOException;
 
@@ -42,8 +45,6 @@ public class CausewayProducer
     private CausewayConfig config;
 
     private HttpFactory httpFactory;
-
-    private ObjectMapper objectMapper;
 
     protected CausewayProducer()
     {
@@ -62,8 +63,6 @@ public class CausewayProducer
         passwords.bind( config.getKojiClientCertificatePassword(), CausewayConfig.KOJI_SITE_ID, PasswordType.KEY );
 
         httpFactory = new HttpFactory( passwords );
-
-        objectMapper = new ObjectMapper();
     }
 
     @PreDestroy
@@ -91,8 +90,12 @@ public class CausewayProducer
 
     @Produces
     @Default
-    public ObjectMapper getObjectMapper()
-    {
-        return objectMapper;
+    public Indy getIndy() throws IndyClientException {
+        return new Indy(config.getIndyURL()).connect();
     }
+
+    public void closeIndy(@Disposes Indy indy) {
+        indy.close();
+    }
+
 }

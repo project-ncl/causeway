@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+    <deployment>
+    </deployment>
+    <sub-deployment name="causeway-core.jar">
+        <dependencies>
+            <module name="deployment.causeway.ear.causeway-rest.jar"/>
+        </dependencies>
+    </sub-deployment>
+    <sub-deployment name="causeway-web.war">
+        <dependencies>
+            <module name="deployment.causeway.ear.causeway-core.jar"/>
+        </dependencies>
+    </sub-deployment>
+    <sub-deployment name="causeway-rest.jar">
+    </sub-deployment>
+</jboss-deployment-structure>
+

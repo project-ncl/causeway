@@ -1,26 +1,19 @@
 package org.jboss.pnc.causeway.test;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.commonjava.propulsor.boot.BootStatus;
-import org.commonjava.propulsor.boot.Booter;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 import org.commonjava.util.jhttpc.util.UrlUtils;
-import org.jboss.pnc.causeway.boot.CausewayBootOptions;
 import org.jboss.pnc.causeway.test.spi.CausewayDriver;
 import org.jboss.pnc.causeway.test.util.HttpCommands;
-import org.junit.AfterClass;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Paths;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -32,11 +25,6 @@ import static org.junit.Assert.fail;
 public class LocalTestDriver
         implements CausewayDriver
 {
-    private CausewayBootOptions options;
-
-    private BootStatus bootStatus;
-
-    private Booter booter;
 
     private PasswordManager passwordManager;
 
@@ -67,25 +55,22 @@ public class LocalTestDriver
                 "Wrote configuration: " + mainConf + " with configuration:\n\n" + FileUtils.readFileToString(
                         mainConf ) );
 
-        options = new CausewayBootOptions();
-        options.setPort( -1 );
-        options.setHomeDir( configDir.getAbsolutePath() );
 
-        booter = new Booter();
-        bootStatus = booter.start( options );
+        //booter = new Booter();
+        //bootStatus = booter.start(  );
 
-        if ( bootStatus == null )
+        /*if ( bootStatus == null )
         {
             fail( "No boot status" );
-        }
+        }*/
 
-        Throwable t = bootStatus.getError();
-        if ( t != null )
+        //Throwable t = bootStatus.getError();
+        /*if ( t != null )
         {
             throw new RuntimeException( "Failed to start Causeway test server.", t );
-        }
+        }*/
 
-        assertThat( bootStatus.isSuccess(), equalTo( true ) );
+        //assertThat( bootStatus.isSuccess(), equalTo( true ) );
 
         passwordManager = new MemoryPasswordManager();
         siteConfig = new SiteConfigBuilder( "local-test", formatUrl().toString() ).build();
@@ -96,27 +81,18 @@ public class LocalTestDriver
     public void stop()
             throws Exception
     {
-        if ( booter != null && bootStatus != null && bootStatus.isSuccess() )
-        {
-            booter.stop();
-        }
-
         temp.delete();
     }
 
     private void checkStarted()
     {
-        if ( booter == null || bootStatus == null || !bootStatus.isSuccess() )
-        {
-            throw new RuntimeException( "Cannot execute; Causeway test server is not running." );
-        }
     }
 
     @Override
     public int getPort()
     {
         checkStarted();
-        return options.getPort();
+        return 8080;
     }
 
     @Override

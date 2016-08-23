@@ -24,37 +24,11 @@
     <version>0.1-SNAPSHOT</version>
   </parent>
   
-  <artifactId>causeway-launcher</artifactId>
-  <name>Causeway :: Launcher</name>
+  <artifactId>causeway-application</artifactId>
+  <packaging>ear</packaging>
+  <name>Causeway :: Application</name>
   
   <dependencies>
-    <dependency>
-      <groupId>javax.enterprise</groupId>
-      <artifactId>cdi-api</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.weld.se</groupId>
-      <artifactId>weld-se</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-jaxrs</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-cdi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>jaxrs-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>async-http-servlet-3.0</artifactId>
-    </dependency>
-
     <dependency>
       <groupId>org.jboss.pnc.causeway</groupId>
       <artifactId>causeway-model-java</artifactId>
@@ -62,22 +36,17 @@
     <dependency>
       <groupId>org.jboss.pnc.causeway</groupId>
       <artifactId>causeway-core</artifactId>
+      <type>ejb</type>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.pnc.causeway</groupId>
+      <artifactId>causeway-web</artifactId>
+      <type>war</type>
     </dependency>
     <dependency>
       <groupId>org.jboss.pnc.causeway</groupId>
       <artifactId>causeway-rest</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.propulsor</groupId>
-      <artifactId>propulsor-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.propulsor</groupId>
-      <artifactId>propulsor-undertow</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.propulsor</groupId>
-      <artifactId>propulsor-resteasy</artifactId>
+      <type>ejb</type>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -99,35 +68,31 @@
     </resources>
     <plugins>
       <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.6</version>
-        <executions>
-          <execution>
-            <id>launcher-jar</id>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <phase>prepare-package</phase>
-            <configuration>
-              <descriptors>
-                <descriptor>src/main/assembly/launcher-jar.xml</descriptor>
-              </descriptors>
-              <appendAssemblyId>false</appendAssemblyId>
-            </configuration>
-          </execution>
-          <execution>
-            <id>launcher-archive</id>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <phase>package</phase>
-            <configuration>
-              <descriptors>
-                <descriptor>src/main/assembly/launcher.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-        </executions>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-ear-plugin</artifactId>
+        <version>2.9</version>
+        <configuration>
+          <filtering>true</filtering>
+          <version>6</version>
+          <defaultLibBundleDir>lib</defaultLibBundleDir>
+          <finalName>causeway</finalName>
+          <fileNameMapping>no-version</fileNameMapping>
+          <!--outputDirectory>${outDirectory}</outputDirectory-->
+          <modules>
+              <ejbModule>
+                <groupId>org.jboss.pnc.causeway</groupId>
+                <artifactId>causeway-core</artifactId>
+              </ejbModule>
+              <ejbModule>
+                <groupId>org.jboss.pnc.causeway</groupId>
+                <artifactId>causeway-rest</artifactId>
+              </ejbModule>
+              <webModule>
+                <groupId>org.jboss.pnc.causeway</groupId>
+                <artifactId>causeway-web</artifactId>
+              </webModule>
+          </modules>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>ru.concerteza.buildnumber</groupId>

@@ -25,6 +25,7 @@
   </parent>
   
   <artifactId>causeway-rest</artifactId>
+  <packaging>ejb</packaging>
   <name>Causeway :: REST Bindings</name>
   
   <dependencies>
