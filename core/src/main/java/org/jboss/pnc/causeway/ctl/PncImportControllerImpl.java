@@ -1,73 +1,121 @@
 package org.jboss.pnc.causeway.ctl;
 
-
 import org.jboss.pnc.causeway.CausewayException;
+import org.jboss.pnc.causeway.bpmclient.BPMClient;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
-import org.jboss.pnc.causeway.rest.BuildImportResult;
+import org.jboss.pnc.causeway.brewclient.BuildTranslator;
+import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
+import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
-import org.jboss.pnc.causeway.rest.ProductReleaseImportResult;
-import org.jboss.pnc.causeway.pncclient.PncBuild;
 import org.jboss.pnc.causeway.pncclient.PncClient;
+import org.jboss.pnc.causeway.rest.CallbackTarget;
+import org.jboss.pnc.rest.restmodel.BuildRecordRest;
+import org.jboss.pnc.rest.restmodel.causeway.BrewPushMilestoneResultRest;
+import org.jboss.pnc.rest.restmodel.causeway.BuildImportResultRest;
+import org.jboss.pnc.rest.restmodel.causeway.BuildImportStatus;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.ejb.Asynchronous;
+import javax.ejb.Stateless;
 import javax.inject.Inject;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-@ApplicationScoped
-public class PncImportControllerImpl implements PncImportController
-{
+import com.redhat.red.build.koji.model.json.KojiImport;
+
+@Stateless
+public class PncImportControllerImpl implements PncImportController {
+
     private final PncClient pncClient;
     private final BrewClient brewClient;
+    private final BPMClient bpmClient;
+    private final BuildTranslator translator;
 
     @Inject
-    public PncImportControllerImpl(PncClient pnclClient, BrewClient brewClient)
-    {
+    public PncImportControllerImpl(PncClient pnclClient, BrewClient brewClient, BPMClient bpmClient, BuildTranslator translator) {
         this.pncClient = pnclClient;
         this.brewClient = brewClient;
+        this.bpmClient = bpmClient;
+        this.translator = translator;
     }
 
     @Override
-    public ProductReleaseImportResult importProductRelease(long releaseId, boolean dryRun)
-            throws CausewayException
-    {
-        Collection<Integer> buildIds = findAndAssertBuildIds(releaseId);
-
-        ProductReleaseImportResult productReleaseImportResult = new ProductReleaseImportResult();
-        for (Integer buildId : buildIds) {
-            BuildImportResult importResult = importBuild(buildId, dryRun);
-            productReleaseImportResult.addResult(buildId.longValue(), importResult);
-        }
-
-        return productReleaseImportResult;
-    }
-
-    private Collection<Integer> findAndAssertBuildIds(long releaseId) throws CausewayException {
-        Collection<Integer> buildIds;
+    @Asynchronous
+    public void importMilestone(int milestoneId, CallbackTarget callback, String callbackId) {
+        Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.INFO, "Entering importMilestone.");
+        BrewPushMilestoneResultRest result = new BrewPushMilestoneResultRest();
         try {
-            buildIds = pncClient.findBuildIdsOfProductRelease(new Long(releaseId).intValue());
-        } catch (Exception e) {
-            throw new CausewayException(messagePncReleaseNotFound(releaseId, e), e);
+            List<BuildImportResultRest> results = importProductMilestone(milestoneId, false);
+            result.setBuilds(results);
+
+            bpmClient.success(callback.getUrl(), callbackId, result);
+        } catch (CausewayException ex) {
+            Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import milestone.", ex);
+            bpmClient.failure(callback.getUrl(), callbackId, result);
+        } catch (RuntimeException ex) {
+            Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import milestone.", ex);
+            bpmClient.error(callback.getUrl(), callbackId, result);
         }
-        if (buildIds == null || buildIds.size() == 0) {
-            throw new CausewayException(messageReleaseWithoutBuildConfigurations(releaseId));
-        }
-        return buildIds;
     }
 
-    private BuildImportResult importBuild(Integer buildId, boolean dryRun) throws CausewayException {
-        PncBuild build = pncClient.findBuild(buildId);
-        if (build == null) {
-            return new BuildImportResult(null, messageBuildNotFound(buildId));
+    private List<BuildImportResultRest> importProductMilestone(int milestoneId, boolean dryRun) throws CausewayException {
+        Collection<BuildRecordRest> builds = findAndAssertBuilds(milestoneId);
+
+        List<BuildImportResultRest> results = new ArrayList<>();
+        for (BuildRecordRest build : builds) {
+            BuildImportResultRest importResult;
+            try{
+                importResult = importBuild(build, dryRun);
+            }catch(CausewayException ex){
+                Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import build.", ex);
+                importResult = new BuildImportResultRest();
+                importResult.setBuildRecordId(build.getId());
+                importResult.setErrorMessage(ex.getMessage());
+                importResult.setStatus(BuildImportStatus.ERROR);
+            }
+            results.add(importResult);
         }
-        BrewNVR nvr = build.createNVR();
+
+        return results;
+    }
+
+    private Collection<BuildRecordRest> findAndAssertBuilds(int milestoneId) throws CausewayException {
+        Collection<BuildRecordRest> builds;
+        try {
+            builds = pncClient.findBuildsOfProductMilestone(milestoneId);
+        } catch (Exception e) {
+            throw new CausewayException(messagePncReleaseNotFound(milestoneId, e), e);
+        }
+        if (builds == null || builds.isEmpty()) {
+            throw new CausewayException(messageReleaseWithoutBuildConfigurations(milestoneId));
+        }
+        return builds;
+    }
+    
+    private BuildImportResultRest importBuild(BuildRecordRest build, boolean dryRun) throws CausewayException {
+        BrewNVR nvr = getNVR(build);
         BrewBuild brewBuild = brewClient.findBrewBuildOfNVR(nvr);
-        if ( brewBuild != null ) {
+        if (brewBuild != null) {
             // FIXME clarify behavior - if the build already exists in brew log as successful import ?
-            return new BuildImportResult(brewBuild, null);
+            BuildImportResultRest ret = new BuildImportResultRest();
+            ret.setBrewBuildId(brewBuild.getId());
+            ret.setBrewBuildUrl(brewClient.getBuildUrl(brewBuild.getId()));
+            ret.setBuildRecordId(build.getId());
+            ret.setStatus(BuildImportStatus.SUCCESSFUL); // TODO: replace with EXISTING?
+
+            return ret;
         }
-        return brewClient.importBuild(nvr, build);
+
+        BuildArtifacts artifacts = pncClient.findBuildArtifacts(build.getId());
+
+        KojiImport kojiImport = translator.translate(nvr, build, artifacts);
+        ImportFileGenerator importFiles = translator.getImportFiles(artifacts);
+
+        return brewClient.importBuild(nvr, build.getId(), kojiImport, importFiles);
     }
 
     static String messagePncReleaseNotFound(long releaseId, Exception e) {
@@ -80,6 +128,10 @@ public class PncImportControllerImpl implements PncImportController
 
     static String messageBuildNotFound(Integer buildId) {
         return "PNC build id " + buildId + " not found";
+    }
+
+    private BrewNVR getNVR(BuildRecordRest build) {
+        return new BrewNVR("foo", "bar", "1"); // TODO: implement it actually
     }
 
 }

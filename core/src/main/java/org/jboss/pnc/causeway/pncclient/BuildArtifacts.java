@@ -1,28 +1,16 @@
 package org.jboss.pnc.causeway.pncclient;
 
-import org.jboss.pnc.causeway.rest.BrewNVR;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public final class PncBuild {
+public final class BuildArtifacts {
 
-    private final int id;
     public final List<PncArtifact> buildArtifacts;
     public final List<PncArtifact> dependencies;
 
-    public PncBuild(int id) {
-        this.id = id;
+    public BuildArtifacts() {
         buildArtifacts = new ArrayList<>();
         dependencies = new ArrayList<>();
-    }
-
-    public BrewNVR createNVR() {
-        return null;
-    }
-
-    public int getId() {
-        return id;
     }
 
     public static class PncArtifact {

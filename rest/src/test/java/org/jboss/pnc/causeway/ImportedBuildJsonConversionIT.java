@@ -31,7 +31,7 @@ public class ImportedBuildJsonConversionIT {
 
     private ImportedBuild createImportedBuild() {
         BrewNVR brewNvr = new BrewNVR(createRandomString(), createRandomString(), createRandomString());
-        BrewBuild brewBuild = new BrewBuild(createRandomLong(), brewNvr);
+        BrewBuild brewBuild = new BrewBuild(createRandomInt(), brewNvr);
         return new ImportedBuild(createRandomLong(), brewBuild);
     }
 

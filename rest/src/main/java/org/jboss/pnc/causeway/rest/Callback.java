@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Honza Brázdil <jbrazdil@redhat.com>.
+ * Copyright 2016 Honza Brázdil <janinko.g@gmail.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.pnc.causeway.ctl;
+package org.jboss.pnc.causeway.rest;
 
-import org.jboss.pnc.causeway.rest.CallbackTarget;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import lombok.Data;
+import lombok.NonNull;
 
 /**
  *
- * @author Honza Brázdil <jbrazdil@redhat.com>
+ * @author Honza Brázdil <janinko.g@gmail.com>
  */
-public interface PncImportController {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Data
+public class Callback {
+    @NonNull
+    private final String id;
+    
+    private final Integer status;
 
-    public void importMilestone(int milestoneId, CallbackTarget callback, String callbackId);
+    public Callback(String id) {
+        this.id = id;
+        this.status = null;
+    }
 }

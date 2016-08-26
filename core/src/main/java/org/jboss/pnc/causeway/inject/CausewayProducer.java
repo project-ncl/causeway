@@ -17,6 +17,7 @@ package org.jboss.pnc.causeway.inject;
 
 import org.commonjava.indy.client.core.Indy;
 import org.commonjava.indy.client.core.IndyClientException;
+import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
@@ -25,6 +26,8 @@ import org.jboss.pnc.causeway.config.CausewayConfig;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
+import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Disposes;
@@ -33,6 +36,10 @@ import javax.inject.Inject;
 
 import java.io.Closeable;
 import java.io.IOException;
+
+import com.redhat.red.build.koji.KojiClient;
+import com.redhat.red.build.koji.config.KojiConfig;
+import com.redhat.red.build.koji.config.SimpleKojiConfig;
 
 /**
  * Created by jdcasey on 11/10/15.
@@ -44,7 +51,12 @@ public class CausewayProducer
     @Inject
     private CausewayConfig config;
 
+    @Resource
+    private ManagedExecutorService executorService;
+
     private HttpFactory httpFactory;
+
+    private KojiClient koji;
 
     protected CausewayProducer()
     {
@@ -63,6 +75,25 @@ public class CausewayProducer
         passwords.bind( config.getKojiClientCertificatePassword(), CausewayConfig.KOJI_SITE_ID, PasswordType.KEY );
 
         httpFactory = new HttpFactory( passwords );
+
+        setupKoji(passwords);
+    }
+
+    private void setupKoji(PasswordManager passwords) {
+
+        KojiConfig kc = new SimpleKojiConfig("koji",
+                config.getKojiURL(),
+                config.getKojiClientKeyCertificateFile(),
+                config.getKojiClientCertificatePassword(),
+                config.getKojiServerCertificateFile(),
+                config.getKojiTimeout(),
+                config.getKojiTrustSelfSigned());
+/*
+        try {
+            koji = new KojiClient(kc, passwords, executorService);
+        } catch (BindException ex) {
+            throw new RuntimeException(ex);
+        }*/
     }
 
     @PreDestroy
@@ -79,6 +110,9 @@ public class CausewayProducer
                 throw new RuntimeException( "Close httpFactory error " + e.getMessage(), e );
             }
         }
+        if(koji != null){
+            koji.close();
+        }
     }
 
     @Produces
@@ -86,6 +120,13 @@ public class CausewayProducer
     public HttpFactory getHttpFactory()
     {
         return httpFactory;
+    }
+
+    @Produces
+    @Default
+    public KojiClient getKojiClient()
+    {
+        return koji;
     }
 
     @Produces

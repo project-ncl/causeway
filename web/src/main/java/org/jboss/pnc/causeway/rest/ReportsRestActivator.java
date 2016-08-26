@@ -29,5 +29,6 @@ public class ReportsRestActivator extends Application {
      */
     public void addProjectResources(Set<Class<?>> resources) {
         resources.add(Root.class);
+        resources.add(PncImportResourceEndpoint.class);
     }
 }

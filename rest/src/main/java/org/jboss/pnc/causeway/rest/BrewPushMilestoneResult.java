@@ -13,23 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.pnc.causeway.brewclient;
+package org.jboss.pnc.causeway.rest;
 
-import org.jboss.pnc.causeway.CausewayException;
-import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
-import org.jboss.pnc.causeway.rest.BrewNVR;
-import org.jboss.pnc.rest.restmodel.BuildRecordRest;
+import org.jboss.pnc.rest.restmodel.causeway.BrewPushMilestoneResultRest;
 
-import com.redhat.red.build.koji.model.json.KojiImport;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+
+import lombok.Data;
+import lombok.NonNull;
 
 /**
  *
  * @author Honza Brázdil <jbrazdil@redhat.com>
  */
-public interface BuildTranslator {
-
-    ImportFileGenerator getImportFiles(BuildArtifacts build);
-
-    KojiImport translate(BrewNVR nvr, BuildRecordRest build, BuildArtifacts artifacts) throws CausewayException;
-
+@Data
+public class BrewPushMilestoneResult {
+    @JsonUnwrapped
+    @NonNull
+    private final BrewPushMilestoneResultRest content;
+    @NonNull
+    private final Callback callback;
 }

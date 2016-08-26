@@ -26,10 +26,8 @@ import java.util.Collection;
  */
 public interface PncClient {
 
-    BuildRecordRest findBuild(int buildId) throws CausewayException;
+    BuildArtifacts findBuildArtifacts(Integer buildId) throws CausewayException;
 
-    PncBuild findBuild(Integer buildId) throws CausewayException;
-
-    Collection<Integer> findBuildIdsOfProductRelease(int productReleaseId) throws CausewayException;
+    public Collection<BuildRecordRest> findBuildsOfProductMilestone(int milestoneId) throws CausewayException;
 
 }

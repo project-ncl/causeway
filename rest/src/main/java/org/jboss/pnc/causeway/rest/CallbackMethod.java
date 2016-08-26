@@ -13,23 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.pnc.causeway.brewclient;
-
-import org.jboss.pnc.causeway.CausewayException;
-import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
-import org.jboss.pnc.causeway.rest.BrewNVR;
-import org.jboss.pnc.rest.restmodel.BuildRecordRest;
-
-import com.redhat.red.build.koji.model.json.KojiImport;
+package org.jboss.pnc.causeway.rest;
 
 /**
  *
  * @author Honza Brázdil <jbrazdil@redhat.com>
  */
-public interface BuildTranslator {
-
-    ImportFileGenerator getImportFiles(BuildArtifacts build);
-
-    KojiImport translate(BrewNVR nvr, BuildRecordRest build, BuildArtifacts artifacts) throws CausewayException;
-
+public enum CallbackMethod {
+    POST,
+    PUT;
 }
