@@ -5,7 +5,7 @@ import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-import org.jboss.pnc.causeway.pncclient.PncClient.ProductReleaseEndpoint;
+import org.jboss.pnc.causeway.pncclient.PncClientImpl.ProductReleaseEndpoint;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 import org.jboss.pnc.rest.restmodel.ProductReleaseRest;
 import org.jboss.pnc.rest.restmodel.response.Page;

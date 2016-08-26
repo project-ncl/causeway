@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.jboss.pnc.causeway.config.CausewayConfig;
-import org.jboss.pnc.causeway.pncclient.PncClient.ProductReleaseEndpoint;
+import org.jboss.pnc.causeway.pncclient.PncClientImpl.ProductReleaseEndpoint;
 import org.jboss.pnc.rest.provider.collection.CollectionInfo;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 import org.jboss.pnc.rest.restmodel.ProductMilestoneRest;
@@ -28,10 +28,10 @@ public class PncClientTest {
 
     private Random generator = new Random();
 
-    private PncClient client;
+    private PncClientImpl client;
     private CausewayConfig config;
     @Mock
-    private PncClient.RestEndpointProxyFactory restEndpointProxyFactory;
+    private PncClientImpl.RestEndpointProxyFactory restEndpointProxyFactory;
     @Mock
     private HttpFactory httpFactory;
     @Mock
@@ -42,7 +42,7 @@ public class PncClientTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        client = new PncClient(config, httpFactory, restEndpointProxyFactory);
+        client = new PncClientImpl(config, httpFactory, restEndpointProxyFactory);
         when(restEndpointProxyFactory.createRestEndpoint(ProductReleaseEndpoint.class)).thenReturn(productReleaseEndpoint);
     }
 

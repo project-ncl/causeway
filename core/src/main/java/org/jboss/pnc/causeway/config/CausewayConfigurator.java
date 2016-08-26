@@ -15,15 +15,11 @@
  */
 package org.jboss.pnc.causeway.config;
 
-import org.apache.commons.lang.StringUtils;
-import org.commonjava.propulsor.boot.BootOptions;
-import org.commonjava.propulsor.config.Configurator;
-import org.commonjava.propulsor.config.ConfiguratorException;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,23 +27,32 @@ import java.io.InputStream;
 
 import static org.apache.commons.lang.StringUtils.isNotEmpty;
 
+import javax.annotation.PostConstruct;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+
 /**
  * Created by jdcasey on 11/10/15.
  */
-@ApplicationScoped
-public class CausewayConfigurator
-        implements Configurator
-{
+@Singleton
+@Startup
+public class CausewayConfigurator {
     @Inject
     private CausewayConfig causewayConfig;
 
-    @Override
-    public void load( BootOptions options )
-            throws ConfiguratorException
-    {
-        String config = options.getConfig();
-        if ( StringUtils.isEmpty( config ) )
-        {
+    @PostConstruct
+    public void init(){
+        try {
+            load();
+        } catch (ConfiguratorException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public void load() throws ConfiguratorException {
+
+        String config = System.getProperty(CausewayConfig.CAUSEWAY_CONFIG_DIR_SYSPROP);
+        if( config == null ){
             config = CausewayConfig.DEFAULT_CAUSEWAY_CONFIG;
         }
 

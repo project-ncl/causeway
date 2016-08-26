@@ -8,14 +8,14 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static java.util.Arrays.asList;
 
 import static org.apache.commons.lang.StringUtils.join;
-import static org.jboss.pnc.causeway.pncclient.PncClient.extractIds;
+import static org.jboss.pnc.causeway.pncclient.PncClientImpl.extractIds;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 import org.apache.commons.io.IOUtils;
 import org.jboss.pnc.causeway.config.CausewayConfig;
-import org.jboss.pnc.causeway.pncclient.PncClient.ProductReleaseEndpoint;
+import org.jboss.pnc.causeway.pncclient.PncClientImpl.ProductReleaseEndpoint;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 import org.jboss.pnc.rest.restmodel.ProductReleaseRest;
 import org.jboss.pnc.rest.restmodel.response.Page;
@@ -54,14 +54,14 @@ public class PncClientWIT {
 
     @Rule
     public WireMockClassRule instanceRule = wireMockRule;
-    private PncClient pncClient;
+    private PncClientImpl pncClient;
     @Mock
     private CausewayConfig config;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        pncClient = new PncClient(config, null);
+        pncClient = new PncClientImpl(config, null);
         client = new ResteasyClientBuilder().build();
         pncUrl = "http://localhost:"  + port + CONTEXT_URL;
         productReleaseId = 1;
@@ -143,13 +143,13 @@ public class PncClientWIT {
     public void testReadBuildArtifacts() throws Exception {
         Integer buildId = 61;
 
-        String relativeBuiltUrl = "/build-records/" + buildId + "/built-artifacts?pageIndex=0&pageSize=" + PncClient.MAX_ARTIFACTS + "&sort=&q=";
+        String relativeBuiltUrl = "/build-records/" + buildId + "/built-artifacts?pageIndex=0&pageSize=" + PncClientImpl.MAX_ARTIFACTS + "&sort=&q=";
         stubFor(get(urlEqualTo(CONTEXT_URL + relativeBuiltUrl))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody(readResponseBodyFromTemplate("build-records-61-built-artifacts-1.json"))));
 
-        String relativeDependencyUrl = "/build-records/" + buildId + "/dependency-artifacts?pageIndex=0&pageSize=" + PncClient.MAX_ARTIFACTS + "&sort=&q=";
+        String relativeDependencyUrl = "/build-records/" + buildId + "/dependency-artifacts?pageIndex=0&pageSize=" + PncClientImpl.MAX_ARTIFACTS + "&sort=&q=";
         stubFor(get(urlEqualTo(CONTEXT_URL + relativeDependencyUrl))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")

@@ -1,7 +1,7 @@
 package org.jboss.pnc.causeway.ctl;
 
-import static org.jboss.pnc.causeway.ctl.PncImportController.messageBuildNotFound;
-import static org.jboss.pnc.causeway.ctl.PncImportController.messageReleaseWithoutBuildConfigurations;
+import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageBuildNotFound;
+import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageReleaseWithoutBuildConfigurations;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
@@ -9,12 +9,11 @@ import static org.mockito.Mockito.when;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.pncclient.PncBuild;
-import org.jboss.pnc.causeway.pncclient.PncClient;
+import org.jboss.pnc.causeway.pncclient.PncClientImpl;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.BuildImportResult;
 import org.jboss.pnc.causeway.rest.ProductReleaseImportResult;
-import org.jboss.weld.exceptions.IllegalArgumentException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -26,16 +25,16 @@ import java.util.Random;
 
 public class PncImportControllerTest {
 
-    private PncImportController importController;
+    private PncImportControllerImpl importController;
     @Mock
-    private PncClient pncClient;
+    private PncClientImpl pncClient;
     @Mock
     private BrewClient brewClient;
 
     @Before
     public void before() throws Exception {
         MockitoAnnotations.initMocks(this);
-        importController = new PncImportController(pncClient, brewClient);
+        importController = new PncImportControllerImpl(pncClient, brewClient);
     }
 
     @Test
