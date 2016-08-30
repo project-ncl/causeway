@@ -8,6 +8,7 @@ import org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact;
 import org.jboss.pnc.rest.restmodel.ArtifactRest;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 import org.jboss.pnc.rest.restmodel.response.Page;
+import static org.jboss.pnc.spi.BuildCoordinationStatus.DONE;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
@@ -24,6 +25,7 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * Created by jdcasey on 2/9/16.
@@ -51,10 +53,10 @@ public class PncClientImpl implements PncClient
         Response response = null;
         try {
             ProductMilestoneEndpoint endpoint = restEndpointProxyFactory.createRestEndpoint(ProductMilestoneEndpoint.class);
-            response = endpoint.getDistributedBuilds(0, MAX_BUILDS, "", "", milestoneId);
+            response = endpoint.getPerformedBuilds(milestoneId, 0, MAX_BUILDS, "", "");
             if (response.getStatus() == SC_OK) {
                 Page<BuildRecordRest> wrapper = ((Page<BuildRecordRest>) response.readEntity(new GenericType<Page<BuildRecordRest>>() {}));
-                return wrapper.getContent();
+                return wrapper.getContent().stream().filter(b -> b.getStatus() == DONE).collect(Collectors.toSet());
             }
         } finally {
             if (response != null) {
@@ -133,6 +135,15 @@ public class PncClientImpl implements PncClient
     @Path("/product-milestones")
     @Consumes("application/json")
     public interface ProductMilestoneEndpoint { //FIXME remove when resolved https://projects.engineering.redhat.com/browse/NCL-1645
+
+        @GET
+        @Path("/{id}/performed-builds")
+        public Response getPerformedBuilds(
+                @PathParam("id") Integer id,
+                @QueryParam(PAGE_INDEX_QUERY_PARAM) @DefaultValue(PAGE_INDEX_DEFAULT_VALUE) int pageIndex,
+                @QueryParam(PAGE_SIZE_QUERY_PARAM) @DefaultValue(PAGE_SIZE_DEFAULT_VALUE) int pageSize,
+                @QueryParam(SORTING_QUERY_PARAM) String sort,
+                @QueryParam(QUERY_QUERY_PARAM) String q);
 
         @GET
         @Path("/{id}/distributed-builds")
