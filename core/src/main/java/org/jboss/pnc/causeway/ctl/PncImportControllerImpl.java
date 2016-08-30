@@ -14,6 +14,7 @@ import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 import org.jboss.pnc.rest.restmodel.causeway.BrewPushMilestoneResultRest;
 import org.jboss.pnc.rest.restmodel.causeway.BuildImportResultRest;
 import org.jboss.pnc.rest.restmodel.causeway.BuildImportStatus;
+import org.jboss.pnc.rest.restmodel.causeway.PushStatus;
 
 import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
@@ -50,14 +51,25 @@ public class PncImportControllerImpl implements PncImportController {
         BrewPushMilestoneResultRest result = new BrewPushMilestoneResultRest();
         try {
             List<BuildImportResultRest> results = importProductMilestone(milestoneId, false);
+
+            result.setPushStatus(PushStatus.SUCCESS);
+            if( results.stream().anyMatch(r -> !r.getErrors().isEmpty())){
+                result.setPushStatus(PushStatus.IMPORT_ERROR);
+            }
+            if( results.stream().anyMatch(r -> r.getErrorMessage() != null)){
+                result.setPushStatus(PushStatus.SET_UP_ERROR);
+            }
+
             result.setBuilds(results);
 
             bpmClient.success(callback.getUrl(), callbackId, result);
         } catch (CausewayException ex) {
             Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import milestone.", ex);
+                result.setPushStatus(PushStatus.SET_UP_ERROR);
             bpmClient.failure(callback.getUrl(), callbackId, result);
         } catch (RuntimeException ex) {
             Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import milestone.", ex);
+                result.setPushStatus(PushStatus.SET_UP_ERROR);
             bpmClient.error(callback.getUrl(), callbackId, result);
         }
     }

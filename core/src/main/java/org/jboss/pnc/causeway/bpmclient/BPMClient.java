@@ -17,24 +17,16 @@ package org.jboss.pnc.causeway.bpmclient;
 
 import org.jboss.pnc.rest.restmodel.causeway.BrewPushMilestoneResultRest;
 
-import javax.enterprise.context.ApplicationScoped;
-
 /**
  *
  * @author Honza Brázdil <jbrazdil@redhat.com>
  */
-@ApplicationScoped
-public class BPMClient {
+public interface BPMClient {
 
-    public void success(String url, String callbackId, BrewPushMilestoneResultRest result) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    public void error(String url, String callbackId, BrewPushMilestoneResultRest result) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    void error(String url, String callbackId, BrewPushMilestoneResultRest result);
 
-    public void failure(String url, String callbackId, BrewPushMilestoneResultRest result) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    void failure(String url, String callbackId, BrewPushMilestoneResultRest result);
+
+    void success(String url, String callbackId, BrewPushMilestoneResultRest result);
+
 }

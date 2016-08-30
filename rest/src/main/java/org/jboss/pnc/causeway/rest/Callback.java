@@ -36,4 +36,9 @@ public class Callback {
         this.id = id;
         this.status = null;
     }
+
+    public Callback(String id, int status) {
+        this.id = id;
+        this.status = status;
+    }
 }
