@@ -24,7 +24,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -33,7 +35,7 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class PncClientImpl implements PncClient
 {
-    public static final int MAX_ARTIFACTS = 20000;
+    public static final int MAX_ARTIFACTS = 200;
     public static final int MAX_BUILDS = 20000;
 
     private final RestEndpointProxyFactory restEndpointProxyFactory;
@@ -83,44 +85,58 @@ public class PncClientImpl implements PncClient
 
     @Override
     public BuildArtifacts findBuildArtifacts(Integer buildId) throws CausewayException {
-        Response responseBuilt = null;
-        Response responseDepend = null;
-        try {
-            BuildRecordEndpoint endpoint = restEndpointProxyFactory.createRestEndpoint(BuildRecordEndpoint.class);
+        BuildRecordEndpoint endpoint = restEndpointProxyFactory.createRestEndpoint(BuildRecordEndpoint.class);
 
-            responseBuilt = endpoint.getBuiltArtifacts(buildId, 0, MAX_ARTIFACTS, "", "");
-            if (responseBuilt.getStatus() != SC_OK) {
-                throw new CausewayException("Can read info for build id " + buildId + " - responseBuilt " + responseBuilt.getStatus());
-            }
-            Collection<ArtifactRest> artifactRestsBuilt = ((Page<ArtifactRest>) responseBuilt.readEntity(new GenericType<Page<ArtifactRest>>() {})).getContent();
-            responseBuilt.close();
-            responseBuilt = null;
+        Collection<ArtifactRest> artifactRestsBuilt = getArtifacts(buildId, (p) -> endpoint.getBuiltArtifacts(buildId, p, MAX_ARTIFACTS, "", ""));
+        Collection<ArtifactRest> artifactRestsDepend = getArtifacts(buildId, (p) -> endpoint.getDependencyArtifacts(buildId, p, MAX_ARTIFACTS, "", ""));
 
-            responseDepend = endpoint.getDependencyArtifacts(buildId, 0, MAX_ARTIFACTS, "", "");
-            if (responseDepend.getStatus() != SC_OK) {
-                throw new CausewayException("Can read info for build id " + buildId  + " - responseDepend " + responseDepend.getStatus());
-            }
-            Collection<ArtifactRest> artifactRestsDepend = ((Page<ArtifactRest>) responseDepend.readEntity(new GenericType<Page<ArtifactRest>>() {})).getContent();
-            responseDepend.close();
-            responseDepend = null;
+        BuildArtifacts build = new BuildArtifacts();
 
-            BuildArtifacts build = new BuildArtifacts();
+        for (ArtifactRest artifactRest : artifactRestsBuilt) {
+            PncArtifact artifact = toPncArtifact(artifactRest);
+            build.buildArtifacts.add(artifact);
+        }
+        for (ArtifactRest artifactRest : artifactRestsDepend) {
+            PncArtifact artifact = toPncArtifact(artifactRest);
+            build.dependencies.add(artifact);
+        }
+        return build;
+    }
 
-            for (ArtifactRest artifactRest : artifactRestsBuilt) {
-                PncArtifact artifact = new PncArtifact("maven", artifactRest.getIdentifier(), artifactRest.getFilename(), artifactRest.getChecksum(), artifactRest.getDeployUrl(), artifactRest.getSize());
-                build.buildArtifacts.add(artifact);
+    private PncArtifact toPncArtifact(ArtifactRest artifactRest) {
+        return new PncArtifact(artifactRest.getId(),
+                "maven",
+                artifactRest.getIdentifier(),
+                artifactRest.getFilename(),
+                artifactRest.getChecksum(),
+                artifactRest.getDeployUrl(),
+                artifactRest.getSize() == null ? 1 : artifactRest.getSize());
+    }
+
+    public Collection<ArtifactRest> getArtifacts(Integer buildId, IntFunction<Response> query) throws CausewayException{
+        Response response = null;
+        try{
+            Collection<ArtifactRest> artifacts = new ArrayList<>();
+            response = query.apply(0);
+            if (response.getStatus() != SC_OK) {
+                throw new CausewayException("Can read info for build id " + buildId + " - responseBuilt " + response.getStatus());
             }
-            for (ArtifactRest artifactRest : artifactRestsDepend) {
-                PncArtifact artifact = new PncArtifact("maven", artifactRest.getIdentifier(), artifactRest.getFilename(), artifactRest.getChecksum(), artifactRest.getDeployUrl(), artifactRest.getSize());
-                build.dependencies.add(artifact);
+            Page<ArtifactRest> page = (Page<ArtifactRest>) response.readEntity(new GenericType<Page<ArtifactRest>>() {});
+            response.close();
+
+            artifacts.addAll(page.getContent());
+            for(int p=1; p< page.getTotalPages(); p++){
+                response = query.apply(p);
+                if (response.getStatus() != SC_OK) {
+                    throw new CausewayException("Can read info for build id " + buildId + " - responseBuilt " + response.getStatus());
+                }
+                page = (Page<ArtifactRest>) response.readEntity(new GenericType<Page<ArtifactRest>>() {});
+                artifacts.addAll(page.getContent());
             }
-            return build;
-        } finally {
-            if (responseBuilt != null) {
-                responseBuilt.close();
-            }
-            if (responseDepend != null) {
-                responseDepend.close();
+            return artifacts;
+        }finally{
+            if (response != null) {
+                response.close();
             }
         }
     }
