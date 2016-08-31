@@ -1,6 +1,7 @@
 package org.jboss.pnc.causeway.brewclient;
 
 import org.jboss.pnc.causeway.CausewayException;
+import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.rest.restmodel.causeway.ArtifactImportError;
@@ -27,24 +28,27 @@ public class BrewClientImpl implements BrewClient {
 
     private final KojiClient koji;
 
+    private final String brewUrl;
+
     @Inject
-    public BrewClientImpl(KojiClient koji) {
+    public BrewClientImpl(KojiClient koji, CausewayConfig config) {
         this.koji = koji;
+        brewUrl = config.getKojiURL().replace("brewhub", "brew/buildinfo?buildID=");
     }
 
     @Override
     public BrewBuild findBrewBuildOfNVR(BrewNVR nvr) throws CausewayException {
-        return null;/*
         try {
             KojiSessionInfo session = koji.login();
 
             KojiNVR knvr = new KojiNVR(nvr.getName(), nvr.getVersion(), nvr.getRelease());
             KojiBuildInfo bi = koji.getBuildInfo(knvr, session); // returns null if missing
 
-            return toBrewBuild(bi, nvr);
+            koji.logout(session);
+            return bi == null? null : toBrewBuild(bi, nvr);
         } catch (KojiClientException ex) {
             throw new CausewayException("Failure while comunicating with Koji", ex);
-        }*/
+        }
     }
 
     private static BrewBuild toBrewBuild(KojiBuildInfo bi, BrewNVR nvr) {
@@ -60,21 +64,37 @@ public class BrewClientImpl implements BrewClient {
             KojiSessionInfo session = koji.login();
 
             KojiImportResult result = koji.importBuild(kojiImport, () -> importFiles, session);
+            koji.logout(session);
 
-            Map<String, KojiClientException> errors = result.getUploadErrors();
+            List<ArtifactImportError> importErrors = new ArrayList<>();
 
-            if(errors != null && !errors.isEmpty()){
-                List<ArtifactImportError> importErrors = new ArrayList<>();
-                for(Map.Entry<String, KojiClientException> e : errors.entrySet()){
+            Map<String, KojiClientException> kojiErrors = result.getUploadErrors();
+            if(kojiErrors != null){
+                for(Map.Entry<String, KojiClientException> e : kojiErrors.entrySet()){
                     ArtifactImportError importError = new ArtifactImportError();
-                    importError.setArtifactId(importFiles.getId(e.getValue()));
+                    importError.setArtifactId(importFiles.getId(e.getKey()));
                     importError.setErrorMessage(e.getValue().getMessage());
+                    importErrors.add(importError);
+                    System.out.println("ERRORS koji: " + e.getValue().getMessage());
                 }
+            }
+
+            Map<Integer, String> importerErrors = importFiles.getErrors();
+            if(!importerErrors.isEmpty()){
+                for(Map.Entry<Integer, String> e : importerErrors.entrySet()){
+                    ArtifactImportError importError = new ArtifactImportError();
+                    importError.setArtifactId(e.getKey());
+                    importError.setErrorMessage(e.getValue());
+                    importErrors.add(importError);
+                    System.out.println("ERRORS importer: " + e.getValue());
+                }
+            }
+            if(!importErrors.isEmpty()){
                 ret.setErrors(importErrors);
                 ret.setStatus(BuildImportStatus.FAILED);
             }
 
-            KojiBuildInfo bi = result.getBuildInfo(); // TODO: handle error
+            KojiBuildInfo bi = result.getBuildInfo();
 
             if(bi == null){
                 ret.setErrorMessage("Import to koji failed");
@@ -92,7 +112,7 @@ public class BrewClientImpl implements BrewClient {
 
     @Override
     public String getBuildUrl(int id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return brewUrl + id;
     }
 
 }

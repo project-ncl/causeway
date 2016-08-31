@@ -43,12 +43,11 @@
     <javaVersion>1.8</javaVersion>
     <jhttpcVersion>1.2</jhttpcVersion>
     <galleyVersion>0.13.0</galleyVersion>
-    <kojijiVersion>1.0-SNAPSHOT</kojijiVersion>
     <configVersion>0.8</configVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <pncVersion>0.10-SNAPSHOT</pncVersion>
     <mockitoVersion>1.10.19</mockitoVersion>
-    <kojijiVersion>1.1-SNAPSHOT</kojijiVersion>
+    <kojijiVersion>1.2-SNAPSHOT</kojijiVersion>
   </properties>
 
   <modules>

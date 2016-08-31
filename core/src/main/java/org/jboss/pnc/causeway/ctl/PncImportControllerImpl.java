@@ -49,20 +49,22 @@ public class PncImportControllerImpl implements PncImportController {
     public void importMilestone(int milestoneId, CallbackTarget callback, String callbackId) {
         Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.INFO, "Entering importMilestone.");
         MilestoneReleaseResultRest result = new MilestoneReleaseResultRest();
+        result.setMilestoneId(milestoneId);
         try {
             List<BuildImportResultRest> results = importProductMilestone(milestoneId, false);
-
-            result.setReleaseStatus(ReleaseStatus.SUCCESS);
-            if( results.stream().anyMatch(r -> !r.getErrors().isEmpty())){
-                result.setReleaseStatus(ReleaseStatus.IMPORT_ERROR);
-            }
-            if( results.stream().anyMatch(r -> r.getErrorMessage() != null)){
-                result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
-            }
-
             result.setBuilds(results);
 
-            bpmClient.success(callback.getUrl(), callbackId, result);
+            if( results.stream().anyMatch(r -> r.getErrorMessage() != null)){
+                result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
+                bpmClient.failure(callback.getUrl(), callbackId, result);
+            }else if( results.stream().anyMatch(r -> !r.getErrors().isEmpty())){
+                result.setReleaseStatus(ReleaseStatus.IMPORT_ERROR);
+                bpmClient.failure(callback.getUrl(), callbackId, result);
+            }else{
+                result.setReleaseStatus(ReleaseStatus.SUCCESS);
+                bpmClient.success(callback.getUrl(), callbackId, result);
+            }
+
         } catch (CausewayException ex) {
             Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import milestone.", ex);
                 result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);

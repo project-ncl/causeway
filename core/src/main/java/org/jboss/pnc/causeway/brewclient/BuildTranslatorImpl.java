@@ -24,9 +24,8 @@ import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import java.util.HashSet;
+import java.net.MalformedURLException;
 import java.util.List;
-import java.util.Set;
 
 import com.redhat.red.build.koji.model.json.BuildContainer;
 import com.redhat.red.build.koji.model.json.BuildOutput;
@@ -127,14 +126,18 @@ public class BuildTranslatorImpl implements BuildTranslator {
     }
 
     @Override
-    public ImportFileGenerator getImportFiles(BuildArtifacts build) {
-        Set<String> urls = new HashSet<>();
-        for(PncArtifact artifact : build.buildArtifacts){
-            urls.add(artifact.deployUrl);
+    public ImportFileGenerator getImportFiles(BuildArtifacts build) throws CausewayException {
+        try{
+            ImportFileGenerator ret = new ImportFileGenerator();
+            for(PncArtifact artifact : build.buildArtifacts){
+                ret.addUrl(artifact.id, artifact.deployUrl);
+            }
+            for(PncArtifact artifact : build.dependencies){
+                ret.addUrl(artifact.id, artifact.deployUrl);
+            }
+            return ret;
+        }catch(MalformedURLException ex){
+            throw new CausewayException("Failed to parse artifact url.", ex);
         }
-        for(PncArtifact artifact : build.dependencies){
-            urls.add(artifact.deployUrl);
-        }
-        return new ImportFileGenerator(urls);
     }
 }

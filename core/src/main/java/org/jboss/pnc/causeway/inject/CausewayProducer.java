@@ -16,7 +16,6 @@
 package org.jboss.pnc.causeway.inject;
 
 import org.commonjava.rwx.binding.error.BindException;
-import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordType;
@@ -32,7 +31,6 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
 import java.io.Closeable;
-import java.io.IOException;
 
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.config.KojiConfig;
@@ -50,8 +48,6 @@ public class CausewayProducer
 
     @Resource
     private ManagedExecutorService executorService;
-
-    private HttpFactory httpFactory;
 
     private KojiClient koji;
 
@@ -71,13 +67,10 @@ public class CausewayProducer
         PasswordManager passwords = new MemoryPasswordManager();
         passwords.bind( config.getKojiClientCertificatePassword(), CausewayConfig.KOJI_SITE_ID, PasswordType.KEY );
 
-        httpFactory = new HttpFactory( passwords );
-
         setupKoji(passwords);
     }
 
     private void setupKoji(PasswordManager passwords) {
-
         KojiConfig kc = new SimpleKojiConfig("koji",
                 config.getKojiURL(),
                 config.getKojiClientKeyCertificateFile(),
@@ -85,38 +78,20 @@ public class CausewayProducer
                 config.getKojiServerCertificateFile(),
                 config.getKojiTimeout(),
                 config.getKojiTrustSelfSigned());
-/*
+
         try {
             koji = new KojiClient(kc, passwords, executorService);
         } catch (BindException ex) {
             throw new RuntimeException(ex);
-        }*/
+        }
     }
 
     @PreDestroy
     public void close()
     {
-        if ( httpFactory != null )
-        {
-            try
-            {
-                httpFactory.close();
-            }
-            catch ( IOException e )
-            {
-                throw new RuntimeException( "Close httpFactory error " + e.getMessage(), e );
-            }
-        }
         if(koji != null){
             koji.close();
         }
-    }
-
-    @Produces
-    @Default
-    public HttpFactory getHttpFactory()
-    {
-        return httpFactory;
     }
 
     @Produces

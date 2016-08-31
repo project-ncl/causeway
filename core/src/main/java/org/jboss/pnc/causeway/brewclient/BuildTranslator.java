@@ -28,7 +28,7 @@ import com.redhat.red.build.koji.model.json.KojiImport;
  */
 public interface BuildTranslator {
 
-    ImportFileGenerator getImportFiles(BuildArtifacts build);
+    ImportFileGenerator getImportFiles(BuildArtifacts build) throws CausewayException;
 
     KojiImport translate(BrewNVR nvr, BuildRecordRest build, BuildArtifacts artifacts) throws CausewayException;
 

@@ -19,12 +19,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.redhat.red.build.koji.KojiClientException;
 import com.redhat.red.build.koji.model.ImportFile;
 
 /**
@@ -32,10 +35,20 @@ import com.redhat.red.build.koji.model.ImportFile;
  * @author Honza Brázdil <jbrazdil@redhat.com>
  */
 public class ImportFileGenerator implements Iterable<ImportFile>{
-    private final Collection<String> urls;
+    private final Set<URL> urls = new HashSet<>();
+    private final Map<String, Integer> paths = new HashMap<>();
+    private final Map<Integer, String> errors = new HashMap<>();
 
-    public ImportFileGenerator(Collection<String> urls) {
-        this.urls = urls;
+    public void addUrl(Integer id, String url) throws MalformedURLException {
+        URL artifactUrl = new URL(url);
+        urls.add(artifactUrl);
+        String[] parts = artifactUrl.getPath().split("/", 5);
+        String path = parts[4]; // /api/TYPE/NAME/p/a/t/h => p/a/t/h
+        paths.put(path, id);
+    }
+
+    public Map<Integer, String> getErrors() {
+        return errors;
     }
 
     @Override
@@ -43,35 +56,50 @@ public class ImportFileGenerator implements Iterable<ImportFile>{
         return new ImportFileIterator(urls.iterator());
     }
 
-    Integer getId(KojiClientException value) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Integer getId(String path) {
+        return paths.get(path);
     }
 
-    private static class ImportFileIterator implements Iterator<ImportFile>{
-        private Iterator<String> it;
+    private class ImportFileIterator implements Iterator<ImportFile>{
+        private Iterator<URL> it;
+        private ImportFile next;
 
-        public ImportFileIterator(Iterator<String> it) {
+        public ImportFileIterator(Iterator<URL> it) {
             this.it = it;
+        }
+
+        private ImportFile getNext() {
+            URL url = it.next();
+            String[] parts = url.getPath().split("/", 5);
+            String path = parts[4]; // /api/TYPE/NAME/p/a/t/h => p/a/t/h
+            try {
+                InputStream stream = url.openStream();
+                System.out.println("Next is " + url);
+                return new ImportFile(path, stream);
+            } catch (IOException ex) {
+                Logger.getLogger(ImportFileGenerator.class.getName()).log(Level.WARNING, null, ex);
+                Integer id = paths.get(path);
+                errors.put(id, "Failed to obtain artifact: " + ex.getMessage());
+                return null;
+            }
         }
 
         @Override
         public boolean hasNext() {
-            return it.hasNext();
+            while(next == null && it.hasNext()){
+                next = getNext();
+            }
+
+            return next == null;
         }
 
         @Override
         public ImportFile next() {
-            String next = it.next();
-            try {
-                URL url = new URL(next);
-                String[] parts = url.getPath().split("/", 5);
-                String path = parts[4]; // /api/TYPE/NAME/p/a/t/h => p/a/t/h
-
-                InputStream stream = url.openStream();
-                return new ImportFile(path, stream);
-            } catch (IOException ex) {
-                throw new RuntimeException("Failed to get input stream for url '" + next+ "'", ex);
+            System.out.println("Getting next");
+            while(next == null){ // will throw NoSuchElementException if there is no next
+                next = getNext();
             }
+            return next;
         }
     }
 
