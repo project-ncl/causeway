@@ -192,16 +192,6 @@
         <version>${pncVersion}</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-model-core-java</artifactId>
-        <version>0.99.3</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-client-core-java</artifactId>
-        <version>0.99.3</version>
-      </dependency>
-      <dependency>
         <groupId>org.commonjava.util</groupId>
         <artifactId>http-testserver</artifactId>
         <version>1.1</version>

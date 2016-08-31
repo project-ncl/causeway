@@ -15,8 +15,6 @@
  */
 package org.jboss.pnc.causeway.inject;
 
-import org.commonjava.indy.client.core.Indy;
-import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
@@ -30,7 +28,6 @@ import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
@@ -127,16 +124,6 @@ public class CausewayProducer
     public KojiClient getKojiClient()
     {
         return koji;
-    }
-
-    @Produces
-    @Default
-    public Indy getIndy() throws IndyClientException {
-        return new Indy(config.getIndyURL()).connect();
-    }
-
-    public void closeIndy(@Disposes Indy indy) {
-        indy.close();
     }
 
 }

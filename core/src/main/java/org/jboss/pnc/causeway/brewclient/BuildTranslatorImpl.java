@@ -15,11 +15,6 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
-import org.commonjava.indy.client.core.Indy;
-import org.commonjava.indy.client.core.IndyClientException;
-import org.commonjava.indy.client.core.helper.PathInfo;
-import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.maven.atlas.ident.ref.SimpleArtifactRef;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
@@ -28,10 +23,7 @@ import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -55,17 +47,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
     private static final String CONTENT_GENERATOR_VERSION = "0.10";
     private static final String CONTENT_GENERATOR_NAME = "Project Newcastle";
 
-    private final Indy indy;
-
-    @Inject
-    public BuildTranslatorImpl(Indy indy) {
-        this.indy = indy;
-    }
-
     @Override
     public KojiImport translate(BrewNVR nvr, BuildRecordRest build, BuildArtifacts artifacts) throws CausewayException {
-        StoreKey store = new StoreKey(StoreType.hosted, build.getBuildContentId());
-
         KojiImport.Builder builder = new KojiImport.Builder()
                 .withNewBuildDescription(nvr.getName(), nvr.getVersion(), nvr.getRelease())
                 .withStartTime(build.getStartTime())
@@ -85,7 +68,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                         .getAttributes().get("JDK"));
 
         addDependencies(artifacts.dependencies, buildRootBuilder);
-        addBuiltArtifacts(artifacts.buildArtifacts, builder, buildRootId, store);
+        addBuiltArtifacts(artifacts.buildArtifacts, builder, buildRootId);
 
         try {
             return builder.build();
@@ -102,8 +85,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
 
             switch (artifact.type) {
                 case MAVEN: {
-                    PathInfo info = getIndyInfo(artifact.deployUrl);
-                    componentBuilder.withFileSize(info.getContentLength());
+                    componentBuilder.withFileSize(artifact.size);
                     break;
                 }
                 default: {
@@ -114,7 +96,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
     }
 
     private void addBuiltArtifacts(List<PncArtifact> buildArtifacts, KojiImport.Builder builder,
-            int buildRootId, StoreKey store) throws CausewayException {
+            int buildRootId) throws CausewayException {
         for (BuildArtifacts.PncArtifact artifact : buildArtifacts) {
             BuildOutput.Builder outputBuilder = builder
                     .withNewOutput(buildRootId, artifact.filename)
@@ -124,45 +106,14 @@ public class BuildTranslatorImpl implements BuildTranslator {
             switch (artifact.type) {
                 case MAVEN: {
                     SimpleArtifactRef ref = SimpleArtifactRef.parse(artifact.identifier);
-                    final String path = ref.getGroupId().replace('.', '/')
-                            + '/' + ref.getArtifactId()
-                            + '/' + ref.getVersionStringRaw()
-                            + '/' + artifact.filename;
-                    try {
-                        PathInfo info = indy.content().getInfo(store, path);
-                        outputBuilder.withFileSize(info.getContentLength());
-                        outputBuilder.withMavenInfoAndType(ref);
-                    } catch (IndyClientException ex) {
-                        throw new CausewayException("Failed to get info from Indy for path '%s'", ex, path);
-                    }
+                    outputBuilder.withFileSize(artifact.size);
+                    outputBuilder.withMavenInfoAndType(ref);
                     break;
                 }
                 default: {
                     throw new IllegalArgumentException("Unknown artifact type.");
                 }
             }
-        }
-    }
-
-    private PathInfo getIndyInfo(String indyUrl) throws CausewayException {
-        try {
-            URL url = new URL(indyUrl);
-            String deployPath = url.getPath();
-            String[] parts = deployPath.split("/", 5);
-            if (!"api".equals(parts[1])) {
-                throw new IllegalArgumentException("Url " + indyUrl
-                        + " doesn't seem to be Indy url. Path needs to start with \"api/\".");
-            }
-            
-            StoreType st = StoreType.valueOf(parts[2]);
-            String name = parts[3];
-            String path = parts[4];
-
-            try (Indy indy2 = new Indy("http://" + url.getAuthority() + "/api").connect()) {
-                return indy2.content().getInfo(st, name, path);
-            }
-        }   catch (MalformedURLException | IndyClientException ex) {
-            throw new CausewayException("Failed to get info from Indy for url '%s'", ex, indyUrl);
         }
     }
 

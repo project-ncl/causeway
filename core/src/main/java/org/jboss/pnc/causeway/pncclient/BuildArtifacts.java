@@ -19,13 +19,15 @@ public final class BuildArtifacts {
         public final String filename;
         public final String checksum;
         public final String deployUrl;
+        public final long size;
 
-        public PncArtifact(String type, String identifier, String filename, String checksum, String deployUrl) {
+        public PncArtifact(String type, String identifier, String filename, String checksum, String deployUrl, long size) {
             this.type = type;
             this.identifier = identifier;
             this.filename = filename;
             this.checksum = checksum;
             this.deployUrl = deployUrl;
+            this.size = size;
         }
     }
 }

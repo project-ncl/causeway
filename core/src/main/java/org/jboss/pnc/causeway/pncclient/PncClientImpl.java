@@ -107,11 +107,11 @@ public class PncClientImpl implements PncClient
             BuildArtifacts build = new BuildArtifacts();
 
             for (ArtifactRest artifactRest : artifactRestsBuilt) {
-                PncArtifact artifact = new PncArtifact("maven", artifactRest.getIdentifier(), artifactRest.getFilename(), artifactRest.getChecksum(), artifactRest.getDeployUrl());
+                PncArtifact artifact = new PncArtifact("maven", artifactRest.getIdentifier(), artifactRest.getFilename(), artifactRest.getChecksum(), artifactRest.getDeployUrl(), artifactRest.getSize());
                 build.buildArtifacts.add(artifact);
             }
             for (ArtifactRest artifactRest : artifactRestsDepend) {
-                PncArtifact artifact = new PncArtifact("maven", artifactRest.getIdentifier(), artifactRest.getFilename(), artifactRest.getChecksum(), artifactRest.getDeployUrl());
+                PncArtifact artifact = new PncArtifact("maven", artifactRest.getIdentifier(), artifactRest.getFilename(), artifactRest.getChecksum(), artifactRest.getDeployUrl(), artifactRest.getSize());
                 build.dependencies.add(artifact);
             }
             return build;

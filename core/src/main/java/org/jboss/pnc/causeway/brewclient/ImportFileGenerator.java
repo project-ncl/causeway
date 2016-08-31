@@ -15,8 +15,6 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
-import org.commonjava.indy.model.core.StoreType;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
