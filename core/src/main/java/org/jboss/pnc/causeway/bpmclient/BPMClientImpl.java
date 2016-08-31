@@ -17,7 +17,7 @@ package org.jboss.pnc.causeway.bpmclient;
 
 import org.jboss.pnc.causeway.rest.BrewPushMilestoneResult;
 import org.jboss.pnc.causeway.rest.Callback;
-import org.jboss.pnc.rest.restmodel.causeway.BrewPushMilestoneResultRest;
+import org.jboss.pnc.rest.restmodel.causeway.MilestoneReleaseResultRest;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
@@ -44,19 +44,19 @@ public class BPMClientImpl implements BPMClient {
     }
 
     @Override
-    public void success(String url, String callbackId, BrewPushMilestoneResultRest result) {
+    public void success(String url, String callbackId, MilestoneReleaseResultRest result) {
         Callback callback = new Callback(callbackId, 200);
         send(url, new BrewPushMilestoneResult(result, callback));
     }
     
     @Override
-    public void error(String url, String callbackId, BrewPushMilestoneResultRest result) {
+    public void error(String url, String callbackId, MilestoneReleaseResultRest result) {
         Callback callback = new Callback(callbackId, 418);
         send(url, new BrewPushMilestoneResult(result, callback));
     }
 
     @Override
-    public void failure(String url, String callbackId, BrewPushMilestoneResultRest result) {
+    public void failure(String url, String callbackId, MilestoneReleaseResultRest result) {
         Callback callback = new Callback(callbackId, 500);
         send(url, new BrewPushMilestoneResult(result, callback));
     }

@@ -15,7 +15,7 @@
  */
 package org.jboss.pnc.causeway.bpmclient;
 
-import org.jboss.pnc.rest.restmodel.causeway.BrewPushMilestoneResultRest;
+import org.jboss.pnc.rest.restmodel.causeway.MilestoneReleaseResultRest;
 
 /**
  *
@@ -23,10 +23,10 @@ import org.jboss.pnc.rest.restmodel.causeway.BrewPushMilestoneResultRest;
  */
 public interface BPMClient {
 
-    void error(String url, String callbackId, BrewPushMilestoneResultRest result);
+    void error(String url, String callbackId, MilestoneReleaseResultRest result);
 
-    void failure(String url, String callbackId, BrewPushMilestoneResultRest result);
+    void failure(String url, String callbackId, MilestoneReleaseResultRest result);
 
-    void success(String url, String callbackId, BrewPushMilestoneResultRest result);
+    void success(String url, String callbackId, MilestoneReleaseResultRest result);
 
 }

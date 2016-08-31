@@ -15,7 +15,7 @@
  */
 package org.jboss.pnc.causeway.rest;
 
-import org.jboss.pnc.rest.restmodel.causeway.BrewPushMilestoneRest;
+import org.jboss.pnc.rest.restmodel.causeway.MilestoneReleaseRest;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
@@ -32,7 +32,7 @@ import lombok.NonNull;
 public class BrewPushMilestone {
     @JsonUnwrapped
     @NonNull
-    private BrewPushMilestoneRest content;
+    private MilestoneReleaseRest content;
     @NonNull
     private CallbackTarget callback;
 }
