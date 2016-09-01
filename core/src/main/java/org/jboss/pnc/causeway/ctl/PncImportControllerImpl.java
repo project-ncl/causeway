@@ -145,7 +145,7 @@ public class PncImportControllerImpl implements PncImportController {
     }
 
     private BrewNVR getNVR(BuildRecordRest build) {
-        return new BrewNVR("foo", "bar", "1"); // TODO: implement it actually
+        return new BrewNVR(build.getExecutionRootName(), build.getExecutionRootVersion(), "1");
     }
 
 }
