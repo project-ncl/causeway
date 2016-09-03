@@ -17,6 +17,7 @@ package org.jboss.pnc.causeway.brewclient;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -73,13 +74,21 @@ public class ImportFileGenerator implements Iterable<ImportFile>{
             String[] parts = url.getPath().split("/", 5);
             String path = parts[4]; // /api/TYPE/NAME/p/a/t/h => p/a/t/h
             try {
-                InputStream stream = url.openStream();
-                System.out.println("Next is " + url);
-                return new ImportFile(path, stream);
-            } catch (IOException ex) {
-                Logger.getLogger(ImportFileGenerator.class.getName()).log(Level.WARNING, null, ex);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                String contentLength = connection.getHeaderField("Content-Length");
+                if(contentLength == null){
+                    Logger.getLogger(ImportFileGenerator.class.getName()).log(Level.WARNING, "Failed to obtain artifact '{0}'", url);
+                    Integer id = paths.get(path);
+                    errors.put(id, "Failed to obtain file size of artifact '"+url+"'.");
+                    return null;
+                }
+                long size = Long.parseLong(contentLength);
+                InputStream stream = connection.getInputStream();
+                return new ImportFile(path, stream, size);
+            } catch (IOException | NumberFormatException ex) {
+                Logger.getLogger(ImportFileGenerator.class.getName()).log(Level.WARNING, "Failed to obtain artifact '"+url+"'", ex);
                 Integer id = paths.get(path);
-                errors.put(id, "Failed to obtain artifact: " + ex.getMessage());
+                errors.put(id, "Failed to obtain artifact '"+url+"': " + ex.getMessage());
                 return null;
             }
         }
