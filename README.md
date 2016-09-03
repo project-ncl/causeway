@@ -10,7 +10,5 @@ Integration tests for PNC can be disabled by setting -Ddisable-pnc-it
 
 ## Dependencies
 To compile causeway you need to compile:
- * https://github.com/Commonjava/propulsor
-   * https://github.com/Commonjava/jhttpc
  * https://github.com/project-ncl/pnc
  * https://github.com/release-engineering/kojiji
