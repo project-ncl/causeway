@@ -49,6 +49,8 @@ public class CausewayConfig
 
     public static final String KOJI_URL_OPTION = "koji.url";
 
+    public static final String KOJI_WEBURL_OPTION = "koji.weburl";
+
     public static final String INDY_URL_OPTION = "indy.url";
 
     public static final String DEFAULT_CAUSEWAY_CONFIG = "/etc/causeway/main.conf";
@@ -78,6 +80,8 @@ public class CausewayConfig
     private Boolean kojiTrustSelfSigned;
 
     private String kojiURL;
+
+    private String kojiWebURL;
 
     private String indyURL;
 
@@ -157,6 +161,18 @@ public class CausewayConfig
     public void setKojiURL( String kojiURL )
     {
         this.kojiURL = kojiURL;
+    }
+
+    public String getKojiWebURL()
+    {
+        checkConfigured();
+        return kojiWebURL;
+    }
+
+    @ConfigName( CausewayConfig.KOJI_WEBURL_OPTION )
+    public void setKojiWebURL( String kojiWebURL )
+    {
+        this.kojiWebURL = kojiWebURL;
     }
 
     public String getPnclURL()
@@ -303,6 +319,11 @@ public class CausewayConfig
         if ( isEmpty( getKojiURL() ) )
         {
             errors.add( String.format( "Koji URL '%s' is required.", KOJI_URL_OPTION ) );
+        }
+
+        if ( isEmpty( getKojiWebURL() ) )
+        {
+            errors.add( String.format( "Koji Web URL '%s' is required.", KOJI_WEBURL_OPTION ) );
         }
 
         if ( !errors.isEmpty() )
