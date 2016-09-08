@@ -33,7 +33,7 @@ public class BrewClientImpl implements BrewClient {
     @Inject
     public BrewClientImpl(KojiClient koji, CausewayConfig config) {
         this.koji = koji;
-        brewUrl = config.getKojiURL().replace("brewhub", "brew/buildinfo?buildID=");
+        brewUrl = config.getKojiWebURL();
     }
 
     @Override
