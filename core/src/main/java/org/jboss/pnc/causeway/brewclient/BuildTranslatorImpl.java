@@ -72,7 +72,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
         try {
             return builder.build();
         } catch (VerificationException ex) {
-            throw new CausewayException("Failure while building Koji Import JSON", ex);
+            throw new CausewayException("Failure while building Koji Import JSON: " + ex.getMessage(), ex);
         }
     }
 
@@ -137,7 +137,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             }
             return ret;
         }catch(MalformedURLException ex){
-            throw new CausewayException("Failed to parse artifact url.", ex);
+            throw new CausewayException("Failed to parse artifact url: " + ex.getMessage(), ex);
         }
     }
 }
