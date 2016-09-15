@@ -2,6 +2,7 @@ package org.jboss.pnc.causeway.brewclient;
 
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.config.CausewayConfig;
+import org.jboss.pnc.causeway.ctl.PncImportControllerImpl;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.rest.restmodel.causeway.ArtifactImportError;
@@ -14,6 +15,8 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
@@ -47,7 +50,7 @@ public class BrewClientImpl implements BrewClient {
             koji.logout(session);
             return bi == null? null : toBrewBuild(bi, nvr);
         } catch (KojiClientException ex) {
-            throw new CausewayException("Failure while comunicating with Koji", ex);
+            throw new CausewayException("Failure while comunicating with Koji: " + ex.getMessage(), ex);
         }
     }
 
@@ -75,7 +78,7 @@ public class BrewClientImpl implements BrewClient {
                     importError.setArtifactId(importFiles.getId(e.getKey()));
                     importError.setErrorMessage(e.getValue().getMessage());
                     importErrors.add(importError);
-                    System.out.println("ERRORS koji: " + e.getValue().getMessage());
+                    Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.WARNING, "Failed to import.", e.getValue());
                 }
             }
 
@@ -86,7 +89,7 @@ public class BrewClientImpl implements BrewClient {
                     importError.setArtifactId(e.getKey());
                     importError.setErrorMessage(e.getValue());
                     importErrors.add(importError);
-                    System.out.println("ERRORS importer: " + e.getValue());
+                    Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.WARNING, "Failed to import: {0}", e.getValue());
                 }
             }
             if(!importErrors.isEmpty()){
@@ -106,7 +109,7 @@ public class BrewClientImpl implements BrewClient {
 
             return ret;
         } catch (KojiClientException ex) {
-            throw new CausewayException("Failure while comunicating with Koji", ex);
+            throw new CausewayException("Failure while comunicating with Koji: " + ex.getMessage(), ex);
         }
     }
 
