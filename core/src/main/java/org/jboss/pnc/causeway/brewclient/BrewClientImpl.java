@@ -59,6 +59,19 @@ public class BrewClientImpl implements BrewClient {
     }
 
     @Override
+    public void tagBuild(String tag, BrewNVR nvr) throws CausewayException{
+        try {
+            KojiSessionInfo session = koji.login();
+
+            koji.tagBuild(tag, nvr.getNVR(), session);
+
+            koji.logout(session);
+        } catch (KojiClientException ex) {
+            throw new CausewayException("Failure while comunicating with Koji: " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
     public BuildImportResultRest importBuild(BrewNVR nvr, int buildRecordId, KojiImport kojiImport, ImportFileGenerator importFiles) throws CausewayException {
         BuildImportResultRest ret = new BuildImportResultRest();
         ret.setBuildRecordId(buildRecordId);

@@ -23,4 +23,8 @@ public class BrewNVR {
     public String getRelease() {
         return release;
     }
+
+    public String getNVR(){
+        return name + "-" + version + "-" + release;
+    }
 }

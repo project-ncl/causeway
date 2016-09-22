@@ -5,6 +5,7 @@ import org.jboss.pnc.causeway.bpmclient.BPMClient;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
+import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
@@ -35,13 +36,15 @@ public class PncImportControllerImpl implements PncImportController {
     private final BrewClient brewClient;
     private final BPMClient bpmClient;
     private final BuildTranslator translator;
+    private final CausewayConfig config;
 
     @Inject
-    public PncImportControllerImpl(PncClient pnclClient, BrewClient brewClient, BPMClient bpmClient, BuildTranslator translator) {
+    public PncImportControllerImpl(PncClient pnclClient, BrewClient brewClient, BPMClient bpmClient, BuildTranslator translator, CausewayConfig config) {
         this.pncClient = pnclClient;
         this.brewClient = brewClient;
         this.bpmClient = bpmClient;
         this.translator = translator;
+        this.config = config;
     }
 
     @Override
@@ -84,6 +87,9 @@ public class PncImportControllerImpl implements PncImportController {
             BuildImportResultRest importResult;
             try{
                 importResult = importBuild(build, dryRun);
+                if(importResult.getStatus() == BuildImportStatus.SUCCESSFUL){
+                    brewClient.tagBuild(config.getTag(), getNVR(build));
+                }
             }catch(CausewayException ex){
                 Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import build.", ex);
                 importResult = new BuildImportResultRest();
