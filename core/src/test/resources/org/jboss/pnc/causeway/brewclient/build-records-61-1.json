@@ -1,5 +1,4 @@
 {
-  "content": {
     "id": 61,
     "submitTime": 1470309689231,
     "startTime": 1470309691844,
@@ -80,5 +79,4 @@
         "imageRepositoryUrl": "my.registry/newcastle"
       }
     }
-  }
 }
