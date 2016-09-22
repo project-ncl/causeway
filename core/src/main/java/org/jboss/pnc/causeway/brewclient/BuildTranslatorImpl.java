@@ -133,9 +133,6 @@ public class BuildTranslatorImpl implements BuildTranslator {
             for(PncArtifact artifact : build.buildArtifacts){
                 ret.addUrl(artifact.id, artifact.deployUrl);
             }
-            for(PncArtifact artifact : build.dependencies){
-                ret.addUrl(artifact.id, artifact.deployUrl);
-            }
             return ret;
         }catch(MalformedURLException ex){
             throw new CausewayException("Failed to parse artifact url: " + ex.getMessage(), ex);
