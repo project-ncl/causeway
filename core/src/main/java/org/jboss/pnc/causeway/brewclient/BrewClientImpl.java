@@ -66,7 +66,7 @@ public class BrewClientImpl implements BrewClient {
         try {
             KojiSessionInfo session = koji.login();
 
-            KojiImportResult result = koji.importBuild(kojiImport, () -> importFiles, session);
+            KojiImportResult result = koji.importBuild(kojiImport, importFiles, session);
             koji.logout(session);
 
             List<ArtifactImportError> importErrors = new ArrayList<>();

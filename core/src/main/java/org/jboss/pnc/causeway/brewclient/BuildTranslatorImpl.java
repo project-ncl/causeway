@@ -55,6 +55,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 .withBuildType(StandardBuildType.maven)
                 .withBuildSource(build.getBuildConfigurationAudited().getScmRepoURL(),
                         build.getBuildConfigurationAudited().getScmRevision())
+                //.withExtraInfo("PNC-build", build.getId())
                 .parent();
 
         int buildRootId = 42;
@@ -105,7 +106,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             switch (artifact.type) {
                 case MAVEN: {
                     SimpleArtifactRef ref = SimpleArtifactRef.parse(artifact.identifier);
-                    outputBuilder.withFileSize(artifact.size);
+                    outputBuilder.withFileSize((int) artifact.size);
                     outputBuilder.withMavenInfoAndType(ref);
                     break;
                 }
