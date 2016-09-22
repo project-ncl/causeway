@@ -181,18 +181,6 @@ public class CausewayConfig
         return pnclURL;
     }
 
-    @ConfigName( CausewayConfig.INDY_URL_OPTION )
-    public void setIndyURL( String indyURL )
-    {
-        this.indyURL = indyURL;
-    }
-
-    public String getIndyURL()
-    {
-        checkConfigured();
-        return indyURL;
-    }
-
     @ConfigName( CausewayConfig.PNCL_URL_OPTION )
     public void setPnclURL( String pnclURL )
     {
