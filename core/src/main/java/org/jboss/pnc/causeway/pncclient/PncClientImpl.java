@@ -119,7 +119,7 @@ public class PncClientImpl implements PncClient
             Collection<ArtifactRest> artifacts = new ArrayList<>();
             response = query.apply(0);
             if (response.getStatus() != SC_OK) {
-                throw new CausewayException("Can read info for build id " + buildId + " - responseBuilt " + response.getStatus());
+                throw new CausewayException("Can't read info for build id " + buildId + " - response " + response.getStatus() + ": " + response.getEntity());
             }
             Page<ArtifactRest> page = (Page<ArtifactRest>) response.readEntity(new GenericType<Page<ArtifactRest>>() {});
             response.close();
@@ -128,7 +128,7 @@ public class PncClientImpl implements PncClient
             for(int p=1; p< page.getTotalPages(); p++){
                 response = query.apply(p);
                 if (response.getStatus() != SC_OK) {
-                    throw new CausewayException("Can read info for build id " + buildId + " - responseBuilt " + response.getStatus());
+                    throw new CausewayException("Can't read info for build id " + buildId + " - response " + response.getStatus() + ": " + response.getEntity());
                 }
                 page = (Page<ArtifactRest>) response.readEntity(new GenericType<Page<ArtifactRest>>() {});
                 artifacts.addAll(page.getContent());
