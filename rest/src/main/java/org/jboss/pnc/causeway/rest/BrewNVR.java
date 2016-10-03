@@ -1,5 +1,7 @@
 package org.jboss.pnc.causeway.rest;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class BrewNVR {
 
     private final String name;
@@ -24,6 +26,7 @@ public class BrewNVR {
         return release;
     }
 
+    @JsonIgnore
     public String getNVR(){
         return name + "-" + version + "-" + release;
     }
