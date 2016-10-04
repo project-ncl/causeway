@@ -15,6 +15,8 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
+import com.redhat.red.build.koji.model.ImportFile;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -25,13 +27,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.redhat.red.build.koji.model.ImportFile;
 
 /**
  *
@@ -144,7 +143,8 @@ public class ImportFileGenerator implements Iterable<Supplier<ImportFile>>{
 
         @Override
         public ImportFile get() {
-            try(InputStream stream = url.openStream()) {
+            try {
+                InputStream stream = url.openStream();
                 return new ImportFile(filePath, stream, size);
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
