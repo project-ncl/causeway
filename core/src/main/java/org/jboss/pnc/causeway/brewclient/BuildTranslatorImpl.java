@@ -15,7 +15,15 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
+import com.redhat.red.build.koji.model.json.BuildContainer;
+import com.redhat.red.build.koji.model.json.BuildOutput;
+import com.redhat.red.build.koji.model.json.BuildRoot;
+import com.redhat.red.build.koji.model.json.FileBuildComponent;
+import com.redhat.red.build.koji.model.json.KojiImport;
+import com.redhat.red.build.koji.model.json.StandardArchitecture;
+import com.redhat.red.build.koji.model.json.VerificationException;
 import org.commonjava.maven.atlas.ident.ref.SimpleArtifactRef;
+import org.commonjava.maven.atlas.ident.ref.SimpleProjectVersionRef;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact;
@@ -23,18 +31,8 @@ import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 
 import javax.enterprise.context.ApplicationScoped;
-
 import java.net.MalformedURLException;
 import java.util.List;
-
-import com.redhat.red.build.koji.model.json.BuildContainer;
-import com.redhat.red.build.koji.model.json.BuildOutput;
-import com.redhat.red.build.koji.model.json.BuildRoot;
-import com.redhat.red.build.koji.model.json.FileBuildComponent;
-import com.redhat.red.build.koji.model.json.KojiImport;
-import com.redhat.red.build.koji.model.json.StandardArchitecture;
-import com.redhat.red.build.koji.model.json.StandardBuildType;
-import com.redhat.red.build.koji.model.json.VerificationException;
 
 /**
  *
@@ -48,14 +46,18 @@ public class BuildTranslatorImpl implements BuildTranslator {
 
     @Override
     public KojiImport translate(BrewNVR nvr, BuildRecordRest build, BuildArtifacts artifacts) throws CausewayException {
+        String[] splittedName = nvr.getName().split(":");
         KojiImport.Builder builder = new KojiImport.Builder()
-                .withNewBuildDescription(nvr.getName(), nvr.getVersion(), nvr.getRelease())
+                .withNewBuildDescription(nvr.getKojiName(), nvr.getVersion(), nvr.getRelease())
                 .withStartTime(build.getStartTime())
                 .withEndTime(build.getEndTime())
-                .withBuildType(StandardBuildType.maven)
                 .withBuildSource(build.getBuildConfigurationAudited().getScmRepoURL(),
                         build.getBuildConfigurationAudited().getScmRevision())
-                //.withExtraInfo("PNC-build", build.getId())
+                .withExternalBuildId(String.valueOf(build.getId()))
+                .withMavenInfoAndType(new SimpleProjectVersionRef(
+                        splittedName[0],
+                        splittedName.length < 2 ? null : splittedName[1],
+                        nvr.getVersion()))
                 .parent();
 
         int buildRootId = 42;

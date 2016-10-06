@@ -16,6 +16,10 @@ public class BrewNVR {
         return name;
     }
 
+    public String getKojiName() {
+        return name.replaceAll(":", "-");
+    }
+
     public String getVersion() {
         return version;
     }
@@ -25,6 +29,6 @@ public class BrewNVR {
     }
 
     public String getNVR(){
-        return name + "-" + version + "-" + release;
+        return getKojiName() + "-" + version + "-" + release;
     }
 }

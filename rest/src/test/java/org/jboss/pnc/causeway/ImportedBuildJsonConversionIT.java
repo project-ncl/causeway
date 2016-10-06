@@ -1,7 +1,8 @@
 package org.jboss.pnc.causeway;
 
-import static org.junit.Assert.assertEquals;
-
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.ImportedBuild;
@@ -12,8 +13,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Random;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.junit.Assert.assertEquals;
 
 public class ImportedBuildJsonConversionIT {
 
@@ -37,7 +37,12 @@ public class ImportedBuildJsonConversionIT {
 
     private String convertToJson(Object object) throws IOException {
         OutputStream stream = new ByteArrayOutputStream();
-        new ObjectMapper().writeValue(stream, object);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setVisibilityChecker(mapper.getSerializationConfig().getDefaultVisibilityChecker()
+                .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
+                .withGetterVisibility(JsonAutoDetect.Visibility.NONE));
+
+        mapper.writeValue(stream, object);
         stream.close();
         return stream.toString();
     }

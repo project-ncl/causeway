@@ -1,6 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
     <deployment>
+        <resources>
+            <resource-root path="lib/bcprov-jdk15on.jar" use-physical-code-source="true"/>
+        </resources>
     </deployment>
     <sub-deployment name="causeway-core.jar">
         <dependencies>

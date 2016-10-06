@@ -1,5 +1,12 @@
 package org.jboss.pnc.causeway.brewclient;
 
+import com.redhat.red.build.koji.KojiClient;
+import com.redhat.red.build.koji.KojiClientException;
+import com.redhat.red.build.koji.model.KojiImportResult;
+import com.redhat.red.build.koji.model.json.KojiImport;
+import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
+import com.redhat.red.build.koji.model.xmlrpc.KojiNVR;
+import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.ctl.PncImportControllerImpl;
@@ -11,20 +18,11 @@ import org.jboss.pnc.rest.restmodel.causeway.BuildImportStatus;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.redhat.red.build.koji.KojiClient;
-import com.redhat.red.build.koji.KojiClientException;
-import com.redhat.red.build.koji.model.KojiImportResult;
-import com.redhat.red.build.koji.model.json.KojiImport;
-import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
-import com.redhat.red.build.koji.model.xmlrpc.KojiNVR;
-import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 
 @ApplicationScoped
 public class BrewClientImpl implements BrewClient {
@@ -44,7 +42,7 @@ public class BrewClientImpl implements BrewClient {
         try {
             KojiSessionInfo session = koji.login();
 
-            KojiNVR knvr = new KojiNVR(nvr.getName(), nvr.getVersion(), nvr.getRelease());
+            KojiNVR knvr = new KojiNVR(nvr.getKojiName(), nvr.getVersion(), nvr.getRelease());
             KojiBuildInfo bi = koji.getBuildInfo(knvr, session); // returns null if missing
 
             koji.logout(session);

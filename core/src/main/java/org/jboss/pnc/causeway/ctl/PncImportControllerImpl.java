@@ -60,7 +60,7 @@ public class PncImportControllerImpl implements PncImportController {
             if( results.stream().anyMatch(r -> r.getErrorMessage() != null)){
                 result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
                 bpmClient.failure(callback.getUrl(), callbackId, result);
-            }else if( results.stream().anyMatch(r -> !r.getErrors().isEmpty())){
+            }else if( results.stream().anyMatch(r -> isNotEmpty(r.getErrors()))){
                 result.setReleaseStatus(ReleaseStatus.IMPORT_ERROR);
                 bpmClient.failure(callback.getUrl(), callbackId, result);
             }else{
@@ -151,7 +151,11 @@ public class PncImportControllerImpl implements PncImportController {
     }
 
     private BrewNVR getNVR(BuildRecordRest build) {
-        return new BrewNVR(build.getExecutionRootName(), build.getExecutionRootVersion(), "1");
+        return new BrewNVR(build.getExecutionRootName(), build.getExecutionRootVersion().replace( '-', '_' ), "1");
+    }
+
+    private boolean isNotEmpty(Collection<?> collection) {
+        return collection != null && !collection.isEmpty();
     }
 
 }
