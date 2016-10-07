@@ -15,6 +15,10 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.redhat.red.build.koji.model.json.KojiImport;
+import com.redhat.red.build.koji.model.json.util.KojiObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
@@ -25,11 +29,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.redhat.red.build.koji.model.json.KojiImport;
-import com.redhat.red.build.koji.model.json.util.KojiObjectMapper;
 
 /**
  *
@@ -53,7 +52,7 @@ public class TranslatorTest {
         artifacts.dependencies.add(newArtifact(9, "org.apache.maven.shared", "maven-shared-io", "1.1", "jar"));
         artifacts.dependencies.add(newArtifact(10, "xml-apis", "xml-apis", "1.0.b2", "jar")); 
 
-        KojiImport out = bt.translate(new BrewNVR("a", "1.2.3", "1"), build, artifacts);
+        KojiImport out = bt.translate(new BrewNVR("g:a", "1.2.3", "1"), build, artifacts);
 
         mapper.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
         String jsonOut = mapper.writeValueAsString(out);

@@ -4,9 +4,7 @@ import org.jboss.pnc.causeway.ctl.PncImportController;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
-
 import java.util.UUID;
 
 
@@ -17,7 +15,7 @@ public class PncImportResourceEndpoint implements PncImportResource {
     private PncImportController controller;
 
     @Override
-    public Response testResponse( @PathParam( "variable" ) String var )
+    public Response testResponse( String var )
     {
         return Response.ok( var ).build();
     }
