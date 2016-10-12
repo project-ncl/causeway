@@ -17,6 +17,8 @@
     "buildConfigSetRecordId": 56,
     "buildContentId": "build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721",
     "productMilestoneId": 3,
+    "executionRootName": "org.apache.geronimo.specs:geronimo-annotation_1.0_spec",
+    "executionRootVersion": "1.1.1",
     "user": {
       "id": 17,
       "email": "pgallagh@redhat.com",
