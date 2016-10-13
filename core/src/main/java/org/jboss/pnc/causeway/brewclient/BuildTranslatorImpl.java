@@ -15,6 +15,8 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+
 import com.redhat.red.build.koji.model.json.BuildContainer;
 import com.redhat.red.build.koji.model.json.BuildOutput;
 import com.redhat.red.build.koji.model.json.BuildRoot;
@@ -22,6 +24,7 @@ import com.redhat.red.build.koji.model.json.FileBuildComponent;
 import com.redhat.red.build.koji.model.json.KojiImport;
 import com.redhat.red.build.koji.model.json.StandardArchitecture;
 import com.redhat.red.build.koji.model.json.VerificationException;
+
 import org.commonjava.maven.atlas.ident.ref.SimpleArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.SimpleProjectVersionRef;
 import org.jboss.pnc.causeway.CausewayException;
@@ -31,6 +34,7 @@ import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 
 import javax.enterprise.context.ApplicationScoped;
+
 import java.net.MalformedURLException;
 import java.util.List;
 
@@ -46,7 +50,6 @@ public class BuildTranslatorImpl implements BuildTranslator {
 
     @Override
     public KojiImport translate(BrewNVR nvr, BuildRecordRest build, BuildArtifacts artifacts) throws CausewayException {
-        String[] splittedName = nvr.getName().split(":");
         KojiImport.Builder builder = new KojiImport.Builder()
                 .withNewBuildDescription(nvr.getKojiName(), nvr.getVersion(), nvr.getRelease())
                 .withStartTime(build.getStartTime())
@@ -54,10 +57,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 .withBuildSource(build.getBuildConfigurationAudited().getScmRepoURL(),
                         build.getBuildConfigurationAudited().getScmRevision())
                 .withExternalBuildId(String.valueOf(build.getId()))
-                .withMavenInfoAndType(new SimpleProjectVersionRef(
-                        splittedName[0],
-                        splittedName.length < 2 ? null : splittedName[1],
-                        nvr.getVersion()))
+                .withMavenInfoAndType(buildRootToGAV(build))
                 .parent();
 
         int buildRootId = 42;
@@ -139,5 +139,16 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }catch(MalformedURLException ex){
             throw new CausewayException("Failed to parse artifact url: " + ex.getMessage(), ex);
         }
+    }
+
+    private ProjectVersionRef buildRootToGAV(BuildRecordRest build) {
+        String[] splittedName = build.getExecutionRootName().split(":");
+        if(splittedName.length != 2)
+            throw new IllegalArgumentException("Execution root '"+build.getExecutionRootName()+"' doesnt seem to be maven G:A.");
+
+        return new SimpleProjectVersionRef(
+                        splittedName[0],
+                        splittedName.length < 2 ? null : splittedName[1],
+                        build.getExecutionRootVersion());
     }
 }
