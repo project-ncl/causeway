@@ -61,6 +61,7 @@ public class BrewClientImpl implements BrewClient {
         try {
             KojiSessionInfo session = koji.login();
 
+            koji.addPackageToTag(tag, nvr.getKojiName(), session);
             koji.tagBuild(tag, nvr.getNVR(), session);
 
             koji.logout(session);
