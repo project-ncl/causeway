@@ -47,7 +47,7 @@
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <pncVersion>0.10-SNAPSHOT</pncVersion>
     <mockitoVersion>1.10.19</mockitoVersion>
-    <kojijiVersion>1.2-SNAPSHOT</kojijiVersion>
+    <kojijiVersion>1.2</kojijiVersion>
   </properties>
 
   <modules>
@@ -172,7 +172,7 @@
       <dependency>
         <groupId>org.commonjava.rwx</groupId>
         <artifactId>rwx-bindings</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.1</version>
       </dependency>
 
       <dependency>
