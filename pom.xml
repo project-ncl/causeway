@@ -26,7 +26,7 @@
   
   <groupId>org.jboss.pnc.causeway</groupId>
   <artifactId>causeway</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.2.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <name>Causeway PNCL-to-Koji Bridge</name>
@@ -97,30 +97,30 @@
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-model-java</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.2.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-core</artifactId>
         <type>ejb</type>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.2.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-rest</artifactId>
         <type>ejb</type>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.2.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-web</artifactId>
         <type>war</type>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.2.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-tck</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.2.0-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
 
