@@ -46,7 +46,7 @@
     <galleyVersion>0.13.0</galleyVersion>
     <configVersion>0.8</configVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
-    <pncVersion>0.10</pncVersion>
+    <pncVersion>0.10.1</pncVersion>
     <mockitoVersion>1.10.19</mockitoVersion>
     <kojijiVersion>1.2</kojijiVersion>
   </properties>
