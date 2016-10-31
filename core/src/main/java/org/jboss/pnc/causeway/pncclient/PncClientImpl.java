@@ -108,7 +108,7 @@ public class PncClientImpl implements PncClient
                 "maven",
                 artifactRest.getIdentifier(),
                 artifactRest.getFilename(),
-                artifactRest.getChecksum(),
+                artifactRest.getMd5(),
                 artifactRest.getDeployUrl(),
                 artifactRest.getSize() == null ? 1 : artifactRest.getSize());
     }
