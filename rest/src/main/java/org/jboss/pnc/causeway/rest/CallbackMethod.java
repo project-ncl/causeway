@@ -1,11 +1,11 @@
-/*
- * Copyright 2016 Honza Brázdil <jbrazdil@redhat.com>.
+/**
+ * Copyright (C) 2015 Red Hat, Inc. (jbrazdil@redhat.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,7 +17,7 @@ package org.jboss.pnc.causeway.rest;
 
 /**
  *
- * @author Honza Brázdil <jbrazdil@redhat.com>
+ * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
 public enum CallbackMethod {
     POST,
