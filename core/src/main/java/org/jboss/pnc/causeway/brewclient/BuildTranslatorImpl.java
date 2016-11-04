@@ -49,14 +49,23 @@ public class BuildTranslatorImpl implements BuildTranslator {
     private static final String CONTENT_GENERATOR_NAME = "Project Newcastle";
 
     @Override
-    public KojiImport translate(BrewNVR nvr, BuildRecordRest build, BuildArtifacts artifacts) throws CausewayException {
+    public KojiImport translate(BrewNVR nvr,
+                                BuildRecordRest build,
+                                BuildArtifacts artifacts) throws CausewayException {
+        String externalBuildId = String.valueOf(build.getId());
+        String externalBuildUrl = null;
+        String externalBuildsUrl = System.getProperty("pncl.builds.url");
+        if (externalBuildsUrl != null) {
+            externalBuildUrl = externalBuildsUrl + externalBuildId;
+        }
         KojiImport.Builder builder = new KojiImport.Builder()
                 .withNewBuildDescription(nvr.getKojiName(), nvr.getVersion(), nvr.getRelease())
                 .withStartTime(build.getStartTime())
                 .withEndTime(build.getEndTime())
                 .withBuildSource(build.getBuildConfigurationAudited().getScmRepoURL(),
                         build.getBuildConfigurationAudited().getScmRevision())
-                .withExternalBuildId(String.valueOf(build.getId()))
+                .withExternalBuildId(externalBuildId)
+                .withExternalBuildUrl(externalBuildUrl)
                 .withMavenInfoAndType(buildRootToGAV(build))
                 .parent();
 
