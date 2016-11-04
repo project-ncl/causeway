@@ -47,6 +47,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
     private static final String MAVEN = "maven";
     private static final String CONTENT_GENERATOR_VERSION = "0.10";
     private static final String CONTENT_GENERATOR_NAME = "Project Newcastle";
+    private static final String PNC = "PNC";
 
     @Override
     public KojiImport translate(BrewNVR nvr,
@@ -66,6 +67,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                         build.getBuildConfigurationAudited().getScmRevision())
                 .withExternalBuildId(externalBuildId)
                 .withExternalBuildUrl(externalBuildUrl)
+                .withBuildSystem(PNC)
                 .withMavenInfoAndType(buildRootToGAV(build))
                 .parent();
 
