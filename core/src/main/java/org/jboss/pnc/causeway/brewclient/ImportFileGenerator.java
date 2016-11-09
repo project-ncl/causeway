@@ -16,6 +16,7 @@
 package org.jboss.pnc.causeway.brewclient;
 
 import com.redhat.red.build.koji.model.ImportFile;
+import org.apache.commons.lang.builder.EqualsBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -152,4 +153,22 @@ public class ImportFileGenerator implements Iterable<Supplier<ImportFile>>{
         }
     }
 
+    @Override
+    // Added the equals nethod so that this object can be correctly used in Mockito's eq() expression
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ImportFileGenerator that = (ImportFileGenerator) o;
+
+        return new EqualsBuilder()
+                .append(urls, that.urls)
+                .append(paths, that.paths)
+                .append(errors, that.errors)
+                .isEquals();
+    }
 }

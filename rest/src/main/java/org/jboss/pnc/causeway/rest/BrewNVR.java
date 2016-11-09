@@ -1,6 +1,7 @@
 package org.jboss.pnc.causeway.rest;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang.builder.EqualsBuilder;
 
 public class BrewNVR {
 
@@ -33,5 +34,24 @@ public class BrewNVR {
     @JsonIgnore
     public String getNVR(){
         return getKojiName() + "-" + version + "-" + release;
+    }
+
+    @Override
+    // Added the equals nethod so that this object can be correctly used in Mockito's eq() expression
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        BrewNVR that = (BrewNVR) o;
+
+        return new EqualsBuilder()
+                .append(name, that.name)
+                .append(version, that.version)
+                .append(release, that.release)
+                .isEquals();
     }
 }
