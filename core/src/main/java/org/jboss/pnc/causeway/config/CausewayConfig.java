@@ -47,6 +47,8 @@ public class CausewayConfig
 
     public static final String PNCL_URL_OPTION = "pncl.url";
 
+    public static final String PNCL_BUILDS_URL_OPTION = "pncl.builds.url";
+
     public static final String KOJI_URL_OPTION = "koji.url";
 
     public static final String KOJI_WEBURL_OPTION = "koji.weburl";
@@ -86,6 +88,8 @@ public class CausewayConfig
     private String tag;
 
     private String pnclURL;
+
+    private String pnclBuildsURL;
 
     private File configDir;
 
@@ -197,6 +201,18 @@ public class CausewayConfig
     public void setPnclURL( String pnclURL )
     {
         this.pnclURL = pnclURL;
+    }
+
+    public String getPnclBuildsURL()
+    {
+        checkConfigured();
+        return pnclBuildsURL;
+    }
+
+    @ConfigName( CausewayConfig.PNCL_BUILDS_URL_OPTION )
+    public void setPnclBuildsURL( String pnclURL )
+    {
+        this.pnclBuildsURL = pnclURL;
     }
 
     public void configurationDone()

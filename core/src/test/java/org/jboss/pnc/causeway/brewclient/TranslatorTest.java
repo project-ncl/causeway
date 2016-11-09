@@ -21,9 +21,11 @@ import com.redhat.red.build.koji.model.json.KojiImport;
 import com.redhat.red.build.koji.model.json.util.KojiObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -35,8 +37,14 @@ import java.nio.charset.Charset;
  * @author Honza Brázdil <jbrazdil@redhat.com>
  */
 public class TranslatorTest {
-    private final BuildTranslator bt = new BuildTranslatorImpl();
-    private final ObjectMapper mapper = new KojiObjectMapper();
+    private static final CausewayConfig config = new CausewayConfig();
+    private static final BuildTranslator bt = new BuildTranslatorImpl(config);
+    private static final ObjectMapper mapper = new KojiObjectMapper();
+
+    @BeforeClass
+    public static void setUp() {
+        config.setPnclBuildsURL("http://example.com/build-records/");
+    }
 
     @Test
     public void testReadBuildArtifacts() throws Exception {
