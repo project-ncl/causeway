@@ -34,6 +34,8 @@ public interface BrewClient {
 
     public String getBuildUrl(int id);
 
+    public boolean tagsExists(String tag) throws CausewayException;
+
     void tagBuild(String tag, BrewNVR nvr) throws CausewayException;
 
 }

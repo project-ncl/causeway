@@ -30,4 +30,6 @@ public interface PncClient {
 
     public Collection<BuildRecordRest> findBuildsOfProductMilestone(int milestoneId) throws CausewayException;
 
+    public String getTagForMilestone(int milestoneId) throws CausewayException;
+
 }

@@ -51,8 +51,6 @@ public class CausewayConfig
 
     public static final String KOJI_WEBURL_OPTION = "koji.weburl";
 
-    public static final String KOJI_TAG = "koji.tag";
-
     public static final String DEFAULT_CAUSEWAY_CONFIG = "/etc/causeway/main.conf";
 
     public static final String DEFAULT_SSL_SERVER_PEM_FILE = "server.pem";
@@ -173,18 +171,6 @@ public class CausewayConfig
     public void setKojiWebURL( String kojiWebURL )
     {
         this.kojiWebURL = kojiWebURL;
-    }
-
-    @ConfigName( CausewayConfig.KOJI_TAG )
-    public void setTag( String tag )
-    {
-        this.tag = tag;
-    }
-
-    public String getTag()
-    {
-        checkConfigured();
-        return tag;
     }
 
     public String getPnclURL()

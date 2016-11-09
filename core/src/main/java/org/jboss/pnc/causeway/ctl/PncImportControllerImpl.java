@@ -36,15 +36,13 @@ public class PncImportControllerImpl implements PncImportController {
     private final BrewClient brewClient;
     private final BPMClient bpmClient;
     private final BuildTranslator translator;
-    private final CausewayConfig config;
 
     @Inject
-    public PncImportControllerImpl(PncClient pnclClient, BrewClient brewClient, BPMClient bpmClient, BuildTranslator translator, CausewayConfig config) {
+    public PncImportControllerImpl(PncClient pnclClient, BrewClient brewClient, BPMClient bpmClient, BuildTranslator translator) {
         this.pncClient = pnclClient;
         this.brewClient = brewClient;
         this.bpmClient = bpmClient;
         this.translator = translator;
-        this.config = config;
     }
 
     @Override
@@ -80,6 +78,11 @@ public class PncImportControllerImpl implements PncImportController {
     }
 
     private List<BuildImportResultRest> importProductMilestone(int milestoneId, boolean dryRun) throws CausewayException {
+        String tagPrefix = pncClient.getTagForMilestone(milestoneId);
+        if (!brewClient.tagsExists(tagPrefix)) {
+            throw new CausewayException("Proper brew tags doesn't exists. Create them before importing builds. Tag prefix: " + tagPrefix);
+        }
+
         Collection<BuildRecordRest> builds = findAndAssertBuilds(milestoneId);
 
         List<BuildImportResultRest> results = new ArrayList<>();
@@ -88,7 +91,7 @@ public class PncImportControllerImpl implements PncImportController {
             try{
                 importResult = importBuild(build, dryRun);
                 if(importResult.getStatus() == BuildImportStatus.SUCCESSFUL){
-                    brewClient.tagBuild(config.getTag(), getNVR(build));
+                    brewClient.tagBuild(tagPrefix, getNVR(build));
                 }
             }catch(CausewayException ex){
                 Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import build.", ex);
