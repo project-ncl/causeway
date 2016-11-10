@@ -7,7 +7,10 @@ import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact;
 import org.jboss.pnc.rest.restmodel.ArtifactRest;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
+import org.jboss.pnc.rest.restmodel.ProductMilestoneRest;
+import org.jboss.pnc.rest.restmodel.ProductVersionRest;
 import org.jboss.pnc.rest.restmodel.response.Page;
+import org.jboss.pnc.rest.restmodel.response.Singleton;
 import static org.jboss.pnc.spi.BuildCoordinationStatus.DONE;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
@@ -48,6 +51,33 @@ public class PncClientImpl implements PncClient
 
     PncClientImpl(RestEndpointProxyFactory restEndpointProxyFactory) {
         this.restEndpointProxyFactory = restEndpointProxyFactory;
+    }
+
+    @Override
+    public String getTagForMilestone(int milestoneId) throws CausewayException {
+        ProductMilestoneEndpoint milestoneEndpoint = restEndpointProxyFactory.createRestEndpoint(ProductMilestoneEndpoint.class);
+        ProductVersionEndpoint versionEndpoint = restEndpointProxyFactory.createRestEndpoint(ProductVersionEndpoint.class);
+        Response response = null;
+        try {
+            response = milestoneEndpoint.getSpecific(milestoneId);
+            if (response.getStatus() == SC_OK) {
+                Singleton<ProductMilestoneRest> milestone = ((Singleton<ProductMilestoneRest>) response.readEntity(new GenericType<Singleton<ProductMilestoneRest>>() {
+                }));
+                Integer productVersionId = milestone.getContent().getProductVersionId();
+                response.close();
+
+                response = versionEndpoint.getSpecific(productVersionId);
+                Singleton<ProductVersionRest> version = ((Singleton<ProductVersionRest>) response.readEntity(new GenericType<Singleton<ProductVersionRest>>() {
+                }));
+
+                return version.getContent().getBrewTagPrefix();
+            }
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
+        throw new CausewayException("Can not read tag for product version of milestone " + milestoneId + (response == null ? "" : " - response " + response.getStatus()));
     }
 
     @Override
@@ -148,9 +178,23 @@ public class PncClientImpl implements PncClient
     public static final String SORTING_QUERY_PARAM = "sort";
     public static final String QUERY_QUERY_PARAM = "q";
 
+    @Path("/product-versions")
+    @Consumes("application/json")
+    public interface ProductVersionEndpoint { //FIXME remove when resolved https://projects.engineering.redhat.com/browse/NCL-1645
+
+        @GET
+        @Path("/{id}")
+        public Response getSpecific(@PathParam("id") Integer id);
+
+    }
+
     @Path("/product-milestones")
     @Consumes("application/json")
     public interface ProductMilestoneEndpoint { //FIXME remove when resolved https://projects.engineering.redhat.com/browse/NCL-1645
+
+        @GET
+        @Path("/{id}")
+        public Response getSpecific(@PathParam("id") Integer id);
 
         @GET
         @Path("/{id}/performed-builds")

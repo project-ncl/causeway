@@ -7,6 +7,7 @@ import com.redhat.red.build.koji.model.json.KojiImport;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiNVR;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
+
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.ctl.PncImportControllerImpl;
@@ -18,6 +19,7 @@ import org.jboss.pnc.rest.restmodel.causeway.BuildImportStatus;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,8 @@ import java.util.logging.Logger;
 
 @ApplicationScoped
 public class BrewClientImpl implements BrewClient {
+
+    private static final String BUILD_TAG_SUFIX = "-candidate";
 
     private final KojiClient koji;
 
@@ -62,7 +66,7 @@ public class BrewClientImpl implements BrewClient {
             KojiSessionInfo session = koji.login();
 
             koji.addPackageToTag(tag, nvr.getKojiName(), session);
-            koji.tagBuild(tag, nvr.getNVR(), session);
+            koji.tagBuild(tag + BUILD_TAG_SUFIX, nvr.getNVR(), session);
 
             koji.logout(session);
         } catch (KojiClientException ex) {
@@ -128,6 +132,22 @@ public class BrewClientImpl implements BrewClient {
     @Override
     public String getBuildUrl(int id) {
         return brewUrl + id;
+    }
+
+    @Override
+    public boolean tagsExists(String tag) throws CausewayException {
+        boolean packageTag, buildTag;
+        try {
+            KojiSessionInfo session = koji.login();
+
+            packageTag = koji.getTag(tag, session) != null;
+            buildTag = koji.getTag(tag + BUILD_TAG_SUFIX, session) != null;
+
+            koji.logout(session);
+        } catch (KojiClientException ex) {
+            throw new CausewayException("Failure while comunicating with Koji: " + ex.getMessage(), ex);
+        }
+        return packageTag && buildTag;
     }
 
 }
