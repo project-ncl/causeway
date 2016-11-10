@@ -134,9 +134,10 @@ public class PncImportControllerImpl implements PncImportController {
         }
 
         BuildArtifacts artifacts = pncClient.findBuildArtifacts(build.getId());
+        String log = pncClient.getBuildLog(build.getId());
 
-        KojiImport kojiImport = translator.translate(nvr, build, artifacts);
-        ImportFileGenerator importFiles = translator.getImportFiles(artifacts);
+        KojiImport kojiImport = translator.translate(nvr, build, artifacts, log);
+        ImportFileGenerator importFiles = translator.getImportFiles(artifacts, log);
 
         return brewClient.importBuild(nvr, build.getId(), kojiImport, importFiles);
     }

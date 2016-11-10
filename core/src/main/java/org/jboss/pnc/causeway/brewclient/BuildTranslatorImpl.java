@@ -37,8 +37,13 @@ import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import java.math.BigInteger;
 import java.net.MalformedURLException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
+
+import com.redhat.red.build.koji.model.json.StandardOutputType;
 
 /**
  *
@@ -62,8 +67,9 @@ public class BuildTranslatorImpl implements BuildTranslator {
 
     @Override
     public KojiImport translate(BrewNVR nvr,
-                                BuildRecordRest build,
-                                BuildArtifacts artifacts) throws CausewayException {
+            BuildRecordRest build,
+            BuildArtifacts artifacts,
+            String log) throws CausewayException {
         String externalBuildId = String.valueOf(build.getId());
         String externalBuildUrl = null;
         String externalBuildsUrl = config.getPnclBuildsURL();
@@ -93,11 +99,28 @@ public class BuildTranslatorImpl implements BuildTranslator {
 
         addDependencies(artifacts.dependencies, buildRootBuilder);
         addBuiltArtifacts(artifacts.buildArtifacts, builder, buildRootId);
+        addLog(log, builder, buildRootId);
 
         try {
             return builder.build();
         } catch (VerificationException ex) {
             throw new CausewayException("Failure while building Koji Import JSON: " + ex.getMessage(), ex);
+        }
+    }
+
+    private void addLog(String log, KojiImport.Builder builder, int buildRootId) throws CausewayException {
+        try {
+            byte[] logBytes = log.getBytes();
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            BigInteger bi = new BigInteger(1, md.digest(logBytes));
+            String logHash = bi.toString(16);
+            builder.withNewOutput(buildRootId, "build.log")
+                    .withOutputType(StandardOutputType.log)
+                    .withFileSize(logBytes.length)
+                    .withArch(StandardArchitecture.noarch)
+                    .withChecksum("MD5", logHash);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new CausewayException("Failed to compute md5 sum of build log: " + ex.getMessage(), ex);
         }
     }
 
@@ -151,9 +174,9 @@ public class BuildTranslatorImpl implements BuildTranslator {
     }
 
     @Override
-    public ImportFileGenerator getImportFiles(BuildArtifacts build) throws CausewayException {
+    public ImportFileGenerator getImportFiles(BuildArtifacts build, String log) throws CausewayException {
         try{
-            ImportFileGenerator ret = new ImportFileGenerator();
+            ImportFileGenerator ret = new ImportFileGenerator(log);
             for(PncArtifact artifact : build.buildArtifacts){
                 ret.addUrl(artifact.id, artifact.deployUrl);
             }
