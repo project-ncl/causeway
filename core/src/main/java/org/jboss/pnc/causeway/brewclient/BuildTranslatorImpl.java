@@ -28,12 +28,14 @@ import com.redhat.red.build.koji.model.json.VerificationException;
 import org.commonjava.maven.atlas.ident.ref.SimpleArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.SimpleProjectVersionRef;
 import org.jboss.pnc.causeway.CausewayException;
+import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 import java.net.MalformedURLException;
 import java.util.List;
@@ -49,13 +51,22 @@ public class BuildTranslatorImpl implements BuildTranslator {
     private static final String CONTENT_GENERATOR_NAME = "Project Newcastle";
     private static final String PNC = "PNC";
 
+    private final CausewayConfig config;
+
+    @Inject
+    public BuildTranslatorImpl(CausewayConfig config) {
+        this.config = config;
+        config.configurationDone();
+    }
+
+
     @Override
     public KojiImport translate(BrewNVR nvr,
                                 BuildRecordRest build,
                                 BuildArtifacts artifacts) throws CausewayException {
         String externalBuildId = String.valueOf(build.getId());
         String externalBuildUrl = null;
-        String externalBuildsUrl = System.getProperty("pncl.builds.url");
+        String externalBuildsUrl = config.getPnclBuildsURL();
         if (externalBuildsUrl != null) {
             externalBuildUrl = externalBuildsUrl + externalBuildId;
         }
