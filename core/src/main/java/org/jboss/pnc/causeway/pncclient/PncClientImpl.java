@@ -5,6 +5,7 @@ import static org.jboss.resteasy.util.HttpResponseCodes.SC_OK;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact;
+import org.jboss.pnc.model.ProductVersion;
 import org.jboss.pnc.rest.restmodel.ArtifactRest;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 import org.jboss.pnc.rest.restmodel.ProductMilestoneRest;
@@ -70,7 +71,7 @@ public class PncClientImpl implements PncClient
                 Singleton<ProductVersionRest> version = ((Singleton<ProductVersionRest>) response.readEntity(new GenericType<Singleton<ProductVersionRest>>() {
                 }));
 
-                return version.getContent().getBrewTagPrefix();
+                return version.getContent().getAttributes().get(ProductVersion.ATTRIBUTE_KEY_BREW_TAG_PREFIX);
             }
         } finally {
             if (response != null) {
