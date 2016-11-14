@@ -32,4 +32,6 @@ public interface PncClient {
 
     public String getTagForMilestone(int milestoneId) throws CausewayException;
 
+    public String getBuildLog(int buildId) throws CausewayException;
+
 }

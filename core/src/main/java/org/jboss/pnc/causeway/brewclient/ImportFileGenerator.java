@@ -15,6 +15,8 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
+import java.io.ByteArrayInputStream;
+
 import com.redhat.red.build.koji.model.ImportFile;
 
 import java.io.IOException;
@@ -40,6 +42,11 @@ public class ImportFileGenerator implements Iterable<Supplier<ImportFile>>{
     private final Set<URL> urls = new HashSet<>();
     private final Map<String, Integer> paths = new HashMap<>();
     private final Map<Integer, String> errors = new HashMap<>();
+    private final String log;
+
+    public ImportFileGenerator(String log) {
+        this.log = log;
+    }
 
     public void addUrl(Integer id, String url) throws MalformedURLException {
         URL artifactUrl = new URL(url);
@@ -67,6 +74,7 @@ public class ImportFileGenerator implements Iterable<Supplier<ImportFile>>{
     private class ImportFileIterator implements Iterator<Supplier<ImportFile>>{
         private Iterator<URL> it;
         private ImportFileSupplier next;
+        private boolean logGiven = false;
 
         public ImportFileIterator(Iterator<URL> it) {
             this.it = it;
@@ -111,6 +119,9 @@ public class ImportFileGenerator implements Iterable<Supplier<ImportFile>>{
 
         @Override
         public boolean hasNext() {
+            if (!logGiven) {
+                return true;
+            }
             while(next == null && it.hasNext()){
                 next = getNext();
             }
@@ -120,6 +131,11 @@ public class ImportFileGenerator implements Iterable<Supplier<ImportFile>>{
 
         @Override
         public Supplier<ImportFile> next() {
+            if (!logGiven) {
+                logGiven = true;
+                byte[] bytes = log.getBytes();
+                return () -> new ImportFile("build.log", new ByteArrayInputStream(bytes), bytes.length);
+            }
             while(next == null){ // will throw NoSuchElementException if there is no next
                 next = getNext();
             }

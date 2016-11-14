@@ -24,8 +24,10 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import java.util.ArrayList;
@@ -97,6 +99,23 @@ public class PncClientImpl implements PncClient
             }
         }
         throw new CausewayException("Can not read builds for product milestone " + milestoneId + ( response == null ? "" : " - response " + response.getStatus()));
+    }
+
+    @Override
+    public String getBuildLog(int buildId) throws CausewayException {
+        Response response = null;
+        try {
+            BuildRecordEndpoint endpoint = restEndpointProxyFactory.createRestEndpoint(BuildRecordEndpoint.class);
+            response = endpoint.getLogs(buildId);
+            if (response.getStatus() == SC_OK) {
+                return response.readEntity(String.class);
+            }
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
+        throw new CausewayException("Can not read build log of build " + buildId + (response == null ? "" : " - response " + response.getStatus()));
     }
 
     static class RestEndpointProxyFactory {
@@ -236,6 +255,11 @@ public class PncClientImpl implements PncClient
                 @QueryParam(PAGE_SIZE_QUERY_PARAM) @DefaultValue(PAGE_SIZE_DEFAULT_VALUE) int pageSize,
                 @QueryParam(SORTING_QUERY_PARAM) String sort,
                 @QueryParam(QUERY_QUERY_PARAM) String q);
+
+        @GET
+        @Path("/{id}/log")
+        @Produces(MediaType.TEXT_PLAIN)
+        public Response getLogs(@PathParam("id") Integer id);
 
     }
 

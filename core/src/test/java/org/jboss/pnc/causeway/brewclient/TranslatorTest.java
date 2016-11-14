@@ -60,7 +60,7 @@ public class TranslatorTest {
         artifacts.dependencies.add(newArtifact(9, "org.apache.maven.shared", "maven-shared-io", "1.1", "jar"));
         artifacts.dependencies.add(newArtifact(10, "xml-apis", "xml-apis", "1.0.b2", "jar")); 
 
-        KojiImport out = bt.translate(new BrewNVR("g:a", "1.2.3", "1"), build, artifacts);
+        KojiImport out = bt.translate(new BrewNVR("g:a", "1.2.3", "1"), build, artifacts, "foo-bar-logs");
 
         mapper.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
         String jsonOut = mapper.writeValueAsString(out);
