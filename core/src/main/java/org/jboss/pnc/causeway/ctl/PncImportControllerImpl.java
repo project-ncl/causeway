@@ -3,6 +3,7 @@ package org.jboss.pnc.causeway.ctl;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.bpmclient.BPMClient;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
+import org.jboss.pnc.causeway.brewclient.BrewClientImpl;
 import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
@@ -36,13 +37,15 @@ public class PncImportControllerImpl implements PncImportController {
     private final BrewClient brewClient;
     private final BPMClient bpmClient;
     private final BuildTranslator translator;
+    private final CausewayConfig config;
 
     @Inject
-    public PncImportControllerImpl(PncClient pnclClient, BrewClient brewClient, BPMClient bpmClient, BuildTranslator translator) {
+    public PncImportControllerImpl(PncClient pnclClient, BrewClient brewClient, BPMClient bpmClient, BuildTranslator translator, CausewayConfig config) {
         this.pncClient = pnclClient;
         this.brewClient = brewClient;
         this.bpmClient = bpmClient;
         this.translator = translator;
+        this.config = config;
     }
 
     @Override
@@ -82,7 +85,7 @@ public class PncImportControllerImpl implements PncImportController {
     private List<BuildImportResultRest> importProductMilestone(int milestoneId, boolean dryRun) throws CausewayException {
         String tagPrefix = pncClient.getTagForMilestone(milestoneId);
         if (!brewClient.tagsExists(tagPrefix)) {
-            throw new CausewayException("Proper brew tags doesn't exists. Create them before importing builds. Tag prefix: " + tagPrefix);
+            throw new CausewayException(messageMissingTag(tagPrefix));
         }
 
         Collection<BuildRecordRest> builds = findAndAssertBuilds(milestoneId);
@@ -154,6 +157,14 @@ public class PncImportControllerImpl implements PncImportController {
 
     static String messageBuildNotFound(Integer buildId) {
         return "PNC build id " + buildId + " not found";
+    }
+
+    private String messageMissingTag(String tagPrefix) {
+        return "Proper brew tags don't exist. Create them before importing builds.\n"
+              + "Tag prefix: " + tagPrefix+ "\n"
+              + "You should ask RCM to create at least following tags:\n"
+              + tagPrefix + ", " + tagPrefix + BrewClientImpl.BUILD_TAG_SUFIX + "\n"
+              + "in " + config.getKojiURL();
     }
 
     private BrewNVR getNVR(BuildRecordRest build) {
