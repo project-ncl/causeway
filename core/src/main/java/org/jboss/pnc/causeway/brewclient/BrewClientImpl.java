@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 @ApplicationScoped
 public class BrewClientImpl implements BrewClient {
 
-    private static final String BUILD_TAG_SUFIX = "-candidate";
+    public static final String BUILD_TAG_SUFIX = "-candidate";
 
     private final KojiClient koji;
 
