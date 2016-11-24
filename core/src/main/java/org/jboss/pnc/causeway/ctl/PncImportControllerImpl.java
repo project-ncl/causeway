@@ -68,11 +68,13 @@ public class PncImportControllerImpl implements PncImportController {
 
         } catch (CausewayException ex) {
             Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import milestone.", ex);
-                result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
+            result.setErrorMessage(ex.getMessage());
+            result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
             bpmClient.failure(callback.getUrl(), callbackId, result);
         } catch (RuntimeException ex) {
             Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import milestone.", ex);
-                result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
+            result.setErrorMessage(ex.getMessage());
+            result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
             bpmClient.error(callback.getUrl(), callbackId, result);
         }
     }
