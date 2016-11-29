@@ -168,7 +168,7 @@ public class PncImportControllerImpl implements PncImportController {
     }
 
     private BrewNVR getNVR(BuildRecordRest build) {
-        return new BrewNVR(build.getExecutionRootName(), build.getExecutionRootVersion().replace( '-', '_' ), "1");
+        return new BrewNVR(build.getExecutionRootName(), build.getExecutionRootVersion(), "1");
     }
 
     private boolean isNotEmpty(Collection<?> collection) {
