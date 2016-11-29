@@ -119,7 +119,7 @@ public class PncImportControllerImpl implements PncImportController {
             throw new CausewayException(messagePncReleaseNotFound(milestoneId, e), e);
         }
         if (builds == null || builds.isEmpty()) {
-            throw new CausewayException(messageReleaseWithoutBuildConfigurations(milestoneId));
+            throw new CausewayException(messageMilestoneWithoutBuilds(milestoneId));
         }
         return builds;
     }
@@ -151,8 +151,8 @@ public class PncImportControllerImpl implements PncImportController {
         return "Can not find PNC release " + releaseId + " - " + e.getMessage();
     }
 
-    static String messageReleaseWithoutBuildConfigurations(long releaseId) {
-        return "Release " + releaseId + " does not contain any build configurations";
+    static String messageMilestoneWithoutBuilds(long milestoneId) {
+        return "Milestone " + milestoneId + " does not contain any build";
     }
 
     static String messageBuildNotFound(Integer buildId) {
