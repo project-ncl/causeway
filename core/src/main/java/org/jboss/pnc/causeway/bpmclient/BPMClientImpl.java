@@ -15,6 +15,7 @@
  */
 package org.jboss.pnc.causeway.bpmclient;
 
+import org.jboss.pnc.causeway.ctl.PncImportControllerImpl;
 import org.jboss.pnc.causeway.rest.BrewPushMilestoneResult;
 import org.jboss.pnc.causeway.rest.Callback;
 import org.jboss.pnc.rest.restmodel.causeway.MilestoneReleaseResultRest;
@@ -25,6 +26,9 @@ import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -45,18 +49,21 @@ public class BPMClientImpl implements BPMClient {
 
     @Override
     public void success(String url, String callbackId, MilestoneReleaseResultRest result) {
+        Logger.getLogger(BPMClientImpl.class.getName()).log(Level.INFO, "Import of milestone {0} ended with success.", result.getMilestoneId());
         Callback callback = new Callback(callbackId, 200);
         send(url, new BrewPushMilestoneResult(result, callback));
     }
     
     @Override
     public void error(String url, String callbackId, MilestoneReleaseResultRest result) {
+        Logger.getLogger(BPMClientImpl.class.getName()).log(Level.INFO, "Import of milestone {0} ended with error.", result.getMilestoneId());
         Callback callback = new Callback(callbackId, 418);
         send(url, new BrewPushMilestoneResult(result, callback));
     }
 
     @Override
     public void failure(String url, String callbackId, MilestoneReleaseResultRest result) {
+        Logger.getLogger(BPMClientImpl.class.getName()).log(Level.INFO, "Import of milestone {0} ended with failure.", result.getMilestoneId());
         Callback callback = new Callback(callbackId, 500);
         send(url, new BrewPushMilestoneResult(result, callback));
     }
