@@ -160,11 +160,15 @@ public class PncImportControllerImpl implements PncImportController {
     }
 
     private String messageMissingTag(String tagPrefix) {
+        final String parent = tagPrefix;
+        final String child = tagPrefix + BrewClientImpl.BUILD_TAG_SUFIX;
         return "Proper brew tags don't exist. Create them before importing builds.\n"
               + "Tag prefix: " + tagPrefix+ "\n"
               + "You should ask RCM to create at least following tags:\n"
-              + tagPrefix + ", " + tagPrefix + BrewClientImpl.BUILD_TAG_SUFIX + "\n"
-              + "in " + config.getKojiURL();
+              + " * " + child + "\n"
+              + "   * " + parent + "\n"
+              + "in " + config.getKojiURL() + "\n"
+              + "(Note that tag " + child + " should inherit from tag " + parent + ")";
     }
 
     private BrewNVR getNVR(BuildRecordRest build) {
