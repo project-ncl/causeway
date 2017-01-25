@@ -67,7 +67,7 @@ public class BrewClientImpl implements BrewClient {
             koji.logout(session);
             return bi == null? null : toBrewBuild(bi, nvr);
         } catch (KojiClientException ex) {
-            throw new CausewayException("Failure while comunicating with Koji: " + ex.getMessage(), ex);
+            throw new CausewayException("Failure while communicating with Koji: " + ex.getMessage(), ex);
         }
     }
 
@@ -140,7 +140,7 @@ public class BrewClientImpl implements BrewClient {
 
             return ret;
         } catch (KojiClientException ex) {
-            throw new CausewayException("Failure while comunicating with Koji: " + ex.getMessage(), ex);
+            throw new CausewayException("Failure while communicating with Koji: " + ex.getMessage(), ex);
         }
     }
 
