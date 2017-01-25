@@ -15,7 +15,6 @@
  */
 package org.jboss.pnc.causeway.bpmclient;
 
-import org.jboss.pnc.causeway.ctl.PncImportControllerImpl;
 import org.jboss.pnc.causeway.rest.BrewPushMilestoneResult;
 import org.jboss.pnc.causeway.rest.Callback;
 import org.jboss.pnc.rest.restmodel.causeway.MilestoneReleaseResultRest;
@@ -26,7 +25,6 @@ import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,7 +40,8 @@ public class BPMClientImpl implements BPMClient {
         client = new ResteasyClientBuilder().build();
     }
 
-    private void send(String url, BrewPushMilestoneResult result){
+    private synchronized void send(String url, BrewPushMilestoneResult result){
+        Logger.getLogger(BPMClientImpl.class.getName()).log(Level.INFO, "Will send callback to {0}.", url);
         ResteasyWebTarget target = client.target(url);
         target.request(MediaType.APPLICATION_JSON).post(Entity.entity(result, MediaType.APPLICATION_JSON_TYPE));
     }
