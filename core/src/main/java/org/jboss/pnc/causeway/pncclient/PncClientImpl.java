@@ -64,7 +64,7 @@ public class PncClientImpl implements PncClient
     @Inject
     public PncClientImpl(CausewayConfig config)
     {
-        this(new RestEndpointProxyFactory(config, new ResteasyClientBuilder().build()));
+        this(new RestEndpointProxyFactory(config, new ResteasyClientBuilder().connectionPoolSize(10).build()));
     }
 
     PncClientImpl(RestEndpointProxyFactory restEndpointProxyFactory) {
