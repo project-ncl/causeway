@@ -37,7 +37,7 @@ public class BPMClientImpl implements BPMClient {
     private final ResteasyClient client;
 
     public BPMClientImpl() {
-        client = new ResteasyClientBuilder().build();
+        client = new ResteasyClientBuilder().connectionPoolSize(4).build();
     }
 
     private synchronized void send(String url, BrewPushMilestoneResult result){
