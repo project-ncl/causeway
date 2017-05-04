@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.redhat.red.build.koji.model.json.KojiJsonConstants;
+
 @ApplicationScoped
 public class BrewClientImpl implements BrewClient {
 
@@ -71,7 +73,13 @@ public class BrewClientImpl implements BrewClient {
         }
     }
 
-    private static BrewBuild toBrewBuild(KojiBuildInfo bi, BrewNVR nvr) {
+    private static BrewBuild toBrewBuild(KojiBuildInfo bi, BrewNVR nvr) throws CausewayException {
+        Object buildSystem = bi.getExtra().get(KojiJsonConstants.BUILD_SYSTEM);
+        if (buildSystem == null || !BuildTranslatorImpl.PNC.equals(buildSystem)) {
+            throw new CausewayException("Found conflicting brew build " + bi.getId() +
+                    " (build doesn't have "+KojiJsonConstants.BUILD_SYSTEM+" set to "
+                    + BuildTranslatorImpl.PNC + " set)");
+        }
         return new BrewBuild(bi.getId(), nvr);
     }
 

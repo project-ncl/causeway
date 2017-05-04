@@ -54,7 +54,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
     private static final String MAVEN = "maven";
     private static final String CONTENT_GENERATOR_VERSION = "0.10";
     private static final String CONTENT_GENERATOR_NAME = "Project Newcastle";
-    private static final String PNC = "PNC";
+    static final String PNC = "PNC";
 
     private final CausewayConfig config;
 
