@@ -26,7 +26,7 @@
   
   <groupId>org.jboss.pnc.causeway</groupId>
   <artifactId>causeway</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <name>Causeway PNCL-to-Koji Bridge</name>
@@ -45,7 +45,6 @@
     <connection>scm:git:http://github.com/project-ncl/causeway.git</connection>
     <developerConnection>scm:git:git@github.com:project-ncl/causeway.git</developerConnection>
     <url>http://github.com/project-ncl/causeway</url>
-    <tag>causeway-1.1.0</tag>
   </scm>
 
   <properties>
@@ -108,30 +107,30 @@
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-model-java</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-core</artifactId>
         <type>ejb</type>
-        <version>1.1.0</version>
+        <version>1.1.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-rest</artifactId>
         <type>ejb</type>
-        <version>1.1.0</version>
+        <version>1.1.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-web</artifactId>
         <type>war</type>
-        <version>1.1.0</version>
+        <version>1.1.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-tck</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.1-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
 
