@@ -77,7 +77,9 @@ public class CausewayProducer
                 config.getKojiClientCertificatePassword(),
                 config.getKojiServerCertificateFile(),
                 config.getKojiTimeout(),
-                config.getKojiTrustSelfSigned());
+                config.getKojiConnectionPoolTimeout(),
+                config.getKojiTrustSelfSigned(),
+                config.getKojiConnections());
 
         try {
             koji = new KojiClient(kc, passwords, executorService);
