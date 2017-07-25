@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.redhat.red.build.koji.KojijiErrorInfo;
 import com.redhat.red.build.koji.model.json.KojiJsonConstants;
 
 @ApplicationScoped
@@ -110,12 +111,12 @@ public class BrewClientImpl implements BrewClient {
 
             List<ArtifactImportError> importErrors = new ArrayList<>();
 
-            Map<String, KojiClientException> kojiErrors = result.getUploadErrors();
+            Map<String, KojijiErrorInfo> kojiErrors = result.getUploadErrors();
             if(kojiErrors != null){
-                for(Map.Entry<String, KojiClientException> e : kojiErrors.entrySet()){
+                for(Map.Entry<String, KojijiErrorInfo> e : kojiErrors.entrySet()){
                     ArtifactImportError importError = new ArtifactImportError();
                     importError.setArtifactId(importFiles.getId(e.getKey()));
-                    importError.setErrorMessage(e.getValue().getMessage());
+                    importError.setErrorMessage(e.getValue().getError().getMessage());
                     importErrors.add(importError);
                     Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.WARNING, "Failed to import.", e.getValue());
                 }

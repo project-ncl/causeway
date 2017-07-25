@@ -51,12 +51,12 @@
     <projectOwner>Red Hat, Inc.</projectOwner>
     <projectEmail>jbrazdil@redhat.com</projectEmail>
     <javaVersion>1.8</javaVersion>
-    <jhttpcVersion>1.5</jhttpcVersion>
+    <jhttpcVersion>1.6</jhttpcVersion>
     <configVersion>0.8</configVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <pncVersion>1.0</pncVersion>
     <mockitoVersion>1.10.19</mockitoVersion>
-    <kojijiVersion>1.7.1</kojijiVersion>
+    <kojijiVersion>1.8</kojijiVersion>
   </properties>
 
   <modules>

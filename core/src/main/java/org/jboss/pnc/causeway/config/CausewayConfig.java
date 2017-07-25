@@ -68,6 +68,8 @@ public class CausewayConfig
     private static final String SSL_SUBDIR = "ssl";
 
     private static final Integer DEFAULT_HTTP_TIMEOUT_SECS = Integer.valueOf( 10 );
+    
+    private static final Integer DEFAULT_CONNECTIONS = 10;
 
     private boolean configured;
 
@@ -94,6 +96,10 @@ public class CausewayConfig
     private Integer httpTimeout;
 
     private Integer kojiTimeout;
+
+    private Integer kojiConnectionPoolTimeout;
+    
+    private Integer kojiConnections;
 
     private Integer pnclTimeout;
 
@@ -292,6 +298,28 @@ public class CausewayConfig
     public Integer getKojiTimeout()
     {
         return kojiTimeout == null ? getHttpTimeout() : kojiTimeout;
+    }
+
+    @ConfigName( "koji.connectionPoolTimeout.secs" )
+    public void setKojiConnectionPoolTimeout( Integer kojiConnectionPoolTimeout )
+    {
+        this.kojiConnectionPoolTimeout = kojiConnectionPoolTimeout;
+    }
+
+    public Integer getKojiConnectionPoolTimeout()
+    {
+        return kojiConnectionPoolTimeout == null ? getHttpTimeout() : kojiConnectionPoolTimeout;
+    }
+
+    @ConfigName( "koji.connections" )
+    public void setKojiConnections( Integer kojiConnections )
+    {
+        this.kojiConnections = kojiConnections;
+    }
+
+    public Integer getKojiConnections()
+    {
+        return kojiConnections == null ? DEFAULT_CONNECTIONS : kojiConnections;
     }
 
     public Integer getPnclTimeout()
