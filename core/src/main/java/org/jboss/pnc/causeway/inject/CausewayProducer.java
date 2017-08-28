@@ -34,7 +34,7 @@ import java.io.Closeable;
 
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.config.KojiConfig;
-import com.redhat.red.build.koji.config.SimpleKojiConfig;
+import com.redhat.red.build.koji.config.SimpleKojiConfigBuilder;
 
 /**
  * Created by jdcasey on 11/10/15.
@@ -71,15 +71,18 @@ public class CausewayProducer
     }
 
     private void setupKoji(PasswordManager passwords) {
-        KojiConfig kc = new SimpleKojiConfig("koji",
-                config.getKojiURL(),
-                config.getKojiClientKeyCertificateFile(),
-                config.getKojiClientCertificatePassword(),
-                config.getKojiServerCertificateFile(),
-                config.getKojiTimeout(),
-                config.getKojiConnectionPoolTimeout(),
-                config.getKojiTrustSelfSigned(),
-                config.getKojiConnections());
+        SimpleKojiConfigBuilder builder = new SimpleKojiConfigBuilder();
+        builder.withKojiSiteId("koji")
+                .withKojiURL(config.getKojiURL())
+                .withClientKeyCertificateFile(config.getKojiClientKeyCertificateFile())
+                .withKojiClientCertificatePassword(config.getKojiClientCertificatePassword())
+                .withServerCertificateFile(config.getKojiServerCertificateFile())
+                .withTrustSelfSigned(config.getKojiTrustSelfSigned())
+                .withTimeout(config.getKojiTimeout())
+                .withConnectionPoolTimeout(config.getKojiConnectionPoolTimeout())
+                .withMaxConnections(config.getKojiConnections());
+
+        KojiConfig kc = builder.build();
 
         try {
             koji = new KojiClient(kc, passwords, executorService);

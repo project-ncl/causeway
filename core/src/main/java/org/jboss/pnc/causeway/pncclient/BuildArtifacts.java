@@ -32,16 +32,16 @@ public final class BuildArtifacts {
         public final int id;
         public final String type;
         public final String identifier;
-        public final String filename;
+        public final String deployPath;
         public final String checksum;
         public final String deployUrl;
         public final long size;
 
-        public PncArtifact(int id, String type, String identifier, String filename, String checksum, String deployUrl, long size) {
+        public PncArtifact(int id, String type, String identifier, String deployPath, String checksum, String deployUrl, long size) {
             this.id = id;
             this.type = type;
             this.identifier = identifier;
-            this.filename = filename;
+            this.deployPath = deployPath;
             this.checksum = checksum;
             this.deployUrl = deployUrl;
             this.size = size;

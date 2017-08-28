@@ -34,12 +34,14 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import lombok.Data;
+
 /**
  *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
 public class ImportFileGenerator implements Iterable<Supplier<ImportFile>>{
-    private final Set<URL> urls = new HashSet<>();
+    private final Set<Artifact> artifacts = new HashSet<>();
     private final Map<String, Integer> paths = new HashMap<>();
     private final Map<Integer, String> errors = new HashMap<>();
     private final String log;
@@ -48,10 +50,10 @@ public class ImportFileGenerator implements Iterable<Supplier<ImportFile>>{
         this.log = log;
     }
 
-    public void addUrl(Integer id, String url) throws MalformedURLException {
+    public void addUrl(Integer id, String url, String filePath) throws MalformedURLException {
         URL artifactUrl = new URL(url);
-        urls.add(artifactUrl);
-        paths.put(getPath(artifactUrl), id);
+        artifacts.add(new Artifact(id, artifactUrl, filePath));
+        paths.put(filePath, id);
     }
 
     public Map<Integer, String> getErrors() {
@@ -60,61 +62,64 @@ public class ImportFileGenerator implements Iterable<Supplier<ImportFile>>{
 
     @Override
     public Iterator<Supplier<ImportFile>> iterator() {
-        return new ImportFileIterator(urls.iterator());
+        return new ImportFileIterator(artifacts.iterator());
     }
 
     public Integer getId(String path) {
         return paths.get(path);
     }
 
-    private static String getPath(URL url) {
-        return Paths.get(url.getPath()).getFileName().toString();
+    @Data
+    private static class Artifact{
+        private final int id;
+        private final URL url;
+        private final String filePath;
     }
 
     private class ImportFileIterator implements Iterator<Supplier<ImportFile>>{
-        private Iterator<URL> it;
+        private Iterator<Artifact> it;
         private ImportFileSupplier next;
         private boolean logGiven = false;
 
-        public ImportFileIterator(Iterator<URL> it) {
+        public ImportFileIterator(Iterator<Artifact> it) {
             this.it = it;
         }
 
         private ImportFileSupplier getNext() {
-            URL url = it.next();
+            Artifact artifact = it.next();
             try {
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                HttpURLConnection connection = (HttpURLConnection) artifact.getUrl().openConnection();
                 connection.setRequestMethod("HEAD");
                 if (connection.getResponseCode() != 200) {
-                    fail(url, "Failed to obtain artifact (status " + connection.getResponseCode() + " " + connection.getResponseMessage() + ")");
+                    fail(artifact, "Failed to obtain artifact (status " + connection.getResponseCode() + " " + connection.getResponseMessage() + ")");
                     return null;
                 }
                 String contentLength = connection.getHeaderField("Content-Length");
                 if (contentLength == null) {
-                    fail(url, "Failed to obtain file size of artifact");
+                    fail(artifact, "Failed to obtain file size of artifact");
                     return null;
                 }
                 long size = Long.parseLong(contentLength);
                 connection.disconnect();
 
-                Logger.getLogger(ImportFileGenerator.class.getName()).log(Level.FINE, "Next is '" + getPath(url) + "' from '" + url + "'");
-                return new ImportFileSupplier(getPath(url), url, size);
+                Logger.getLogger(ImportFileGenerator.class.getName()).log(Level.FINE, "Next is '" + artifact.getFilePath() + "' from '" + artifact + "'");
+                return new ImportFileSupplier(artifact, size);
             } catch (IOException | NumberFormatException ex) {
-                fail(url, "Failed to obtain file size of artifact", ex);
+                fail(artifact, "Failed to obtain file size of artifact", ex);
                 return null;
             }
         }
 
-        private void fail(URL url, String message) {
-            Logger.getLogger(ImportFileGenerator.class.getName()).log(Level.WARNING, message + " '" + url + "'");
-            Integer id = paths.get(getPath(url));
-            errors.put(id, message + " '" + url + "'.");
+        private void fail(Artifact artifact, String message) {
+            Logger.getLogger(ImportFileGenerator.class.getName()).log(Level.WARNING, message + " '" + artifact.getUrl() + "'");
+            Integer id = artifact.getId();
+            errors.put(id, message + " '" + artifact.getUrl() + "'.");
         }
 
-        private void fail(URL url, String message, Exception ex) {
-            Logger.getLogger(ImportFileGenerator.class.getName()).log(Level.WARNING, message + " '" + url + "'", ex);
-            Integer id = paths.get(getPath(url));
-            errors.put(id, message + " '" + url + "': " + ex.getMessage());
+        private void fail(Artifact artifact, String message, Exception ex) {
+            Logger.getLogger(ImportFileGenerator.class.getName()).log(Level.WARNING, message + " '" + artifact.getUrl() + "'", ex);
+            Integer id = artifact.getId();
+            errors.put(id, message + " '" + artifact.getUrl() + "': " + ex.getMessage());
         }
 
         @Override
@@ -147,21 +152,19 @@ public class ImportFileGenerator implements Iterable<Supplier<ImportFile>>{
     }
 
     private static class ImportFileSupplier implements Supplier<ImportFile>{
-        private final URL url;
-        private final String filePath;
+        private final Artifact artifact;
         private final long size;
 
-        public ImportFileSupplier(String filePath, URL url, long size) {
-            this.url = url;
-            this.filePath = filePath;
+        public ImportFileSupplier(Artifact artifact, long size) {
+            this.artifact = artifact;
             this.size = size;
         }
 
         @Override
         public ImportFile get() {
             try {
-                InputStream stream = url.openStream();
-                return new ImportFile(filePath, stream, size);
+                InputStream stream = artifact.getUrl().openStream();
+                return new ImportFile(artifact.getFilePath(), stream, size);
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }

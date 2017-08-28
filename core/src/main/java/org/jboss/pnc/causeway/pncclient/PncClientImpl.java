@@ -169,10 +169,14 @@ public class PncClientImpl implements PncClient
     }
 
     private PncArtifact toPncArtifact(ArtifactRest artifactRest) {
+        
+        String deployPath = artifactRest.getDeployPath();
+        if(deployPath.startsWith("/"))
+            deployPath = deployPath.substring(1);
         return new PncArtifact(artifactRest.getId(),
                 "maven",
                 artifactRest.getIdentifier(),
-                artifactRest.getFilename(),
+                deployPath,
                 artifactRest.getMd5(),
                 artifactRest.getDeployUrl(),
                 artifactRest.getSize() == null ? 1 : artifactRest.getSize());

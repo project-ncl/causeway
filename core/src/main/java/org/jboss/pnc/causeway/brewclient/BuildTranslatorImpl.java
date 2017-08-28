@@ -127,7 +127,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
     private void addDependencies(List<PncArtifact> dependencies, BuildRoot.Builder buildRootBuilder) throws CausewayException {
         for (PncArtifact artifact : dependencies) {
             FileBuildComponent.Builder componentBuilder = buildRootBuilder
-                    .withFileComponent(artifact.filename);
+                    .withFileComponent(artifact.deployPath);
             componentBuilder.withChecksum("md5", artifact.checksum);
 
             switch (artifact.type) {
@@ -146,7 +146,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             int buildRootId) throws CausewayException {
         for (BuildArtifacts.PncArtifact artifact : buildArtifacts) {
             BuildOutput.Builder outputBuilder = builder
-                    .withNewOutput(buildRootId, artifact.filename)
+                    .withNewOutput(buildRootId, artifact.deployPath)
                     .withArch(StandardArchitecture.noarch)
                     .withChecksum("md5", artifact.checksum);
 
@@ -178,7 +178,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
         try{
             ImportFileGenerator ret = new ImportFileGenerator(log);
             for(PncArtifact artifact : build.buildArtifacts){
-                ret.addUrl(artifact.id, artifact.deployUrl);
+                ret.addUrl(artifact.id, artifact.deployUrl, artifact.deployPath);
             }
             return ret;
         }catch(MalformedURLException ex){
