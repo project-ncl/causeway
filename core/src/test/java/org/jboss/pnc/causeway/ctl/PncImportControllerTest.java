@@ -34,6 +34,7 @@ import org.jboss.pnc.model.SystemImageType;
 import org.jboss.pnc.rest.restmodel.BuildConfigurationAuditedRest;
 import org.jboss.pnc.rest.restmodel.BuildEnvironmentRest;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
+import org.jboss.pnc.rest.restmodel.RepositoryConfigurationRest;
 import org.jboss.pnc.rest.restmodel.UserRest;
 import org.jboss.pnc.rest.restmodel.causeway.ArtifactImportError;
 import org.jboss.pnc.rest.restmodel.causeway.BuildImportResultRest;
@@ -102,10 +103,16 @@ public class PncImportControllerTest {
         env.setAttributes(attrs);
         env.setSystemImageType(SystemImageType.DOCKER_IMAGE);
 
+        // Mock RepositoryConfiguration
+        RepositoryConfigurationRest rc = RepositoryConfigurationRest.builder()
+                .id(1)
+                .internalUrl("http://repo.url")
+                .build();
+
         // Mock BuildConfigurationAudited
         BuildConfigurationAuditedRest bcar = new BuildConfigurationAuditedRest();
         bcar.setIdRev(new IdRev(id, 1));
-        bcar.setScmRepoURL("http://repo.url");
+        bcar.setRepositoryConfiguration(rc);
         bcar.setScmRevision("r21345");
         bcar.setEnvironment(env);
         
