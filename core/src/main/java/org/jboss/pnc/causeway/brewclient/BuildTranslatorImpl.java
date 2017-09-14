@@ -80,8 +80,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 .withNewBuildDescription(nvr.getKojiName(), nvr.getVersion(), nvr.getRelease())
                 .withStartTime(build.getStartTime())
                 .withEndTime(build.getEndTime())
-                .withBuildSource(build.getBuildConfigurationAudited().getRepositoryConfiguration().getInternalUrl(),
-                        build.getBuildConfigurationAudited().getScmRevision())
+                .withBuildSource(build.getScmRepoURL(), build.getScmRevision())
                 .withExternalBuildId(externalBuildId)
                 .withExternalBuildUrl(externalBuildUrl)
                 .withBuildSystem(PNC)
