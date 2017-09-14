@@ -37,7 +37,9 @@
       "name": "geronimo-annotation_1.0_spec-1.1.1",
       "description": null,
       "buildScript": "mvn clean deploy",
-      "scmRepoURL": "git://git.app.eng.bos.redhat.com/apache/geronimo-specs.git",
+      "repositoryConfiguration": {
+        "internalURL": "git://git.app.eng.bos.redhat.com/apache/geronimo-specs.git"
+      },
       "scmRevision": "geronimo-annotation_1.0_spec-1.1.1",
       "scmMirrorRepoURL": null,
       "scmMirrorRevision": null,
