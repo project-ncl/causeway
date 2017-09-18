@@ -52,7 +52,6 @@ import com.redhat.red.build.koji.model.json.StandardOutputType;
 @ApplicationScoped
 public class BuildTranslatorImpl implements BuildTranslator {
     private static final String MAVEN = "maven";
-    private static final String CONTENT_GENERATOR_VERSION = "0.10";
     private static final String CONTENT_GENERATOR_NAME = "Project Newcastle";
     static final String PNC = "PNC";
 
@@ -89,7 +88,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
 
         int buildRootId = 42;
         BuildRoot.Builder buildRootBuilder = builder.withNewBuildRoot(buildRootId)
-                .withContentGenerator(CONTENT_GENERATOR_NAME, CONTENT_GENERATOR_VERSION)
+                .withContentGenerator(CONTENT_GENERATOR_NAME, config.getPNCSystemVersion())
                 .withContainer(getContainer(build))
                 .withHost(build.getBuildConfigurationAudited().getEnvironment()
                         .getAttributes().get("OS"), StandardArchitecture.noarch)
