@@ -49,6 +49,8 @@ public class CausewayConfig
 
     public static final String PNCL_BUILDS_URL_OPTION = "pncl.builds.url";
 
+    public static final String PNC_SYSTEM_VERSION = "pnc.system.version";
+
     public static final String KOJI_URL_OPTION = "koji.url";
 
     public static final String KOJI_WEBURL_OPTION = "koji.weburl";
@@ -90,6 +92,8 @@ public class CausewayConfig
     private String pnclURL;
 
     private String pnclBuildsURL;
+
+    private String pncSystemVersion;
 
     private File configDir;
 
@@ -205,6 +209,17 @@ public class CausewayConfig
     public void setPnclBuildsURL( String pnclURL )
     {
         this.pnclBuildsURL = pnclURL;
+    }
+
+    public String getPNCSystemVersion() {
+        checkConfigured();
+        return pncSystemVersion;
+    }
+
+    @ConfigName( CausewayConfig.PNC_SYSTEM_VERSION )
+    public void setPNCSystemVersion( String pncSystemVersion )
+    {
+        this.pncSystemVersion = pncSystemVersion;
     }
 
     public void configurationDone()
