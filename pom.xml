@@ -54,7 +54,7 @@
     <jhttpcVersion>1.6</jhttpcVersion>
     <configVersion>0.8</configVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
-    <pncVersion>1.2.0-SNAPSHOT</pncVersion>
+    <pncVersion>1.3.0-SNAPSHOT</pncVersion>
     <mockitoVersion>1.10.19</mockitoVersion>
     <kojijiVersion>1.9</kojijiVersion>
   </properties>
