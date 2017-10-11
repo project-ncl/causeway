@@ -79,7 +79,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 .withNewBuildDescription(nvr.getKojiName(), nvr.getVersion(), nvr.getRelease())
                 .withStartTime(build.getStartTime())
                 .withEndTime(build.getEndTime())
-                .withBuildSource(build.getScmRepoURL(), build.getScmRevision())
+                .withBuildSource(normalizeScmUrl(build.getScmRepoURL()), build.getScmRevision())
                 .withExternalBuildId(externalBuildId)
                 .withExternalBuildUrl(externalBuildUrl)
                 .withBuildSystem(PNC)
@@ -104,6 +104,13 @@ public class BuildTranslatorImpl implements BuildTranslator {
         } catch (VerificationException ex) {
             throw new CausewayException("Failure while building Koji Import JSON: " + ex.getMessage(), ex);
         }
+    }
+
+    private String normalizeScmUrl(final String url) {
+        if(url.startsWith("http")) {
+            return "git+"+url;
+        }
+        return url;
     }
 
     private void addLog(String log, KojiImport.Builder builder, int buildRootId) throws CausewayException {
