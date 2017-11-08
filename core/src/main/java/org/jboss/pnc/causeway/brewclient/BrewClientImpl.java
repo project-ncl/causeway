@@ -75,7 +75,8 @@ public class BrewClientImpl implements BrewClient {
     }
 
     private static BrewBuild toBrewBuild(KojiBuildInfo bi, BrewNVR nvr) throws CausewayException {
-        Object buildSystem = bi.getExtra().get(KojiJsonConstants.BUILD_SYSTEM);
+        final Map<String, Object> extra = bi.getExtra();
+        Object buildSystem = extra == null ? null : extra.get(KojiJsonConstants.BUILD_SYSTEM);
         if (buildSystem == null || !BuildTranslatorImpl.PNC.equals(buildSystem)) {
             throw new CausewayException("Found conflicting brew build " + bi.getId() +
                     " (build doesn't have "+KojiJsonConstants.BUILD_SYSTEM+" set to "
