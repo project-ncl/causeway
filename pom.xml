@@ -232,6 +232,11 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>log4j-over-slf4j</artifactId>
       <scope>runtime</scope>
