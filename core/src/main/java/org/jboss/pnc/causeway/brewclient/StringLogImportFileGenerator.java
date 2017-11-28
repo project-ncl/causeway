@@ -26,6 +26,7 @@ import java.util.function.Supplier;
  *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
+@Deprecated
 public class StringLogImportFileGenerator extends ImportFileGenerator {
     private final String log;
 

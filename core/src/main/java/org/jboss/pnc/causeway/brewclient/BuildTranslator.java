@@ -29,8 +29,10 @@ import com.redhat.red.build.koji.model.json.KojiImport;
  */
 public interface BuildTranslator {
 
+    @Deprecated
     ImportFileGenerator getImportFiles(BuildArtifacts build, String log) throws CausewayException;
 
+    @Deprecated
     KojiImport translate(BrewNVR nvr, BuildRecordRest build, BuildArtifacts artifacts, String log) throws CausewayException;
 
     public ImportFileGenerator getImportFiles(Build build) throws CausewayException;

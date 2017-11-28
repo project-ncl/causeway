@@ -24,6 +24,7 @@ import java.util.Collection;
  *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
+@Deprecated
 public interface PncClient {
 
     BuildArtifacts findBuildArtifacts(Integer buildId) throws CausewayException;

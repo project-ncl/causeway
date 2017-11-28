@@ -33,6 +33,7 @@ import java.util.logging.Logger;
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
 @ApplicationScoped
+@Deprecated
 public class BPMClientImpl implements BPMClient {
     private final ResteasyClient client;
 

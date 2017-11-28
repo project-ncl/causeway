@@ -23,6 +23,7 @@ import lombok.NonNull;
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
 @Data
+@Deprecated
 public class BrewPushMilestoneResponse {
     @NonNull
     private final Callback callback;

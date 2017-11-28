@@ -21,6 +21,7 @@ import org.jboss.pnc.causeway.rest.CallbackTarget;
  *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
+@Deprecated
 public interface PncImportController {
 
     public void importMilestone(int milestoneId, CallbackTarget callback, String callbackId);

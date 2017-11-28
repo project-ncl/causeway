@@ -54,6 +54,7 @@ import java.util.stream.Collectors;
  * Created by jdcasey on 2/9/16.
  */
 @ApplicationScoped
+@Deprecated
 public class PncClientImpl implements PncClient
 {
     public static final int MAX_ARTIFACTS = 200;
