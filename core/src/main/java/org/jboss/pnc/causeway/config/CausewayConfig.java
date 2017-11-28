@@ -51,6 +51,10 @@ public class CausewayConfig
 
     public static final String PNC_SYSTEM_VERSION = "pnc.system.version";
 
+    public static final String ARTIFACT_STORAGE = "artifact-storage";
+
+    public static final String LOG_STORAGE = "log-storage";
+
     public static final String KOJI_URL_OPTION = "koji.url";
 
     public static final String KOJI_WEBURL_OPTION = "koji.weburl";
@@ -87,7 +91,9 @@ public class CausewayConfig
 
     private String kojiWebURL;
 
-    private String tag;
+    private String artifactStorage;
+
+    private String logStorage;
 
     private String pnclURL;
 
@@ -185,6 +191,28 @@ public class CausewayConfig
     public void setKojiWebURL( String kojiWebURL )
     {
         this.kojiWebURL = kojiWebURL;
+    }
+
+    public String getArtifactStorage() {
+        checkConfigured();
+        return artifactStorage;
+    }
+
+    @ConfigName( CausewayConfig.ARTIFACT_STORAGE )
+    public void setArtifactStorage( String artifactStorage )
+    {
+        this.artifactStorage = artifactStorage;
+    }
+
+    public String getLogStorage() {
+        checkConfigured();
+        return logStorage;
+    }
+
+    @ConfigName( CausewayConfig.LOG_STORAGE )
+    public void setLogStorage( String logStorage )
+    {
+        this.logStorage = logStorage;
     }
 
     public String getPnclURL()

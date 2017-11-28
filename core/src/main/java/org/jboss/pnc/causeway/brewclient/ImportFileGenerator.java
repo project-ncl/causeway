@@ -42,6 +42,12 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
     protected final Map<String, Integer> paths = new HashMap<>();
     protected final Map<Integer, String> errors = new HashMap<>();
 
+    /**
+     * Adds artifact URL to the generator.
+     * @param id External ID of the artifact.
+     * @param url URL of the artifact.
+     * @param filePath Deploy path for the artifact.
+     */
     public void addUrl(Integer id, String url, String filePath) throws MalformedURLException {
         URL artifactUrl = new URL(url);
         artifacts.add(new Artifact(id, artifactUrl, filePath));
@@ -52,6 +58,11 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
         return errors;
     }
 
+    /**
+     * Returns external ID of artifact given it's deploy path.
+     * @param path Deploy path of the artifact.
+     * @return External ID of the artifact or null if aritfact not present.
+     */
     public Integer getId(String path) {
         return paths.get(path);
     }

@@ -32,6 +32,12 @@ import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact;
 import org.jboss.pnc.causeway.rest.BrewNVR;
+import org.jboss.pnc.causeway.rest.model.Build;
+import org.jboss.pnc.causeway.rest.model.BuiltArtifact;
+import org.jboss.pnc.causeway.rest.model.Dependency;
+import org.jboss.pnc.causeway.rest.model.Logfile;
+import org.jboss.pnc.causeway.rest.model.MavenBuild;
+import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -42,7 +48,10 @@ import java.net.MalformedURLException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import com.redhat.red.build.koji.model.json.BuildDescription;
 import com.redhat.red.build.koji.model.json.StandardOutputType;
 
 /**
@@ -106,6 +115,38 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }
     }
 
+    @Override
+    public KojiImport translate(BrewNVR nvr, Build build) throws CausewayException {
+        KojiImport.Builder builder = new KojiImport.Builder();
+
+        BuildDescription.Builder descriptionBuilder = builder
+                .withNewBuildDescription(nvr.getKojiName(), nvr.getVersion(), nvr.getRelease())
+                .withStartTime(build.getStartTime())
+                .withEndTime(build.getEndTime())
+                .withBuildSource(normalizeScmUrl(build.getScmURL()), build.getScmRevision())
+                .withExternalBuildId(String.valueOf(build.getExternalBuildID()))
+                .withExternalBuildUrl(build.getExternalBuildURL())
+                .withBuildSystem(PNC);
+        setBuildType(descriptionBuilder, build);
+
+        int buildRootId = 42;
+        BuildRoot.Builder buildRootBuilder = builder.withNewBuildRoot(buildRootId)
+                .withContentGenerator(CONTENT_GENERATOR_NAME, config.getPNCSystemVersion())
+                .withContainer(getContainer(build.getBuildRoot()))
+                .withHost(build.getBuildRoot().getHost(), build.getBuildRoot().getHostArchitecture());
+        addTools(buildRootBuilder, build.getBuildRoot().getTools());
+
+        addDependencies(build.getDependencies(), buildRootBuilder);
+        addBuiltArtifacts(build.getBuiltArtifacts(), builder, buildRootId);
+        addLogs(build, builder, buildRootId);
+
+        try {
+            return builder.build();
+        } catch (VerificationException ex) {
+            throw new CausewayException("Failure while building Koji Import JSON: " + ex.getMessage(), ex);
+        }
+    }
+
     private String normalizeScmUrl(final String url) {
         if(url.startsWith("http")) {
             return "git+"+url;
@@ -129,6 +170,16 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }
     }
 
+    private void addLogs(Build build, KojiImport.Builder builder, int buildRootId) {
+        for (Logfile logfile : build.getLogs()) {
+            builder.withNewOutput(buildRootId, logfile.getFilename())
+                    .withOutputType(StandardOutputType.log)
+                    .withFileSize(logfile.getSize())
+                    .withArch(StandardArchitecture.noarch)
+                    .withChecksum("MD5", logfile.getMd5());
+        }
+    }
+
     private void addDependencies(List<PncArtifact> dependencies, BuildRoot.Builder buildRootBuilder) throws CausewayException {
         for (PncArtifact artifact : dependencies) {
             FileBuildComponent.Builder componentBuilder = buildRootBuilder
@@ -144,6 +195,15 @@ public class BuildTranslatorImpl implements BuildTranslator {
                     throw new IllegalArgumentException("Unknown artifact type");
                 }
             }
+        }
+    }
+
+    private void addDependencies(Set<Dependency> dependencies, BuildRoot.Builder buildRootBuilder) throws CausewayException {
+        for (Dependency dependency : dependencies) {
+            buildRootBuilder
+                    .withFileComponent(dependency.getFilename())
+                    .withChecksum("md5", dependency.getMd5())
+                    .withFileSize(dependency.getSize());
         }
     }
 
@@ -169,6 +229,27 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }
     }
 
+    private void addBuiltArtifacts(Set<BuiltArtifact> builtArtifacts, KojiImport.Builder builder,
+            int buildRootId) throws CausewayException {
+        for (BuiltArtifact artifact : builtArtifacts) {
+            BuildOutput.Builder outputBuilder = builder
+                    .withNewOutput(buildRootId, artifact.getDeployPath())
+                    .withArch(artifact.getArchitecture())
+                    .withChecksum("md5", artifact.getMd5())
+                    .withFileSize((int) artifact.getSize());
+
+            if (artifact.getClass().equals(MavenBuiltArtifact.class)) {
+                outputBuilder.withMavenInfoAndType(mavenArtifactToGAV((MavenBuiltArtifact) artifact));
+            } else {
+                throw new IllegalArgumentException("Unknown artifact type.");
+            }
+        }
+    }
+
+    private BuildContainer getContainer(org.jboss.pnc.causeway.rest.model.BuildRoot buildRoot) {
+        return new BuildContainer(buildRoot.getContainer(), buildRoot.getContainerArchitecture());
+    }
+
     private BuildContainer getContainer(BuildRecordRest buildRecord) {
         switch (buildRecord.getBuildConfigurationAudited().getEnvironment().getSystemImageType()) {
             case DOCKER_IMAGE:
@@ -191,6 +272,31 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }
     }
 
+    @Override
+    public ImportFileGenerator getImportFiles(Build build) throws CausewayException {
+        try{
+            ExternalLogImportFileGenerator ret = new ExternalLogImportFileGenerator();
+            for(Logfile logfile : build.getLogs()){
+                String url = config.getLogStorage() + stripSlash(logfile.getDeployPath());
+                ret.addLog(url, logfile.getFilename(), logfile.getSize());
+            }
+            for(BuiltArtifact artifact : build.getBuiltArtifacts()){
+                String url = config.getArtifactStorage() + stripSlash(artifact.getDeployPath());
+                ret.addUrl(artifact.getId(), url, artifact.getDeployPath());
+            }
+            return ret;
+        }catch(MalformedURLException ex){
+            throw new CausewayException("Failed to parse artifact url: " + ex.getMessage(), ex);
+        }
+    }
+
+    private String stripSlash(String url) {
+        if (url.startsWith("/")) {
+            return url.substring(1);
+        }
+        return url;
+    }
+
     private ProjectVersionRef buildRootToGAV(BuildRecordRest build) {
         String[] splittedName = build.getExecutionRootName().split(":");
         if(splittedName.length != 2)
@@ -200,5 +306,27 @@ public class BuildTranslatorImpl implements BuildTranslator {
                         splittedName[0],
                         splittedName.length < 2 ? null : splittedName[1],
                         build.getExecutionRootVersion());
+    }
+
+    private void addTools(BuildRoot.Builder buildRootBuilder, Map<String, String> tools) {
+        for (Map.Entry<String, String> e : tools.entrySet()) {
+            buildRootBuilder.withTool(e.getKey(), e.getValue());
+        }
+    }
+
+    private void setBuildType(BuildDescription.Builder buildDescription, Build build) {
+        if (build.getClass().equals(MavenBuild.class)) {
+            buildDescription.withMavenInfoAndType(mavenBuildToGAV((MavenBuild) build));
+        } else {
+            throw new IllegalArgumentException("Unsupported build type.");
+        }
+    }
+
+    private ProjectVersionRef mavenBuildToGAV(MavenBuild mb) {
+        return new SimpleProjectVersionRef(mb.getGroupId(), mb.getArtifactId(), mb.getVersion());
+    }
+
+    private ProjectVersionRef mavenArtifactToGAV(MavenBuiltArtifact mba) {
+        return new SimpleProjectVersionRef(mba.getGroupId(), mba.getArtifactId(), mba.getVersion());
     }
 }

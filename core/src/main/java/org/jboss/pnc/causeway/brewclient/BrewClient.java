@@ -32,6 +32,7 @@ public interface BrewClient {
 
     BuildImportResultRest importBuild(BrewNVR nvr, int buildRecordId, KojiImport kojiImport, ImportFileGenerator importFiles) throws CausewayException;
 
+    BrewBuild importBuild(BrewNVR nvr, KojiImport kojiImport, ImportFileGenerator importFiles) throws CausewayException;
     public String getBuildUrl(int id);
 
     public boolean tagsExists(String tag) throws CausewayException;
