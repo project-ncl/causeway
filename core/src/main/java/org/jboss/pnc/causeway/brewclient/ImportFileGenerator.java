@@ -15,16 +15,11 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
-import java.io.ByteArrayInputStream;
-
-import com.redhat.red.build.koji.model.ImportFile;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,21 +29,18 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.redhat.red.build.koji.model.ImportFile;
+
 import lombok.Data;
 
 /**
  *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
-public class ImportFileGenerator implements Iterable<Supplier<ImportFile>>{
-    private final Set<Artifact> artifacts = new HashSet<>();
-    private final Map<String, Integer> paths = new HashMap<>();
-    private final Map<Integer, String> errors = new HashMap<>();
-    private final String log;
-
-    public ImportFileGenerator(String log) {
-        this.log = log;
-    }
+public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFile>> {
+    protected final Set<Artifact> artifacts = new HashSet<>();
+    protected final Map<String, Integer> paths = new HashMap<>();
+    protected final Map<Integer, String> errors = new HashMap<>();
 
     public void addUrl(Integer id, String url, String filePath) throws MalformedURLException {
         URL artifactUrl = new URL(url);
@@ -60,28 +52,23 @@ public class ImportFileGenerator implements Iterable<Supplier<ImportFile>>{
         return errors;
     }
 
-    @Override
-    public Iterator<Supplier<ImportFile>> iterator() {
-        return new ImportFileIterator(artifacts.iterator());
-    }
-
     public Integer getId(String path) {
         return paths.get(path);
     }
 
     @Data
-    private static class Artifact{
+    protected static class Artifact {
         private final int id;
         private final URL url;
         private final String filePath;
     }
 
-    private class ImportFileIterator implements Iterator<Supplier<ImportFile>>{
+    protected abstract class ImportFileIterator implements Iterator<Supplier<ImportFile>> {
+
         private Iterator<Artifact> it;
         private ImportFileSupplier next;
-        private boolean logGiven = false;
 
-        public ImportFileIterator(Iterator<Artifact> it) {
+        protected ImportFileIterator(Iterator<Artifact> it) {
             this.it = it;
         }
 
@@ -124,10 +111,7 @@ public class ImportFileGenerator implements Iterable<Supplier<ImportFile>>{
 
         @Override
         public boolean hasNext() {
-            if (!logGiven) {
-                return true;
-            }
-            while(next == null && it.hasNext()){
+            while (next == null && it.hasNext()) {
                 next = getNext();
             }
 
@@ -136,12 +120,7 @@ public class ImportFileGenerator implements Iterable<Supplier<ImportFile>>{
 
         @Override
         public Supplier<ImportFile> next() {
-            if (!logGiven) {
-                logGiven = true;
-                byte[] bytes = log.getBytes();
-                return () -> new ImportFile("build.log", new ByteArrayInputStream(bytes), bytes.length);
-            }
-            while(next == null){ // will throw NoSuchElementException if there is no next
+            while (next == null) { // will throw NoSuchElementException if there is no next
                 next = getNext();
             }
 
@@ -151,7 +130,8 @@ public class ImportFileGenerator implements Iterable<Supplier<ImportFile>>{
         }
     }
 
-    private static class ImportFileSupplier implements Supplier<ImportFile>{
+    protected static class ImportFileSupplier implements Supplier<ImportFile> {
+
         private final Artifact artifact;
         private final long size;
 
