@@ -73,7 +73,7 @@ public class PncImportControllerImpl implements PncImportController {
         MilestoneReleaseResultRest result = new MilestoneReleaseResultRest();
         result.setMilestoneId(milestoneId);
         try {
-            List<BuildImportResultRest> results = importProductMilestone(milestoneId, false);
+            List<BuildImportResultRest> results = importProductMilestone(milestoneId);
             result.setBuilds(results);
 
             if( results.stream().anyMatch(r -> r.getErrorMessage() != null)){
@@ -100,7 +100,7 @@ public class PncImportControllerImpl implements PncImportController {
         }
     }
 
-    private List<BuildImportResultRest> importProductMilestone(int milestoneId, boolean dryRun) throws CausewayException {
+    private List<BuildImportResultRest> importProductMilestone(int milestoneId) throws CausewayException {
         String tagPrefix = pncClient.getTagForMilestone(milestoneId);
         if (!brewClient.tagsExists(tagPrefix)) {
             throw new CausewayException(messageMissingTag(tagPrefix));
@@ -112,7 +112,7 @@ public class PncImportControllerImpl implements PncImportController {
         for (BuildRecordRest build : builds) {
             BuildImportResultRest importResult;
             try{
-                importResult = importBuild(build, dryRun);
+                importResult = importBuild(build);
                 if(importResult.getStatus() == BuildImportStatus.SUCCESSFUL){
                     brewClient.tagBuild(tagPrefix, getNVR(build));
                 }
@@ -142,7 +142,7 @@ public class PncImportControllerImpl implements PncImportController {
         return builds;
     }
     
-    private BuildImportResultRest importBuild(BuildRecordRest build, boolean dryRun) throws CausewayException {
+    private BuildImportResultRest importBuild(BuildRecordRest build) throws CausewayException {
         BrewNVR nvr = getNVR(build);
         BrewBuild brewBuild = brewClient.findBrewBuildOfNVR(nvr);
         if (brewBuild != null) {
