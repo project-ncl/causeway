@@ -181,7 +181,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
     @Override
     public ImportFileGenerator getImportFiles(BuildArtifacts build, String log) throws CausewayException {
         try{
-            ImportFileGenerator ret = new ImportFileGenerator(log);
+            StringLogImportFileGenerator ret = new StringLogImportFileGenerator(log);
             for(PncArtifact artifact : build.buildArtifacts){
                 ret.addUrl(artifact.id, artifact.deployUrl, artifact.deployPath);
             }

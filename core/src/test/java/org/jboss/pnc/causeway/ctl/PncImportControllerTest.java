@@ -21,7 +21,7 @@ import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.bpmclient.BPMClient;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.brewclient.BuildTranslatorImpl;
-import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
+import org.jboss.pnc.causeway.brewclient.StringLogImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.PncClient;
@@ -63,7 +63,7 @@ public class PncImportControllerTest {
 
     private static final BrewNVR NVR = new BrewNVR(EXEC_ROOT_NAME, EXEC_ROOT_VERSION, "1");
 
-    private static final ImportFileGenerator IMPORT_FILE_GENERATOR = mock(ImportFileGenerator.class);
+    private static final StringLogImportFileGenerator IMPORT_FILE_GENERATOR = mock(StringLogImportFileGenerator.class);
     private static final KojiImport KOJI_IMPORT = mock(KojiImport.class);
 
     private static final Random generator = new Random();
