@@ -18,6 +18,7 @@ package org.jboss.pnc.causeway.brewclient;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.rest.BrewNVR;
+import org.jboss.pnc.causeway.rest.model.Build;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 
 import com.redhat.red.build.koji.model.json.KojiImport;
@@ -31,5 +32,9 @@ public interface BuildTranslator {
     ImportFileGenerator getImportFiles(BuildArtifacts build, String log) throws CausewayException;
 
     KojiImport translate(BrewNVR nvr, BuildRecordRest build, BuildArtifacts artifacts, String log) throws CausewayException;
+
+    public ImportFileGenerator getImportFiles(Build build) throws CausewayException;
+
+    public KojiImport translate(BrewNVR nvr, Build build) throws CausewayException;
 
 }

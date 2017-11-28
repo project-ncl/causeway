@@ -15,19 +15,24 @@
  */
 package org.jboss.pnc.causeway.rest;
 
+import org.jboss.pnc.causeway.ctl.ImportController;
 import org.jboss.pnc.causeway.ctl.PncImportController;
+import org.jboss.pnc.causeway.rest.model.BuildImportRequest;
+import org.jboss.pnc.causeway.rest.spi.Import;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
+
 import java.util.UUID;
 
-
 @RequestScoped
-public class PncImportResourceEndpoint implements PncImportResource {
+public class PncImportResourceEndpoint implements PncImportResource, Import {
 
     @Inject
-    private PncImportController controller;
+    private PncImportController pncController;
+    @Inject
+    private ImportController controller;
 
     @Override
     public Response testResponse( String var )
@@ -40,10 +45,15 @@ public class PncImportResourceEndpoint implements PncImportResource {
     {
         String id = UUID.randomUUID().toString();
         
-        controller.importMilestone(request.getContent().getMilestoneId(), request.getCallback(), id);
+        pncController.importMilestone(request.getContent().getMilestoneId(), request.getCallback(), id);
         
         return new BrewPushMilestoneResponse(new Callback(id));
     }
 
+    @Override
+    public Response importBuild(BuildImportRequest request) {
+        controller.importBuild(request.getBuild(), request.getCallback());
+        return Response.accepted().build();
+    }
 
 }

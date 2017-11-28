@@ -24,8 +24,8 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiNVR;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 
 import org.jboss.pnc.causeway.CausewayException;
+import org.jboss.pnc.causeway.CausewayFailure;
 import org.jboss.pnc.causeway.config.CausewayConfig;
-import org.jboss.pnc.causeway.ctl.PncImportControllerImpl;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.rest.restmodel.causeway.ArtifactImportError;
@@ -88,7 +88,7 @@ public class BrewClientImpl implements BrewClient {
         final Map<String, Object> extra = bi.getExtra();
         Object buildSystem = extra == null ? null : extra.get(KojiJsonConstants.BUILD_SYSTEM);
         if (buildSystem == null || !BuildTranslatorImpl.PNC.equals(buildSystem)) {
-            throw new CausewayException("Found conflicting brew build " + bi.getId()
+            throw new CausewayFailure("Found conflicting brew build " + bi.getId()
                     + " (build doesn't have " + KojiJsonConstants.BUILD_SYSTEM + " set to "
                     + BuildTranslatorImpl.PNC + ")");
         }
@@ -140,6 +140,30 @@ public class BrewClientImpl implements BrewClient {
             }
 
             return ret;
+        } catch (KojiClientException ex) {
+            throw new CausewayException("Failure while communicating with Koji: " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public BrewBuild importBuild(BrewNVR nvr, KojiImport kojiImport, ImportFileGenerator importFiles) throws CausewayException {
+        try {
+            KojiSessionInfo session = koji.login();
+
+            KojiImportResult result = koji.importBuild(kojiImport, importFiles, session);
+            koji.logout(session);
+
+            List<ArtifactImportError> importErrors = getImportErrors(result, importFiles);
+            if(!importErrors.isEmpty()){
+                throw new CausewayFailure(importErrors, "Failure while importing artifacts");
+            }
+
+            KojiBuildInfo bi = result.getBuildInfo();
+
+            if (bi == null) {
+                throw new CausewayException("Import to koji failed for unknown reson. No build data.");
+            }
+            return toBrewBuild(bi, nvr);
         } catch (KojiClientException ex) {
             throw new CausewayException("Failure while communicating with Koji: " + ex.getMessage(), ex);
         }
