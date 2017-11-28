@@ -103,7 +103,7 @@ public class PncImportControllerImpl implements PncImportController {
     private List<BuildImportResultRest> importProductMilestone(int milestoneId) throws CausewayException {
         String tagPrefix = pncClient.getTagForMilestone(milestoneId);
         if (!brewClient.tagsExists(tagPrefix)) {
-            throw new CausewayException(messageMissingTag(tagPrefix));
+            throw new CausewayException(messageMissingTag(tagPrefix, config.getKojiURL()));
         }
 
         Collection<BuildRecordRest> builds = findAndAssertBuilds(milestoneId);
@@ -169,15 +169,11 @@ public class PncImportControllerImpl implements PncImportController {
         return "Can not find PNC release " + releaseId + " - " + e.getMessage();
     }
 
-    static String messageMilestoneWithoutBuilds(long milestoneId) {
+    private static String messageMilestoneWithoutBuilds(long milestoneId) {
         return "Milestone " + milestoneId + " does not contain any build";
     }
 
-    static String messageBuildNotFound(Integer buildId) {
-        return "PNC build id " + buildId + " not found";
-    }
-
-    private String messageMissingTag(String tagPrefix) {
+    public static String messageMissingTag(String tagPrefix, String kojiURL) {
         final String parent = tagPrefix;
         final String child = tagPrefix + BrewClientImpl.BUILD_TAG_SUFIX;
         return "Proper brew tags don't exist. Create them before importing builds.\n"
@@ -185,7 +181,7 @@ public class PncImportControllerImpl implements PncImportController {
               + "You should ask RCM to create at least following tags:\n"
               + " * " + child + "\n"
               + "   * " + parent + "\n"
-              + "in " + config.getKojiURL() + "\n"
+              + "in " + kojiURL + "\n"
               + "(Note that tag " + child + " should inherit from tag " + parent + ")";
     }
 
