@@ -70,20 +70,31 @@ public class BrewClientImpl implements BrewClient {
             KojiBuildInfo bi = koji.getBuildInfo(knvr, session); // returns null if missing
 
             koji.logout(session);
-            return bi == null? null : toBrewBuild(bi, nvr);
+            if (bi == null) {
+                return null;
+            }
+            checkPNCImportedBuild(bi);
+            return toBrewBuild(bi, nvr);
         } catch (KojiClientException ex) {
             throw new CausewayException("Failure while communicating with Koji: " + ex.getMessage(), ex);
         }
     }
 
-    private static BrewBuild toBrewBuild(KojiBuildInfo bi, BrewNVR nvr) throws CausewayException {
+    /**
+     * Checks if the brew build is imported by PNC. If not, throws an exception.
+     * @throws CausewayException when the brew build is not imporeted by PNC.
+     */
+    private void checkPNCImportedBuild(KojiBuildInfo bi) throws CausewayException {
         final Map<String, Object> extra = bi.getExtra();
         Object buildSystem = extra == null ? null : extra.get(KojiJsonConstants.BUILD_SYSTEM);
         if (buildSystem == null || !BuildTranslatorImpl.PNC.equals(buildSystem)) {
-            throw new CausewayException("Found conflicting brew build " + bi.getId() +
-                    " (build doesn't have "+KojiJsonConstants.BUILD_SYSTEM+" set to "
-                    + BuildTranslatorImpl.PNC + " set)");
+            throw new CausewayException("Found conflicting brew build " + bi.getId()
+                    + " (build doesn't have " + KojiJsonConstants.BUILD_SYSTEM + " set to "
+                    + BuildTranslatorImpl.PNC + ")");
         }
+    }
+
+    private static BrewBuild toBrewBuild(KojiBuildInfo bi, BrewNVR nvr) throws CausewayException {
         return new BrewBuild(bi.getId(), nvr);
     }
 
