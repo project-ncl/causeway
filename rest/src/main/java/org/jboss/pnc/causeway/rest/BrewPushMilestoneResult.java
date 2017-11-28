@@ -24,6 +24,7 @@ import org.jboss.pnc.rest.restmodel.causeway.MilestoneReleaseResultRest;
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
 @Data
+@Deprecated
 public class BrewPushMilestoneResult {
     @NonNull
     private final MilestoneReleaseResultRest content;

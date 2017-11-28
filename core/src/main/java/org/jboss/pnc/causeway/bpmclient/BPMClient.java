@@ -21,6 +21,7 @@ import org.jboss.pnc.rest.restmodel.causeway.MilestoneReleaseResultRest;
  *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
+@Deprecated
 public interface BPMClient {
 
     void error(String url, String callbackId, MilestoneReleaseResultRest result);

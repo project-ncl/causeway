@@ -26,6 +26,7 @@ import lombok.NonNull;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
+@Deprecated
 public class Callback {
     @NonNull
     private final String id;

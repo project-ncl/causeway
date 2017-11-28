@@ -18,6 +18,7 @@ package org.jboss.pnc.causeway.pncclient;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public final class BuildArtifacts {
 
     public final List<PncArtifact> buildArtifacts;

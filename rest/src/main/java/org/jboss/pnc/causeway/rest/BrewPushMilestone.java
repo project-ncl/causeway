@@ -29,6 +29,7 @@ import lombok.NonNull;
  */
 @Data
 @NoArgsConstructor
+@Deprecated
 public class BrewPushMilestone {
     @JsonUnwrapped
     @NonNull

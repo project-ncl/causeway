@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 
 import com.redhat.red.build.koji.model.json.KojiImport;
 
+@Deprecated
 @Stateless
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class PncImportControllerImpl implements PncImportController {
