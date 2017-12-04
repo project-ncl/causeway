@@ -19,11 +19,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.redhat.red.build.koji.model.json.KojiImport;
 import com.redhat.red.build.koji.model.json.util.KojiObjectMapper;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.rest.BrewNVR;
+import org.jboss.pnc.causeway.rest.model.Build;
+import org.jboss.pnc.causeway.rest.model.MavenBuild;
+import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
 import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -44,6 +48,7 @@ public class TranslatorTest {
     @BeforeClass
     public static void setUp() {
         config.setPnclBuildsURL("http://example.com/build-records/");
+        mapper.registerSubtypes(MavenBuild.class, MavenBuiltArtifact.class);
     }
 
     @Test
@@ -61,6 +66,19 @@ public class TranslatorTest {
         artifacts.dependencies.add(newArtifact(10, "xml-apis", "xml-apis", "1.0.b2", "jar")); 
 
         KojiImport out = bt.translate(new BrewNVR("g:a", "1.2.3", "1"), build, artifacts, "foo-bar-logs");
+
+        mapper.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
+        String jsonOut = mapper.writeValueAsString(out);
+        System.out.println("RESULTA:\n" + jsonOut);
+    }
+
+    @Test
+    public void testReadBuild() throws Exception {
+        String json = readResponseBodyFromTemplate("build.json");
+
+        Build build = mapper.readValue(json, Build.class);
+
+        KojiImport out = bt.translate(new BrewNVR("g:a", "1.2.3", "1"), build);
 
         mapper.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
         String jsonOut = mapper.writeValueAsString(out);

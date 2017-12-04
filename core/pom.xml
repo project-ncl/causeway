@@ -124,6 +124,11 @@
       <groupId>org.commonjava.maven.atlas</groupId>
       <artifactId>atlas-identities</artifactId>
     </dependency>
+    <dependency>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>resteasy-jackson-provider</artifactId>
+        <scope>test</scope>
+    </dependency>
   </dependencies>
   
 <!--   <build>
