@@ -15,28 +15,31 @@
  */
 package org.jboss.pnc.causeway.rest;
 
-import org.jboss.pnc.causeway.ctl.PncImportController;
+import org.jboss.pnc.causeway.ctl.ImportController;
+import org.jboss.pnc.causeway.rest.model.BuildImportRequest;
+import org.jboss.pnc.causeway.rest.spi.Import;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.ws.rs.core.Response;
 
-import java.util.UUID;
 
 @RequestScoped
-@Deprecated
-public class PncImportResourceEndpoint implements PncImportResource {
+public class ImportEndpoint implements Import {
 
     @Inject
-    private PncImportController pncController;
+    private ImportController controller;
 
     @Override
-    public BrewPushMilestoneResponse importProductMilestone(BrewPushMilestone request)
+    public Response testResponse( String var )
     {
-        String id = UUID.randomUUID().toString();
-        
-        pncController.importMilestone(request.getContent().getMilestoneId(), request.getCallback(), id);
-        
-        return new BrewPushMilestoneResponse(new Callback(id));
+        return Response.ok( var ).build();
+    }
+
+    @Override
+    public Response importBuild(BuildImportRequest request) {
+        controller.importBuild(request.getBuild(), request.getCallback());
+        return Response.accepted().build();
     }
 
 }

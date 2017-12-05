@@ -2,7 +2,12 @@ package org.jboss.pnc.causeway.rest.model;
 
 import org.jboss.pnc.causeway.rest.CallbackTarget;
 
-import lombok.Builder;
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 import lombok.NonNull;
 
@@ -11,7 +16,7 @@ import lombok.NonNull;
  * @author Honza Brázdil <janinko.g@gmail.com>
  */
 @Data
-@Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class BuildImportRequest {
 
     @NonNull
@@ -19,4 +24,10 @@ public class BuildImportRequest {
     @NonNull
     private final Build build;
 
+    @JsonCreator
+    public BuildImportRequest(@JsonProperty("callback") CallbackTarget callback,
+            @JsonProperty("build") Build build) {
+        this.callback = Objects.requireNonNull(callback, "Callback must be specified.");
+        this.build = Objects.requireNonNull(build, "Build information must be specified.");
+    }
 }
