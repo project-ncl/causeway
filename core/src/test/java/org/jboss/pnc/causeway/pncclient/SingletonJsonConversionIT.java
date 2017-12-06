@@ -15,10 +15,10 @@
  */
 package org.jboss.pnc.causeway.pncclient;
 
+import org.jboss.pnc.causeway.pncclient.model.ProductMilestoneRest;
+import org.jboss.pnc.causeway.pncclient.model.Singleton;
 import static org.junit.Assert.assertEquals;
 
-import org.jboss.pnc.rest.restmodel.ProductMilestoneRest;
-import org.jboss.pnc.rest.restmodel.response.Singleton;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;

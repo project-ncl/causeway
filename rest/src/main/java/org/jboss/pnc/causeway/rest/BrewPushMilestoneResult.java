@@ -15,9 +15,10 @@
  */
 package org.jboss.pnc.causeway.rest;
 
+import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
+
 import lombok.Data;
 import lombok.NonNull;
-import org.jboss.pnc.rest.restmodel.causeway.MilestoneReleaseResultRest;
 
 /**
  *

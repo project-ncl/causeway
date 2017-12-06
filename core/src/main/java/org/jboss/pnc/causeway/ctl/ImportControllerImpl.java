@@ -2,20 +2,17 @@ package org.jboss.pnc.causeway.ctl;
 
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.CausewayFailure;
-import org.jboss.pnc.causeway.bpmclient.BPMClientImpl;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
-import org.jboss.pnc.causeway.brewclient.StringLogImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageMissingTag;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.CallbackTarget;
 import org.jboss.pnc.causeway.rest.model.Build;
-import org.jboss.pnc.model.BuildRecordPushResult;
-import org.jboss.pnc.rest.restmodel.BuildRecordPushResultRest;
-import org.jboss.pnc.rest.restmodel.BuildRecordPushResultRest.BuildRecordPushResultRestBuilder;
+import org.jboss.pnc.causeway.rest.model.response.BuildRecordPushResultRest;
+import org.jboss.pnc.causeway.rest.model.response.BuildRecordPushResultRest.BuildRecordPushResultRestBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
@@ -69,20 +66,20 @@ public class ImportControllerImpl implements ImportController {
             BuildResult result = importBuild(build, build.getTagPrefix());
             response.brewBuildId(result.getBrewID());
             response.brewBuildUrl(result.getBrewURL());
-            response.status(BuildRecordPushResult.Status.SUCCESS);
+            response.status(BuildRecordPushResultRest.Status.SUCCESS);
             response.log(result.getMessage());
         } catch (CausewayFailure ex) {
             logger.log(Level.SEVERE, "Failed to import build.", ex);
-            response.status(BuildRecordPushResult.Status.FAILED);
+            response.status(BuildRecordPushResultRest.Status.FAILED);
             response.artifactImportErrors(ex.getArtifactErrors());
             response.log(ex.getMessage());
         } catch (CausewayException ex) {
             logger.log(Level.SEVERE, "Error while importing build.", ex);
-            response.status(BuildRecordPushResult.Status.SYSTEM_ERROR);
+            response.status(BuildRecordPushResultRest.Status.SYSTEM_ERROR);
             response.log(ex.getMessage());
         } catch (RuntimeException ex) {
             logger.log(Level.SEVERE, "Error while importing build.", ex);
-            response.status(BuildRecordPushResult.Status.SYSTEM_ERROR);
+            response.status(BuildRecordPushResultRest.Status.SYSTEM_ERROR);
             response.log(ex.getMessage());
         }
         respond(callback, response.build());

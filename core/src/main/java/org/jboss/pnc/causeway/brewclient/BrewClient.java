@@ -18,7 +18,7 @@ package org.jboss.pnc.causeway.brewclient;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
-import org.jboss.pnc.rest.restmodel.causeway.BuildImportResultRest;
+import org.jboss.pnc.causeway.rest.pnc.BuildImportResultRest;
 
 import com.redhat.red.build.koji.model.json.KojiImport;
 

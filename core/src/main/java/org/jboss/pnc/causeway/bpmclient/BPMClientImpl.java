@@ -17,7 +17,7 @@ package org.jboss.pnc.causeway.bpmclient;
 
 import org.jboss.pnc.causeway.rest.BrewPushMilestoneResult;
 import org.jboss.pnc.causeway.rest.Callback;
-import org.jboss.pnc.rest.restmodel.causeway.MilestoneReleaseResultRest;
+import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
@@ -25,6 +25,7 @@ import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
