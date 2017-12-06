@@ -25,23 +25,23 @@ import org.jboss.pnc.causeway.brewclient.StringLogImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.PncClient;
+import org.jboss.pnc.causeway.pncclient.model.BuildConfigurationAuditedRest;
+import org.jboss.pnc.causeway.pncclient.model.BuildCoordinationStatus;
+import org.jboss.pnc.causeway.pncclient.model.BuildEnvironmentRest;
+import org.jboss.pnc.causeway.pncclient.model.BuildRecordRest;
+import org.jboss.pnc.causeway.pncclient.model.IdRev;
+import org.jboss.pnc.causeway.pncclient.model.RepositoryConfigurationRest;
+import org.jboss.pnc.causeway.pncclient.model.SystemImageType;
+import org.jboss.pnc.causeway.pncclient.model.UserRest;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.CallbackMethod;
 import org.jboss.pnc.causeway.rest.CallbackTarget;
-import org.jboss.pnc.model.IdRev;
-import org.jboss.pnc.model.SystemImageType;
-import org.jboss.pnc.rest.restmodel.BuildConfigurationAuditedRest;
-import org.jboss.pnc.rest.restmodel.BuildEnvironmentRest;
-import org.jboss.pnc.rest.restmodel.BuildRecordRest;
-import org.jboss.pnc.rest.restmodel.RepositoryConfigurationRest;
-import org.jboss.pnc.rest.restmodel.UserRest;
-import org.jboss.pnc.rest.restmodel.causeway.ArtifactImportError;
-import org.jboss.pnc.rest.restmodel.causeway.BuildImportResultRest;
-import org.jboss.pnc.rest.restmodel.causeway.BuildImportStatus;
-import org.jboss.pnc.rest.restmodel.causeway.MilestoneReleaseResultRest;
-import org.jboss.pnc.rest.restmodel.causeway.ReleaseStatus;
-import org.jboss.pnc.spi.BuildCoordinationStatus;
+import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
+import org.jboss.pnc.causeway.rest.pnc.BuildImportResultRest;
+import org.jboss.pnc.causeway.rest.pnc.BuildImportStatus;
+import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
+import org.jboss.pnc.causeway.rest.pnc.ReleaseStatus;
 import org.junit.*;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -285,9 +285,10 @@ public class PncImportControllerTest {
         mockTranslator();
 
         List<ArtifactImportError> artifactImportErrors = new ArrayList<>();
-        ArtifactImportError importError = new ArtifactImportError();
-        importError.setArtifactId(123);
-        importError.setErrorMessage(errorMessage);
+        ArtifactImportError importError = ArtifactImportError.builder()
+                .artifactId(123)
+                .errorMessage(errorMessage)
+                .build();
         artifactImportErrors.add(importError);
         BuildImportResultRest buildImportResultRest = new BuildImportResultRest(buildId, 11, "https://koji.myco.com/brew/buildinfo?buildID=11", BuildImportStatus.FAILED, null, artifactImportErrors);
         

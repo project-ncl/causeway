@@ -1,6 +1,6 @@
 package org.jboss.pnc.causeway;
 
-import org.jboss.pnc.rest.restmodel.causeway.ArtifactImportError;
+import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
 
 import java.util.List;
 

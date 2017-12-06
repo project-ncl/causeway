@@ -35,10 +35,6 @@
       <type>ejb</type>
     </dependency>
     <dependency>
-      <groupId>org.jboss.pnc.causeway</groupId>
-      <artifactId>causeway-model-java</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.util</groupId>
       <artifactId>jhttpc</artifactId>
     </dependency>
@@ -77,24 +73,6 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.jboss.pnc</groupId>
-      <artifactId>rest-model</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.ws.rs</groupId>
-          <artifactId>jsr311-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency><!-- FIXME remove when resolved https://projects.engineering.redhat.com/browse/NCL-1644 -->
-      <groupId>org.jboss.pnc</groupId>
-      <artifactId>model</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.pnc</groupId>
-      <artifactId>spi</artifactId>
-    </dependency><!-- END OF FIXME -->
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-client</artifactId>

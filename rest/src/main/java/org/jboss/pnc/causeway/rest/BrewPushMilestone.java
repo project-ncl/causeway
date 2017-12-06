@@ -15,7 +15,7 @@
  */
 package org.jboss.pnc.causeway.rest;
 
-import org.jboss.pnc.rest.restmodel.causeway.MilestoneReleaseRest;
+import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseRest;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 

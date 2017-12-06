@@ -28,9 +28,9 @@ import org.jboss.pnc.causeway.CausewayFailure;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
-import org.jboss.pnc.rest.restmodel.causeway.ArtifactImportError;
-import org.jboss.pnc.rest.restmodel.causeway.BuildImportResultRest;
-import org.jboss.pnc.rest.restmodel.causeway.BuildImportStatus;
+import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
+import org.jboss.pnc.causeway.rest.pnc.BuildImportResultRest;
+import org.jboss.pnc.causeway.rest.pnc.BuildImportStatus;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -174,9 +174,10 @@ public class BrewClientImpl implements BrewClient {
         Map<String, KojijiErrorInfo> kojiErrors = result.getUploadErrors();
         if (kojiErrors != null) {
             for (Map.Entry<String, KojijiErrorInfo> e : kojiErrors.entrySet()) {
-                ArtifactImportError importError = new ArtifactImportError();
-                importError.setArtifactId(importFiles.getId(e.getKey()));
-                importError.setErrorMessage(e.getValue().getError().getMessage());
+                ArtifactImportError importError = ArtifactImportError.builder()
+                        .artifactId(importFiles.getId(e.getKey()))
+                        .errorMessage(e.getValue().getError().getMessage())
+                        .build();
                 importErrors.add(importError);
                 logger.log(Level.WARNING, "Failed to import.", e.getValue());
             }
@@ -184,9 +185,10 @@ public class BrewClientImpl implements BrewClient {
         Map<Integer, String> importerErrors = importFiles.getErrors();
         if (!importerErrors.isEmpty()) {
             for (Map.Entry<Integer, String> e : importerErrors.entrySet()) {
-                ArtifactImportError importError = new ArtifactImportError();
-                importError.setArtifactId(e.getKey());
-                importError.setErrorMessage(e.getValue());
+                ArtifactImportError importError = ArtifactImportError.builder()
+                        .artifactId(e.getKey())
+                        .errorMessage(e.getValue())
+                        .build();
                 importErrors.add(importError);
                 logger.log(Level.WARNING, "Failed to import: {0}", e.getValue());
             }

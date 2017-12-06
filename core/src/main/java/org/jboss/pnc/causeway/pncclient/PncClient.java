@@ -16,7 +16,7 @@
 package org.jboss.pnc.causeway.pncclient;
 
 import org.jboss.pnc.causeway.CausewayException;
-import org.jboss.pnc.rest.restmodel.BuildRecordRest;
+import org.jboss.pnc.causeway.pncclient.model.BuildRecordRest;
 
 import java.util.Collection;
 

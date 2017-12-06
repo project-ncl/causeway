@@ -34,7 +34,7 @@ import org.jboss.pnc.causeway.rest.CallbackTarget;
 import org.jboss.pnc.causeway.rest.model.Build;
 import org.jboss.pnc.causeway.rest.model.MavenBuild;
 import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
-import org.jboss.pnc.rest.restmodel.causeway.ArtifactImportError;
+import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
 import org.junit.*;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -194,9 +194,10 @@ public class ImportControllerTest {
         mockTranslator();
 
         List<ArtifactImportError> artifactImportErrors = new ArrayList<>();
-        ArtifactImportError importError = new ArtifactImportError();
-        importError.setArtifactId(123);
-        importError.setErrorMessage(errorMessage);
+        ArtifactImportError importError = ArtifactImportError.builder()
+                .artifactId(123)
+                .errorMessage(errorMessage)
+                .build();
         artifactImportErrors.add(importError);
         doThrow(new CausewayFailure(artifactImportErrors, exceptionMessage)).when(brewClient).importBuild(eq(NVR), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
 

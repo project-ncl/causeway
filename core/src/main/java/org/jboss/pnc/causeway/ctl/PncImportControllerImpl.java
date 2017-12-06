@@ -26,12 +26,12 @@ import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.pncclient.PncClient;
+import org.jboss.pnc.causeway.pncclient.model.BuildRecordRest;
 import org.jboss.pnc.causeway.rest.CallbackTarget;
-import org.jboss.pnc.rest.restmodel.BuildRecordRest;
-import org.jboss.pnc.rest.restmodel.causeway.MilestoneReleaseResultRest;
-import org.jboss.pnc.rest.restmodel.causeway.BuildImportResultRest;
-import org.jboss.pnc.rest.restmodel.causeway.BuildImportStatus;
-import org.jboss.pnc.rest.restmodel.causeway.ReleaseStatus;
+import org.jboss.pnc.causeway.rest.pnc.BuildImportResultRest;
+import org.jboss.pnc.causeway.rest.pnc.BuildImportStatus;
+import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
+import org.jboss.pnc.causeway.rest.pnc.ReleaseStatus;
 
 import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;

@@ -31,6 +31,7 @@ import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact;
+import org.jboss.pnc.causeway.pncclient.model.BuildRecordRest;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.model.Build;
 import org.jboss.pnc.causeway.rest.model.BuiltArtifact;
@@ -38,7 +39,6 @@ import org.jboss.pnc.causeway.rest.model.Dependency;
 import org.jboss.pnc.causeway.rest.model.Logfile;
 import org.jboss.pnc.causeway.rest.model.MavenBuild;
 import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
-import org.jboss.pnc.rest.restmodel.BuildRecordRest;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;

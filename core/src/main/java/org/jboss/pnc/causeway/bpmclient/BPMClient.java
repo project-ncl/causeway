@@ -15,7 +15,7 @@
  */
 package org.jboss.pnc.causeway.bpmclient;
 
-import org.jboss.pnc.rest.restmodel.causeway.MilestoneReleaseResultRest;
+import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
 
 /**
  *
