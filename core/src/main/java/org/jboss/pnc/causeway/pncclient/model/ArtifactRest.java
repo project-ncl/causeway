@@ -17,8 +17,6 @@
  */
 package org.jboss.pnc.causeway.pncclient.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -194,31 +192,12 @@ public class ArtifactRest {
         this.originUrl = originUrl;
     }
 
-    @JsonIgnore
-    public boolean isImported() {
-        return (originUrl != null && !originUrl.isEmpty());
-    }
-
-    @Deprecated
-    @JsonIgnore
-    public String getStatus() {
-        if (buildRecordIds != null && buildRecordIds.size() > 0) {
-            return "BINARY_BUILT";
-        }
-        return "BINARY_IMPORTED";
-    }
-
     public Set<Integer> getBuildRecordIds() {
         return buildRecordIds;
     }
 
     public void setBuildRecordIds(Set<Integer> buildRecordIds) {
         this.buildRecordIds = buildRecordIds;
-    }
-
-    @JsonIgnore
-    public boolean isBuilt() {
-        return (buildRecordIds != null && buildRecordIds.size() > 0);
     }
 
     public Set<Integer> getDependantBuildRecordIds() {
