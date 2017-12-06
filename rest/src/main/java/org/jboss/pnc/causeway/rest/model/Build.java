@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import lombok.Data;
@@ -17,6 +18,8 @@ import lombok.NonNull;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY,
         property = "@buildType")
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonSubTypes(
+    @JsonSubTypes.Type(MavenBuild.class))
 public abstract class Build {
 
     @NonNull
