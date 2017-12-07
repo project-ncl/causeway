@@ -24,6 +24,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -120,7 +121,8 @@ public class ImportControllerImpl implements ImportController {
     private void respond(CallbackTarget callback, BuildRecordPushResultRest build) {
         logger.log(Level.INFO, "Will send callback to {0}.", callback.getUrl());
         ResteasyWebTarget target = restClient.target(callback.getUrl());
-        target.request(MediaType.APPLICATION_JSON).post(Entity.entity(build, MediaType.APPLICATION_JSON_TYPE));
+        Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.entity(build, MediaType.APPLICATION_JSON_TYPE));
+        logger.log(Level.INFO, "Callback response: {0}", response);
     }
 
     @Data
