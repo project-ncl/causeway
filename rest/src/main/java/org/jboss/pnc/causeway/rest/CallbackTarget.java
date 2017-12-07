@@ -17,6 +17,9 @@ package org.jboss.pnc.causeway.rest;
 
 import javax.ws.rs.DefaultValue;
 
+import java.util.Collections;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -35,12 +38,19 @@ public class CallbackTarget {
     @NonNull
     private final CallbackMethod method;
 
+    private final Map<String,String> headers;
+
     @JsonCreator
     public CallbackTarget(@JsonProperty("url") String url,
-            @JsonProperty("method") @DefaultValue("POST") CallbackMethod method) {
+            @JsonProperty("method") @DefaultValue("POST") CallbackMethod method,
+            @JsonProperty("headers") @DefaultValue("{}") Map<String,String> headers) {
         this.url = url;
         this.method = method;
+	this.headers = headers;
     }
     
-    
+    public CallbackTarget(String url, CallbackMethod method) {
+        this(url, method, Collections.emptyMap());
+    }
+
 }
