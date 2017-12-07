@@ -15,7 +15,7 @@
  */
 package org.jboss.pnc.causeway.rest;
 
-import javax.ws.rs.DefaultValue;
+import static org.jboss.pnc.causeway.rest.CallbackMethod.POST;
 
 import java.util.Collections;
 import java.util.Map;
@@ -42,11 +42,11 @@ public class CallbackTarget {
 
     @JsonCreator
     public CallbackTarget(@JsonProperty("url") String url,
-            @JsonProperty("method") @DefaultValue("POST") CallbackMethod method,
-            @JsonProperty("headers") @DefaultValue("{}") Map<String,String> headers) {
+            @JsonProperty("method") CallbackMethod method,
+            @JsonProperty("headers") Map<String,String> headers) {
         this.url = url;
-        this.method = method;
-	this.headers = headers;
+        this.method = method == null ? POST : method;
+	this.headers = headers == null ? Collections.emptyMap() : headers;
     }
     
     public CallbackTarget(String url, CallbackMethod method) {
