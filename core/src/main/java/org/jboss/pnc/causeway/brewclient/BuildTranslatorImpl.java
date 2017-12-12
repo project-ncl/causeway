@@ -233,7 +233,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             int buildRootId) throws CausewayException {
         for (BuiltArtifact artifact : builtArtifacts) {
             BuildOutput.Builder outputBuilder = builder
-                    .withNewOutput(buildRootId, artifact.getDeployPath())
+                    .withNewOutput(buildRootId, stripSlash(artifact.getDeployPath()))
                     .withArch(artifact.getArchitecture())
                     .withChecksum("md5", artifact.getMd5())
                     .withFileSize((int) artifact.getSize());
@@ -282,7 +282,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             }
             for(BuiltArtifact artifact : build.getBuiltArtifacts()){
                 String url = config.getArtifactStorage() + stripSlash(artifact.getDeployPath());
-                ret.addUrl(artifact.getId(), url, artifact.getDeployPath());
+                ret.addUrl(artifact.getId(), url, stripSlash(artifact.getDeployPath()));
             }
             return ret;
         }catch(MalformedURLException ex){
