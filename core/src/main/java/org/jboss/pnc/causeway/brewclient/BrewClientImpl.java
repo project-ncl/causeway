@@ -170,7 +170,7 @@ public class BrewClientImpl implements BrewClient {
 
     private List<ArtifactImportError> getImportErrors(KojiImportResult result, ImportFileGenerator importFiles) {
         List<ArtifactImportError> importErrors = new ArrayList<>();
-        Map<String, KojijiErrorInfo> kojiErrors = result.getUploadErrors();
+        Map<String, KojijiErrorInfo> kojiErrors = result == null ? null : result.getUploadErrors();
         if (kojiErrors != null) {
             for (Map.Entry<String, KojijiErrorInfo> e : kojiErrors.entrySet()) {
                 ArtifactImportError importError = ArtifactImportError.builder()
