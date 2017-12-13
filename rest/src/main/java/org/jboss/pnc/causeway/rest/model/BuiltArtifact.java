@@ -1,5 +1,7 @@
 package org.jboss.pnc.causeway.rest.model;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -24,15 +26,18 @@ public class BuiltArtifact {
     @NonNull
     private final String md5;
     @NonNull
-    private final String deployPath;
+    private final String artifactPath;
+    @NonNull
+    private final String repositoryPath;
     private final int size;
 
-    public BuiltArtifact(int id, String filename, String architecture, String md5, String deployPath, int size) {
+    public BuiltArtifact(int id, String filename, String architecture, String md5, String artifactPath, String repositoryPath, int size) {
         this.id = id;
-        this.filename = filename;
-        this.architecture = architecture;
-        this.md5 = md5;
-        this.deployPath = deployPath;
+        this.filename = Objects.requireNonNull(filename, "Filename must be set");
+        this.architecture = Objects.requireNonNull(architecture, "Architecture must be set");
+        this.md5 = Objects.requireNonNull(md5, "MD5 checksum must be set");
+        this.artifactPath = Objects.requireNonNull(artifactPath, "Artifact path must be set");
+        this.repositoryPath = Objects.requireNonNull(repositoryPath, "Repository path must be set");
         this.size = size;
     }
 }

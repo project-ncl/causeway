@@ -1,6 +1,7 @@
 package org.jboss.pnc.causeway.rest.model;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -40,9 +41,9 @@ public class MavenBuild extends Build {
         super(buildName, buildVersion, externalBuildSystem, externalBuildID, externalBuildURL,
                 startTime, endTime, scmURL, scmRevision, buildRoot, logs, dependencies,
                 builtArtifacts, tagPrefix);
-        this.groupId = groupId;
-        this.artifactId = artifactId;
-        this.version = version;
+        this.groupId = Objects.requireNonNull(groupId);
+        this.artifactId = Objects.requireNonNull(artifactId);
+        this.version = Objects.requireNonNull(version);
     }
 
     @JsonPOJOBuilder(withPrefix = "")
