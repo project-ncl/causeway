@@ -1,6 +1,7 @@
 package org.jboss.pnc.causeway.rest.model;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -56,20 +57,20 @@ public abstract class Build {
             int externalBuildID, String externalBuildURL, Date startTime, Date endTime,
             String scmURL, String scmRevision, BuildRoot buildRoot, Set<Logfile> logs,
             Set<Dependency> dependencies, Set<BuiltArtifact> builtArtifacts, String tagPrefix) {
-        this.buildName = buildName;
-        this.buildVersion = buildVersion;
-        this.externalBuildSystem = externalBuildSystem;
+        this.buildName = Objects.requireNonNull(buildName);
+        this.buildVersion = Objects.requireNonNull(buildVersion);
+        this.externalBuildSystem = Objects.requireNonNull(externalBuildSystem);
         this.externalBuildID = externalBuildID;
-        this.externalBuildURL = externalBuildURL;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.scmURL = scmURL;
-        this.scmRevision = scmRevision;
-        this.buildRoot = buildRoot;
-        this.logs = logs;
-        this.dependencies = dependencies;
-        this.builtArtifacts = builtArtifacts;
-        this.tagPrefix = tagPrefix;
+        this.externalBuildURL = Objects.requireNonNull(externalBuildURL);
+        this.startTime = Objects.requireNonNull(startTime);
+        this.endTime = Objects.requireNonNull(endTime);
+        this.scmURL = Objects.requireNonNull(scmURL);
+        this.scmRevision = Objects.requireNonNull(scmRevision);
+        this.buildRoot = Objects.requireNonNull(buildRoot);
+        this.logs = Objects.requireNonNull(logs);
+        this.dependencies = Objects.requireNonNull(dependencies);
+        this.builtArtifacts = Objects.requireNonNull(builtArtifacts);
+        this.tagPrefix = Objects.requireNonNull(tagPrefix);
     }
 
 }
