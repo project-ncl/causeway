@@ -64,7 +64,7 @@ public class BrewClientImpl implements BrewClient {
     @Override
     public BrewBuild findBrewBuildOfNVR(BrewNVR nvr) throws CausewayException {
         try {
-            KojiSessionInfo session = koji.login();
+            KojiSessionInfo session = login();
 
             KojiNVR knvr = new KojiNVR(nvr.getKojiName(), nvr.getVersion(), nvr.getRelease());
             KojiBuildInfo bi = koji.getBuildInfo(knvr, session); // returns null if missing
@@ -99,17 +99,15 @@ public class BrewClientImpl implements BrewClient {
     }
 
     @Override
-    public void tagBuild(String tag, BrewNVR nvr) throws CausewayException{
+    public void tagBuild(String tag, BrewNVR nvr) throws CausewayException {
+        KojiSessionInfo session = login();
         try {
-            KojiSessionInfo session = koji.login();
-
             koji.addPackageToTag(tag, nvr.getKojiName(), session);
             koji.tagBuild(tag + BUILD_TAG_SUFIX, nvr.getNVR(), session);
-
-            koji.logout(session);
         } catch (KojiClientException ex) {
-            throw new CausewayException("Failure while comunicating with Koji: " + ex.getMessage(), ex);
+            throw new CausewayFailure("Failure while comunicating with Koji: " + ex.getMessage(), ex);
         }
+        koji.logout(session);
     }
 
     @Override
@@ -118,7 +116,7 @@ public class BrewClientImpl implements BrewClient {
         ret.setBuildRecordId(buildRecordId);
         ret.setStatus(BuildImportStatus.SUCCESSFUL);
         try {
-            KojiSessionInfo session = koji.login();
+            KojiSessionInfo session = login();
 
             KojiImportResult result = koji.importBuild(kojiImport, importFiles, session);
             koji.logout(session);
@@ -147,26 +145,27 @@ public class BrewClientImpl implements BrewClient {
 
     @Override
     public BrewBuild importBuild(BrewNVR nvr, KojiImport kojiImport, ImportFileGenerator importFiles) throws CausewayException {
+        KojiSessionInfo session = login();
+        KojiImportResult result;
         try {
-            KojiSessionInfo session = koji.login();
-
-            KojiImportResult result = koji.importBuild(kojiImport, importFiles, session);
-            koji.logout(session);
-
-            List<ArtifactImportError> importErrors = getImportErrors(result, importFiles);
-            if(!importErrors.isEmpty()){
-                throw new CausewayFailure(importErrors, "Failure while importing artifacts");
-            }
-
-            KojiBuildInfo bi = result.getBuildInfo();
-
-            if (bi == null) {
-                throw new CausewayException("Import to koji failed for unknown reson. No build data.");
-            }
-            return toBrewBuild(bi, nvr);
+            result = koji.importBuild(kojiImport, importFiles, session);
         } catch (KojiClientException ex) {
-            throw new CausewayException("Failure while communicating with Koji: " + ex.getMessage(), ex);
+            throw new CausewayFailure(getImportErrors(null, importFiles),
+                    "Failure while importing builds to Koji: " + ex.getMessage(), ex);
         }
+        koji.logout(session);
+
+        List<ArtifactImportError> importErrors = getImportErrors(result, importFiles);
+        if (!importErrors.isEmpty()) {
+            throw new CausewayFailure(importErrors, "Failure while importing artifacts");
+        }
+
+        KojiBuildInfo bi = result.getBuildInfo();
+
+        if (bi == null) {
+            throw new CausewayException("Import to koji failed for unknown reson. No build data.");
+        }
+        return toBrewBuild(bi, nvr);
     }
 
     private List<ArtifactImportError> getImportErrors(KojiImportResult result, ImportFileGenerator importFiles) {
@@ -205,7 +204,7 @@ public class BrewClientImpl implements BrewClient {
     public boolean tagsExists(String tag) throws CausewayException {
         boolean packageTag, buildTag;
         try {
-            KojiSessionInfo session = koji.login();
+            KojiSessionInfo session = login();
 
             packageTag = koji.getTag(tag, session) != null;
             buildTag = koji.getTag(tag + BUILD_TAG_SUFIX, session) != null;
@@ -215,6 +214,14 @@ public class BrewClientImpl implements BrewClient {
             throw new CausewayException("Failure while comunicating with Koji: " + ex.getMessage(), ex);
         }
         return packageTag && buildTag;
+    }
+
+    private KojiSessionInfo login() throws CausewayException {
+        try {
+            return koji.login();
+        } catch (KojiClientException ex) {
+            throw new CausewayException("Failure while loging to Koji: " + ex.getMessage(), ex);
+        }
     }
 
 }
