@@ -24,6 +24,11 @@ public class CausewayFailure extends CausewayException {
         super(format, params);
     }
 
+    public CausewayFailure(List<ArtifactImportError> artifactErrors, String format, Throwable cause, Object... params) {
+        super(format, cause, params);
+        this.artifactErrors = artifactErrors;
+    }
+
     public CausewayFailure(List<ArtifactImportError> artifactErrors, String format, Object... params) {
         super(format, params);
         this.artifactErrors = artifactErrors;
