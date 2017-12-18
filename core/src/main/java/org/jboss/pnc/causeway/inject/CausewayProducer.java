@@ -84,11 +84,7 @@ public class CausewayProducer
 
         KojiConfig kc = builder.build();
 
-        try {
-            koji = new KojiClient(kc, passwords, executorService);
-        } catch (BindException ex) {
-            throw new RuntimeException(ex);
-        }
+        koji = new KojiClient(kc, passwords, executorService);
     }
 
     @PreDestroy
