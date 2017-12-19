@@ -46,5 +46,6 @@ public class ReportsRestActivator extends Application {
         resources.add(Root.class);
         resources.add(PncImportResourceEndpoint.class);
         resources.add(ImportEndpoint.class);
+        resources.add(UntagEndpoint.class);
     }
 }

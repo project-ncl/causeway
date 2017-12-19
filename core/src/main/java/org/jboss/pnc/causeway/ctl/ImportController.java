@@ -2,6 +2,7 @@ package org.jboss.pnc.causeway.ctl;
 
 import org.jboss.pnc.causeway.rest.CallbackTarget;
 import org.jboss.pnc.causeway.rest.model.Build;
+import org.jboss.pnc.causeway.rest.model.TaggedBuild;
 
 /**
  *
@@ -10,4 +11,6 @@ import org.jboss.pnc.causeway.rest.model.Build;
 public interface ImportController {
 
     public void importBuild(Build build, CallbackTarget callback);
+
+    public void untagBuild(TaggedBuild build, CallbackTarget callback);
 }
