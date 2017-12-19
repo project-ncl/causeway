@@ -11,6 +11,8 @@ import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.CallbackTarget;
 import org.jboss.pnc.causeway.rest.model.Build;
+import org.jboss.pnc.causeway.rest.model.TaggedBuild;
+import org.jboss.pnc.causeway.rest.model.UntagRequest;
 import org.jboss.pnc.causeway.rest.model.response.BuildRecordPushResultRest;
 import org.jboss.pnc.causeway.rest.model.response.BuildRecordPushResultRest.BuildRecordPushResultRestBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
@@ -27,13 +29,18 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.redhat.red.build.koji.model.json.KojiImport;
 
 import lombok.Data;
+
+import org.jboss.pnc.causeway.rest.model.response.OperationStatus;
+import org.jboss.pnc.causeway.rest.model.response.UntagResultRest;
+import org.jboss.pnc.causeway.rest.model.response.UntagResultRest.UntagResultRestBuilder;
+
+import com.redhat.red.build.koji.model.xmlrpc.messages.UntagBuildRequest;
 
 /**
  *
@@ -69,20 +76,43 @@ public class ImportControllerImpl implements ImportController {
             BuildResult result = importBuild(build, build.getTagPrefix());
             response.brewBuildId(result.getBrewID());
             response.brewBuildUrl(result.getBrewURL());
-            response.status(BuildRecordPushResultRest.Status.SUCCESS);
+            response.status(OperationStatus.SUCCESS);
             response.log(result.getMessage());
         } catch (CausewayFailure ex) {
             logger.log(Level.SEVERE, "Failed to import build.", ex);
-            response.status(BuildRecordPushResultRest.Status.FAILED);
+            response.status(OperationStatus.FAILED);
             response.artifactImportErrors(ex.getArtifactErrors());
             response.log(ex.getMessage());
         } catch (CausewayException ex) {
             logger.log(Level.SEVERE, "Error while importing build.", ex);
-            response.status(BuildRecordPushResultRest.Status.SYSTEM_ERROR);
+            response.status(OperationStatus.SYSTEM_ERROR);
             response.log(ex.getMessage());
         } catch (RuntimeException ex) {
             logger.log(Level.SEVERE, "Error while importing build.", ex);
-            response.status(BuildRecordPushResultRest.Status.SYSTEM_ERROR);
+            response.status(OperationStatus.SYSTEM_ERROR);
+            response.log(ex.getMessage());
+        }
+        respond(callback, response.build());
+    }
+
+    @Override
+    @Asynchronous
+    public void untagBuild(TaggedBuild build, CallbackTarget callback) {
+        logger.log(Level.INFO, "Entering importBuild.");
+
+        UntagResultRestBuilder response = UntagResultRest.builder();
+        response.brewBuildId(build.getBrewBuildId());
+        try {
+            untagBuild(build.getBrewBuildId(), build.getTagPrefix());
+            response.log("Brew build " + build.getBrewBuildId() + " untaged from tag " + build.getTagPrefix());
+            response.status(OperationStatus.SUCCESS);
+        } catch (CausewayFailure ex) {
+            logger.log(Level.SEVERE, "Failed to untag build.", ex);
+            response.status(OperationStatus.FAILED);
+            response.log(ex.getMessage());
+        } catch (CausewayException | RuntimeException ex) {
+            logger.log(Level.SEVERE, "Error while untaging build.", ex);
+            response.status(OperationStatus.SYSTEM_ERROR);
             response.log(ex.getMessage());
         }
         respond(callback, response.build());
@@ -120,13 +150,25 @@ public class ImportControllerImpl implements ImportController {
         return new BrewNVR(build.getBuildName(), build.getBuildVersion(), "1");
     }
 
-    private void respond(CallbackTarget callback, BuildRecordPushResultRest build) {
+    private <T> void respond(CallbackTarget callback, T responseEntity) {
+        if (callback == null) {
+            logger.log(Level.INFO, "Not sending callback.");
+            return;
+        }
         logger.log(Level.INFO, "Will send callback to {0}.", callback.getUrl());
         ResteasyWebTarget target = restClient.target(callback.getUrl());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
         callback.getHeaders().forEach(request::header);
-        Response response = request.post(Entity.entity(build, MediaType.APPLICATION_JSON_TYPE));
+        Response response = request.post(Entity.entity(responseEntity, MediaType.APPLICATION_JSON_TYPE));
         logger.log(Level.INFO, "Callback response: {0} - {1}", new Object[]{response.getStatusInfo(), response.readEntity(String.class)});
+    }
+
+    private void untagBuild(int brewBuildId, String tagPrefix) throws CausewayException {
+        BrewBuild build = brewClient.findBrewBuild(brewBuildId);
+        if (build == null) {
+            throw new CausewayFailure("Build with given id (" + brewBuildId + ") not found");
+        }
+        brewClient.untagBuild(tagPrefix, build);
     }
 
     @Data

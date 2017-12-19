@@ -80,6 +80,25 @@ public class BrewClientImpl implements BrewClient {
         }
     }
 
+    @Override
+    public BrewBuild findBrewBuild(int id) throws CausewayException {
+        KojiBuildInfo buildInfo;
+
+        KojiSessionInfo session = login();
+        try {
+            buildInfo = koji.getBuildInfo(id, session);
+        } catch (KojiClientException ex) {
+            throw new CausewayException("Failure while communicating with Koji: " + ex.getMessage(), ex);
+        }
+        koji.logout(session);
+
+        if (buildInfo == null) {
+            return null;
+        }
+        checkPNCImportedBuild(buildInfo);
+        return toBrewBuild(buildInfo);
+    }
+
     /**
      * Checks if the brew build is imported by PNC. If not, throws an exception.
      * @throws CausewayException when the brew build is not imporeted by PNC.
@@ -98,12 +117,27 @@ public class BrewClientImpl implements BrewClient {
         return new BrewBuild(bi.getId(), nvr);
     }
 
+    private static BrewBuild toBrewBuild(KojiBuildInfo bi) throws CausewayException {
+        return new BrewBuild(bi.getId(), new BrewNVR(bi.getName(), bi.getVersion(), bi.getRelease()));
+    }
+
     @Override
     public void tagBuild(String tag, BrewNVR nvr) throws CausewayException {
         KojiSessionInfo session = login();
         try {
             koji.addPackageToTag(tag, nvr.getKojiName(), session);
             koji.tagBuild(tag + BUILD_TAG_SUFIX, nvr.getNVR(), session);
+        } catch (KojiClientException ex) {
+            throw new CausewayFailure("Failure while comunicating with Koji: " + ex.getMessage(), ex);
+        }
+        koji.logout(session);
+    }
+
+    @Override
+    public void untagBuild(String tag, BrewNVR nvr) throws CausewayException {
+        KojiSessionInfo session = login();
+        try {
+            koji.untagBuild(tag + BUILD_TAG_SUFIX, nvr.getNVR(), session);
         } catch (KojiClientException ex) {
             throw new CausewayFailure("Failure while comunicating with Koji: " + ex.getMessage(), ex);
         }

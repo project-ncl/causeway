@@ -23,23 +23,16 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
-import java.util.List;
-
 import lombok.Data;
 import lombok.NonNull;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
-@AllArgsConstructor
 @Data
 @Builder
-@JsonDeserialize(builder = BuildRecordPushResultRest.BuildRecordPushResultRestBuilder.class)
-public class BuildRecordPushResultRest {
-
-    private final Integer id;
-
-    private final int buildRecordId;
+@JsonDeserialize(builder = UntagResultRest.BuildRecordPushResultRestBuilder.class)
+public class UntagResultRest {
 
     @NonNull
     private final OperationStatus status;
@@ -47,20 +40,7 @@ public class BuildRecordPushResultRest {
     @NonNull
     private final String log;
 
-    /**
-     * list of errors for artifact imports
-     */
-    private final List<ArtifactImportError> artifactImportErrors;
-
-    /**
-     * build id assigned by brew
-     */
-    private final Integer brewBuildId;
-
-    /**
-     * link to brew
-     */
-    private final String brewBuildUrl;
+    private final int brewBuildId;
 
     @JsonPOJOBuilder(withPrefix = "")
     public static final class BuildRecordPushResultRestBuilder {
