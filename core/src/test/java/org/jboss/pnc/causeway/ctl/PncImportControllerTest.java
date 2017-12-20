@@ -54,6 +54,8 @@ import static org.junit.Assert.*;
 import org.mockito.InjectMocks;
 
 public class PncImportControllerTest {
+
+    private static final String USERNAME = "joe";
     private static final String TAG_PREFIX = "pnc-foo-0.1";
     private static final String EXEC_ROOT_VERSION = "1.1.1";
     private static final String EXEC_ROOT_NAME = "test:artifact";
@@ -158,7 +160,7 @@ public class PncImportControllerTest {
     }
 
     private void mockTranslator() throws CausewayException {
-        doReturn(KOJI_IMPORT).when(translator).translate(eq(NVR), any(), any(), anyString());
+        doReturn(KOJI_IMPORT).when(translator).translate(eq(NVR), any(), any(), anyString(), any());
         doReturn(IMPORT_FILE_GENERATOR).when(translator).getImportFiles(any(), anyString());
     }
 
@@ -174,7 +176,7 @@ public class PncImportControllerTest {
         doReturn(new BrewBuild(11, NVR)).when(brewClient).findBrewBuildOfNVR(eq(NVR));
 
         // Run import
-        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID);
+        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
         verifySuccess();
@@ -195,7 +197,7 @@ public class PncImportControllerTest {
         doReturn(buildImportResultRest).when(brewClient).importBuild(eq(NVR), eq(buildId), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
 
         // Run import
-        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID);
+        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
         verifySuccess();
@@ -214,7 +216,7 @@ public class PncImportControllerTest {
         doThrow(new RuntimeException(exceptionMessage)).when(pncClient).findBuildsOfProductMilestone(eq(milestoneId));
 
         // Run import
-        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID);
+        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
         MilestoneReleaseResultRest result = verifyFailure();
@@ -237,7 +239,7 @@ public class PncImportControllerTest {
         doReturn(buildRecords).when(pncClient).findBuildsOfProductMilestone(eq(milestoneId));
 
         // Run import
-        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID);
+        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
         verifyFailure();
@@ -258,7 +260,7 @@ public class PncImportControllerTest {
         doThrow(new CausewayException(exceptionMessage)).when(brewClient).findBrewBuildOfNVR(eq(NVR));
 
         // Run import
-        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID);
+        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
         MilestoneReleaseResultRest result = verifyFailure();
@@ -295,7 +297,7 @@ public class PncImportControllerTest {
         doReturn(buildImportResultRest).when(brewClient).importBuild(eq(NVR), eq(buildId), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
 
         // Run import
-        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID);
+        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
         MilestoneReleaseResultRest result = verifyFailure(ReleaseStatus.IMPORT_ERROR);
@@ -324,7 +326,7 @@ public class PncImportControllerTest {
         doReturn(false).when(brewClient).tagsExists(TAG_PREFIX);
 
         // Run import
-        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID);
+        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
         MilestoneReleaseResultRest result = verifyFailure();

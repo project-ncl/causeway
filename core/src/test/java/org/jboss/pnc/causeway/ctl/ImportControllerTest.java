@@ -64,6 +64,7 @@ public class ImportControllerTest {
     @Rule
     public WireMockRule wireMockRule = (new WireMockRule(8081));
 
+    private static final String USERNAME = "joe";
     private static final String TAG_PREFIX = "pnc-foo-0.1";
     private static final String BUILD_VERSION = "1.1.1";
     private static final String BUILD_NAME = "org.apache.geronimo.specs:geronimo-annotation_1.0_spec";
@@ -115,7 +116,7 @@ public class ImportControllerTest {
     }
 
     private void mockTranslator() throws CausewayException {
-        doReturn(KOJI_IMPORT).when(translator).translate(eq(NVR), any());
+        doReturn(KOJI_IMPORT).when(translator).translate(eq(NVR), any(), any());
         doReturn(IMPORT_FILE_GENERATOR).when(translator).getImportFiles(any());
     }
 
@@ -128,7 +129,7 @@ public class ImportControllerTest {
         doReturn(new BrewBuild(11, NVR)).when(brewClient).findBrewBuildOfNVR(eq(NVR));
 
         // Run import
-        importController.importBuild(getBuild(), CALLBACK_TARGET);
+        importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
 
         // Verify
         verifySuccess("Build was already imported with id 11");
@@ -145,7 +146,7 @@ public class ImportControllerTest {
         doReturn(brewBuild).when(brewClient).importBuild(eq(NVR), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
 
         // Run import
-        importController.importBuild(getBuild(), CALLBACK_TARGET);
+        importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
 
         // Verify
         verifySuccess("Build imported with id 11");
@@ -161,7 +162,7 @@ public class ImportControllerTest {
         build.getBuiltArtifacts().clear();
 
         // Run import
-        importController.importBuild(build, CALLBACK_TARGET);
+        importController.importBuild(build, CALLBACK_TARGET, USERNAME);
 
         // Verify
         verifyFailure("Build doesn't contain any artifacts");
@@ -178,7 +179,7 @@ public class ImportControllerTest {
         doThrow(new CausewayException(exceptionMessage)).when(brewClient).findBrewBuildOfNVR(eq(NVR));
 
         // Run import
-        importController.importBuild(getBuild(), CALLBACK_TARGET);
+        importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
 
         // Verify
         verifyError(exceptionMessage);
@@ -202,7 +203,7 @@ public class ImportControllerTest {
         doThrow(new CausewayFailure(artifactImportErrors, exceptionMessage)).when(brewClient).importBuild(eq(NVR), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
 
         // Run import
-        importController.importBuild(getBuild(), CALLBACK_TARGET);
+        importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
 
         // Verify
         verifyFailure(exceptionMessage, artifactImportErrors);
@@ -216,7 +217,7 @@ public class ImportControllerTest {
         doReturn(false).when(brewClient).tagsExists(TAG_PREFIX);
 
         // Run import
-        importController.importBuild(getBuild(), CALLBACK_TARGET);
+        importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
 
         // Verify
         verifyFailure(messageMissingTag(TAG_PREFIX, KOJI_URL).replace("\n", "\\n"));

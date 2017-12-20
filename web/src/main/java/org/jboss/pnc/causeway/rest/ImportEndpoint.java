@@ -30,6 +30,9 @@ public class ImportEndpoint implements Import {
     @Inject
     private ImportController controller;
 
+    @Inject
+    private UserService userSerivce;
+
     @Override
     public Response testResponse( String var )
     {
@@ -38,7 +41,7 @@ public class ImportEndpoint implements Import {
 
     @Override
     public Response importBuild(BuildImportRequest request) {
-        controller.importBuild(request.getBuild(), request.getCallback());
+        controller.importBuild(request.getBuild(), request.getCallback(), userSerivce.getUsername());
         return Response.accepted().build();
     }
 

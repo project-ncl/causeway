@@ -77,7 +77,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
     public KojiImport translate(BrewNVR nvr,
             BuildRecordRest build,
             BuildArtifacts artifacts,
-            String log) throws CausewayException {
+            String log,
+            String username) throws CausewayException {
         String externalBuildId = String.valueOf(build.getId());
         String externalBuildUrl = null;
         String externalBuildsUrl = config.getPnclBuildsURL();
@@ -108,15 +109,13 @@ public class BuildTranslatorImpl implements BuildTranslator {
         addBuiltArtifacts(artifacts.buildArtifacts, builder, buildRootId);
         addLog(log, builder, buildRootId);
 
-        try {
-            return builder.build();
-        } catch (VerificationException ex) {
-            throw new CausewayException("Failure while building Koji Import JSON: " + ex.getMessage(), ex);
-        }
+        KojiImport translatedBuild = buildTranslatedBuild(builder);
+        translatedBuild.getBuild().getExtraInfo().setImportInitiator(username);
+        return translatedBuild;
     }
 
     @Override
-    public KojiImport translate(BrewNVR nvr, Build build) throws CausewayException {
+    public KojiImport translate(BrewNVR nvr, Build build, String username) throws CausewayException {
         KojiImport.Builder builder = new KojiImport.Builder();
 
         BuildDescription.Builder descriptionBuilder = builder
@@ -140,11 +139,9 @@ public class BuildTranslatorImpl implements BuildTranslator {
         addBuiltArtifacts(build.getBuiltArtifacts(), builder, buildRootId);
         addLogs(build, builder, buildRootId);
 
-        try {
-            return builder.build();
-        } catch (VerificationException ex) {
-            throw new CausewayException("Failure while building Koji Import JSON: " + ex.getMessage(), ex);
-        }
+        KojiImport translatedBuild = buildTranslatedBuild(builder);
+        translatedBuild.getBuild().getExtraInfo().setImportInitiator(username);
+        return translatedBuild;
     }
 
     private String normalizeScmUrl(final String url) {
@@ -288,6 +285,16 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }catch(MalformedURLException ex){
             throw new CausewayException("Failed to parse artifact url: " + ex.getMessage(), ex);
         }
+    }
+
+    private KojiImport buildTranslatedBuild(KojiImport.Builder builder) throws CausewayException {
+        final KojiImport translatedBuild;
+        try {
+            translatedBuild = builder.build();
+        } catch (VerificationException ex) {
+            throw new CausewayException("Failure while building Koji Import JSON: " + ex.getMessage(), ex);
+        }
+        return translatedBuild;
     }
 
     private String stripSlash(String url) {
