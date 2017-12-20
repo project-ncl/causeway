@@ -33,10 +33,10 @@ public interface BuildTranslator {
     ImportFileGenerator getImportFiles(BuildArtifacts build, String log) throws CausewayException;
 
     @Deprecated
-    KojiImport translate(BrewNVR nvr, BuildRecordRest build, BuildArtifacts artifacts, String log) throws CausewayException;
+    KojiImport translate(BrewNVR nvr, BuildRecordRest build, BuildArtifacts artifacts, String log, String username) throws CausewayException;
 
     public ImportFileGenerator getImportFiles(Build build) throws CausewayException;
 
-    public KojiImport translate(BrewNVR nvr, Build build) throws CausewayException;
+    public KojiImport translate(BrewNVR nvr, Build build, String username) throws CausewayException;
 
 }

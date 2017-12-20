@@ -29,12 +29,15 @@ public class PncImportResourceEndpoint implements PncImportResource {
     @Inject
     private PncImportController pncController;
 
+    @Inject
+    private UserService userSerivce;
+
     @Override
     public BrewPushMilestoneResponse importProductMilestone(BrewPushMilestone request)
     {
         String id = UUID.randomUUID().toString();
         
-        pncController.importMilestone(request.getContent().getMilestoneId(), request.getCallback(), id);
+        pncController.importMilestone(request.getContent().getMilestoneId(), request.getCallback(), id, userSerivce.getUsername());
         
         return new BrewPushMilestoneResponse(new Callback(id));
     }

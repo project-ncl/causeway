@@ -67,13 +67,13 @@ public class ImportControllerImpl implements ImportController {
 
     @Override
     @Asynchronous
-    public void importBuild(Build build, CallbackTarget callback) {
+    public void importBuild(Build build, CallbackTarget callback, String username) {
         logger.log(Level.INFO, "Entering importBuild.");
 
         BuildRecordPushResultRestBuilder response = BuildRecordPushResultRest.builder();
         response.buildRecordId(build.getExternalBuildID());
         try {
-            BuildResult result = importBuild(build, build.getTagPrefix());
+            BuildResult result = importBuild(build, build.getTagPrefix(), username);
             response.brewBuildId(result.getBrewID());
             response.brewBuildUrl(result.getBrewURL());
             response.status(OperationStatus.SUCCESS);
@@ -118,7 +118,7 @@ public class ImportControllerImpl implements ImportController {
         respond(callback, response.build());
     }
 
-    private BuildResult importBuild(Build build, String tagPrefix) throws CausewayException {
+    private BuildResult importBuild(Build build, String tagPrefix, String username) throws CausewayException {
         if (build.getBuiltArtifacts().isEmpty()) {
             throw new CausewayFailure("Build doesn't contain any artifacts");
         }
@@ -131,7 +131,7 @@ public class ImportControllerImpl implements ImportController {
         BrewBuild brewBuild = brewClient.findBrewBuildOfNVR(nvr);
         String message;
         if (brewBuild == null) {
-            KojiImport kojiImport = translator.translate(nvr, build);
+            KojiImport kojiImport = translator.translate(nvr, build, username);
             ImportFileGenerator importFiles = translator.getImportFiles(build);
 
             brewBuild = brewClient.importBuild(nvr, kojiImport, importFiles);
