@@ -17,6 +17,9 @@
  */
 package org.jboss.pnc.causeway.rest.pnc;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 
 /**
@@ -30,4 +33,8 @@ public class MilestoneReleaseRest {
 
     private final int milestoneId;
 
+    @JsonCreator
+    public MilestoneReleaseRest(@JsonProperty("milestoneId") int milestoneId) {
+        this.milestoneId = milestoneId;
+    }
 }
