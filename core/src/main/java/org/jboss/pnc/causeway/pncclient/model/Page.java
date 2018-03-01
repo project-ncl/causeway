@@ -18,8 +18,11 @@
 package org.jboss.pnc.causeway.pncclient.model;
 
 import javax.xml.bind.annotation.XmlRootElement;
+
 import java.util.Collection;
 import java.util.Collections;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Collection REST response.
@@ -28,6 +31,7 @@ import java.util.Collections;
  */
 @XmlRootElement
 @Deprecated
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Page<T> {
 
     private Integer pageIndex;

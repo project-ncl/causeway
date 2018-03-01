@@ -25,12 +25,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Getter;
 import lombok.Setter;
 
 
 @XmlRootElement(name = "ProductVersion")
 @Deprecated
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductVersionRest {
 
     private Integer id;

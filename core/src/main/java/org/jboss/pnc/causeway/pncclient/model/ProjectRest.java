@@ -21,8 +21,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @XmlRootElement(name = "Project")
 @Deprecated
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProjectRest {
 
     private Integer id;

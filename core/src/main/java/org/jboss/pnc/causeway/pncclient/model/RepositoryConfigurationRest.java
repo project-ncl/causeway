@@ -26,6 +26,8 @@ import lombok.ToString;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * The REST entity that contains configuration of the SCM repositories.
  *
@@ -37,6 +39,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @AllArgsConstructor
 @XmlRootElement(name = "RepositoryConfiguration")
 @Deprecated
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RepositoryConfigurationRest {
 
     private Integer id;

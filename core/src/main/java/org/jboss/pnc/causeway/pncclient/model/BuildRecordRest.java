@@ -26,8 +26,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @XmlRootElement(name = "BuildRecord")
 @Deprecated
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class BuildRecordRest {
 
     private Integer id;

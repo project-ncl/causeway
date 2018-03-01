@@ -19,6 +19,8 @@ package org.jboss.pnc.causeway.pncclient.model;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Singleton REST response.
  *
@@ -26,6 +28,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 @Deprecated
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Singleton<T> {
 
     private T content;
