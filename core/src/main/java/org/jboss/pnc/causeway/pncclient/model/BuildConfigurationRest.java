@@ -25,8 +25,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Date;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @XmlRootElement(name = "Configuration")
 @Deprecated
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class BuildConfigurationRest {
 
     private Integer id;

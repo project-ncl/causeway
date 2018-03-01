@@ -19,8 +19,11 @@ package org.jboss.pnc.causeway.pncclient.model;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @XmlRootElement(name = "User") //TODO lowercase
 @Deprecated
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserRest {
 
     private Integer id;

@@ -21,9 +21,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 @XmlRootElement(name = "ProductRelease")
 @Deprecated
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductReleaseRest {
 
     public enum SupportLevel {

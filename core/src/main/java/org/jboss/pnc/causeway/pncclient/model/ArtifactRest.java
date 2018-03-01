@@ -25,8 +25,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Date;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @XmlRootElement(name = "Artifact")
 @Deprecated
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ArtifactRest {
 
     public enum Quality {

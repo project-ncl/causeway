@@ -22,8 +22,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Date;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @XmlRootElement(name = "ProductMilestone")
 @Deprecated
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductMilestoneRest {
 
     private Integer id;

@@ -21,8 +21,11 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @XmlRootElement(name = "BuildEnvironment")
 @Deprecated
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class BuildEnvironmentRest {
 
     private Integer id;
