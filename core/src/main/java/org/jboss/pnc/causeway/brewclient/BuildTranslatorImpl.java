@@ -63,6 +63,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
     private static final String MAVEN = "maven";
     private static final String CONTENT_GENERATOR_NAME = "Project Newcastle";
     static final String PNC = "PNC";
+    private static final String MD5 = "md5";
 
     private final CausewayConfig config;
 
@@ -161,7 +162,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                     .withOutputType(StandardOutputType.log)
                     .withFileSize(logBytes.length)
                     .withArch(StandardArchitecture.noarch)
-                    .withChecksum("MD5", logHash);
+                    .withChecksum(MD5, logHash);
         } catch (NoSuchAlgorithmException ex) {
             throw new CausewayException("Failed to compute md5 sum of build log: " + ex.getMessage(), ex);
         }
@@ -173,7 +174,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                     .withOutputType(StandardOutputType.log)
                     .withFileSize(logfile.getSize())
                     .withArch(StandardArchitecture.noarch)
-                    .withChecksum("MD5", logfile.getMd5());
+                    .withChecksum(MD5, logfile.getMd5());
         }
     }
 
@@ -181,7 +182,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
         for (PncArtifact artifact : dependencies) {
             FileBuildComponent.Builder componentBuilder = buildRootBuilder
                     .withFileComponent(artifact.deployPath);
-            componentBuilder.withChecksum("md5", artifact.checksum);
+            componentBuilder.withChecksum(MD5, artifact.checksum);
 
             switch (artifact.type) {
                 case MAVEN: {
@@ -199,7 +200,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
         for (Dependency dependency : dependencies) {
             buildRootBuilder
                     .withFileComponent(dependency.getFilename())
-                    .withChecksum("md5", dependency.getMd5())
+                    .withChecksum(MD5, dependency.getMd5())
                     .withFileSize(dependency.getSize());
         }
     }
@@ -210,7 +211,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             BuildOutput.Builder outputBuilder = builder
                     .withNewOutput(buildRootId, artifact.deployPath)
                     .withArch(StandardArchitecture.noarch)
-                    .withChecksum("md5", artifact.checksum);
+                    .withChecksum(MD5, artifact.checksum);
 
             switch (artifact.type) {
                 case MAVEN: {
@@ -232,7 +233,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             BuildOutput.Builder outputBuilder = builder
                     .withNewOutput(buildRootId, stripSlash(artifact.getArtifactPath()))
                     .withArch(artifact.getArchitecture())
-                    .withChecksum("md5", artifact.getMd5())
+                    .withChecksum(MD5, artifact.getMd5())
                     .withFileSize((int) artifact.getSize());
 
             if (artifact.getClass().equals(MavenBuiltArtifact.class)) {
