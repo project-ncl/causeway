@@ -15,13 +15,11 @@
  */
 package org.jboss.pnc.causeway.inject;
 
-import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordType;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
@@ -31,8 +29,10 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
 import java.io.Closeable;
+import java.util.logging.Logger;
 
 import com.redhat.red.build.koji.KojiClient;
+import com.redhat.red.build.koji.KojiClientException;
 import com.redhat.red.build.koji.config.KojiConfig;
 import com.redhat.red.build.koji.config.SimpleKojiConfigBuilder;
 
@@ -43,6 +43,9 @@ import com.redhat.red.build.koji.config.SimpleKojiConfigBuilder;
 public class CausewayProducer
         implements Closeable
 {
+
+    private final Logger logger = Logger.getLogger(CausewayProducer.class.getName());
+
     @Inject
     private CausewayConfig config;
 
@@ -51,26 +54,24 @@ public class CausewayProducer
 
     private KojiClient koji;
 
+    private final PasswordManager passwords = new MemoryPasswordManager();
+
     protected CausewayProducer()
     {
+        passwords.bind(config.getKojiClientCertificatePassword(), CausewayConfig.KOJI_SITE_ID, PasswordType.KEY);
     }
 
     public CausewayProducer( CausewayConfig config )
     {
         this.config = config;
-        setup();
+        passwords.bind(config.getKojiClientCertificatePassword(), CausewayConfig.KOJI_SITE_ID, PasswordType.KEY);
     }
 
-    @PostConstruct
-    public void setup()
-    {
-        PasswordManager passwords = new MemoryPasswordManager();
-        passwords.bind( config.getKojiClientCertificatePassword(), CausewayConfig.KOJI_SITE_ID, PasswordType.KEY );
+    private synchronized void setupKoji(PasswordManager passwords) {
+        if (koji != null) {
+            return;
+        }
 
-        setupKoji(passwords);
-    }
-
-    private void setupKoji(PasswordManager passwords) {
         SimpleKojiConfigBuilder builder = new SimpleKojiConfigBuilder();
         builder.withKojiSiteId("koji")
                 .withKojiURL(config.getKojiURL())
@@ -84,7 +85,11 @@ public class CausewayProducer
 
         KojiConfig kc = builder.build();
 
-        koji = new KojiClient(kc, passwords, executorService);
+        try {
+            koji = new KojiClient(kc, passwords, executorService);
+        } catch (KojiClientException ex) {
+            throw new RuntimeException("Couldn't connect to Koji.", ex);
+        }
     }
 
     @PreDestroy
@@ -99,6 +104,9 @@ public class CausewayProducer
     @Default
     public KojiClient getKojiClient()
     {
+        if (koji == null) {
+            setupKoji(passwords);
+        }
         return koji;
     }
 
