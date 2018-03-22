@@ -48,6 +48,7 @@ import com.redhat.red.build.koji.model.json.KojiJsonConstants;
 public class BrewClientImpl implements BrewClient {
 
     private final Logger logger = Logger.getLogger(BrewClientImpl.class.getName());
+    private static final String KOJI_COMMUNICATION_FAILURE = "Failure while communicating with Koji: ";
 
     public static final String BUILD_TAG_SUFIX = "-candidate";
 
@@ -76,7 +77,7 @@ public class BrewClientImpl implements BrewClient {
             checkPNCImportedBuild(bi);
             return toBrewBuild(bi, nvr);
         } catch (KojiClientException ex) {
-            throw new CausewayException("Failure while communicating with Koji: " + ex.getMessage(), ex);
+            throw new CausewayException(KOJI_COMMUNICATION_FAILURE + ex.getMessage(), ex);
         }
     }
 
@@ -88,7 +89,7 @@ public class BrewClientImpl implements BrewClient {
         try {
             buildInfo = koji.getBuildInfo(id, session);
         } catch (KojiClientException ex) {
-            throw new CausewayException("Failure while communicating with Koji: " + ex.getMessage(), ex);
+            throw new CausewayException(KOJI_COMMUNICATION_FAILURE + ex.getMessage(), ex);
         }
         koji.logout(session);
 
@@ -128,7 +129,14 @@ public class BrewClientImpl implements BrewClient {
             koji.addPackageToTag(tag, nvr.getKojiName(), session);
             koji.tagBuild(tag + BUILD_TAG_SUFIX, nvr.getNVR(), session);
         } catch (KojiClientException ex) {
-            throw new CausewayFailure("Failure while comunicating with Koji: " + ex.getMessage(), ex);
+            String msg = KOJI_COMMUNICATION_FAILURE;
+            if (ex.getMessage().contains("policy violation")){
+                String userName = session.getUserInfo().getUserName();
+                msg += "This is most probably because of missing permisions. Ask RCM to add "
+                        + "permisions for user '" + userName + "' to add packages to tag '" + tag
+                        + "' and to tag builds into tag '" + tag + BUILD_TAG_SUFIX + "'. Cause: ";
+            }
+            throw new CausewayFailure(msg + ex.getMessage(), ex);
         }
         koji.logout(session);
     }
@@ -139,7 +147,7 @@ public class BrewClientImpl implements BrewClient {
         try {
             koji.untagBuild(tag + BUILD_TAG_SUFIX, nvr.getNVR(), session);
         } catch (KojiClientException ex) {
-            throw new CausewayFailure("Failure while comunicating with Koji: " + ex.getMessage(), ex);
+            throw new CausewayFailure(KOJI_COMMUNICATION_FAILURE + ex.getMessage(), ex);
         }
         koji.logout(session);
     }
@@ -173,7 +181,7 @@ public class BrewClientImpl implements BrewClient {
 
             return ret;
         } catch (KojiClientException ex) {
-            throw new CausewayException("Failure while communicating with Koji: " + ex.getMessage(), ex);
+            throw new CausewayException(KOJI_COMMUNICATION_FAILURE + ex.getMessage(), ex);
         }
     }
 
@@ -245,7 +253,7 @@ public class BrewClientImpl implements BrewClient {
 
             koji.logout(session);
         } catch (KojiClientException ex) {
-            throw new CausewayException("Failure while comunicating with Koji: " + ex.getMessage(), ex);
+            throw new CausewayException(KOJI_COMMUNICATION_FAILURE + ex.getMessage(), ex);
         }
         return packageTag && buildTag;
     }
