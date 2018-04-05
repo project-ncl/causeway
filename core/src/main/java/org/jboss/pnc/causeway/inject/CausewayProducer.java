@@ -46,8 +46,7 @@ public class CausewayProducer
 
     private final Logger logger = Logger.getLogger(CausewayProducer.class.getName());
 
-    @Inject
-    private CausewayConfig config;
+    private final CausewayConfig config;
 
     @Resource
     private ManagedExecutorService executorService;
@@ -56,11 +55,7 @@ public class CausewayProducer
 
     private final PasswordManager passwords = new MemoryPasswordManager();
 
-    protected CausewayProducer()
-    {
-        passwords.bind(config.getKojiClientCertificatePassword(), CausewayConfig.KOJI_SITE_ID, PasswordType.KEY);
-    }
-
+    @Inject
     public CausewayProducer( CausewayConfig config )
     {
         this.config = config;
