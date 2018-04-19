@@ -186,7 +186,10 @@ public class PncImportControllerImpl implements PncImportController {
               + "(Note that tag " + child + " should inherit from tag " + parent + ")";
     }
 
-    private BrewNVR getNVR(BuildRecordRest build) {
+    private BrewNVR getNVR(BuildRecordRest build) throws CausewayException {
+        if(build.getExecutionRootVersion() == null || build.getExecutionRootName() == null){
+            throw new CausewayException("Build executionRootVersion and executionRootName can't be null");
+        }
         return new BrewNVR(build.getExecutionRootName(), build.getExecutionRootVersion(), "1");
     }
 
