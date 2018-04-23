@@ -19,6 +19,7 @@ import static org.jboss.pnc.causeway.rest.CallbackMethod.POST;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -52,5 +53,17 @@ public class CallbackTarget {
     public CallbackTarget(String url, CallbackMethod method) {
         this(url, method, Collections.emptyMap());
     }
+    
+     @Override
+    public String toString() {
+         StringBuilder headersString = new StringBuilder();
+         headers.entrySet().stream()
+                 .map(e -> '"' + e.getKey() + ':'
+                         + ("Authorization".equals(e.getKey()) ? "***" : e.getValue()) + '"')
+                 .collect(Collectors.joining(","));
+
+         return "CallbackTarget{" + "url=" + url + ", method=" + method + ", headers={"
+                 + headersString + "}}";
+     }
 
 }
