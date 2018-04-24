@@ -123,7 +123,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                     .withOutputType(StandardOutputType.log)
                     .withFileSize(logBytes.length)
                     .withArch(StandardArchitecture.noarch)
-                    .withChecksum("MD5", logHash);
+                    .withChecksum("md5", logHash);
         } catch (NoSuchAlgorithmException ex) {
             throw new CausewayException("Failed to compute md5 sum of build log: " + ex.getMessage(), ex);
         }
