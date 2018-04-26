@@ -157,7 +157,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             byte[] logBytes = log.getBytes();
             MessageDigest md = MessageDigest.getInstance("MD5");
             BigInteger bi = new BigInteger(1, md.digest(logBytes));
-            String logHash = bi.toString(16);
+            String logHash = String.format("%032x", bi);
             builder.withNewOutput(buildRootId, "build.log")
                     .withOutputType(StandardOutputType.log)
                     .withFileSize(logBytes.length)
