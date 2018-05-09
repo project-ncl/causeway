@@ -48,6 +48,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.*;
+import org.jboss.pnc.causeway.pncclient.model.ArtifactRest;
 
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
@@ -144,7 +145,8 @@ public class PncImportControllerTest {
                         "bedf8af1b107b36c72f52009e6fcc768",
                         "http://pnc-indy-branch-nightly.cloud.pnc.devel.engineering.redhat.com/api/hosted/"
                             + "build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/org/apache/geronimo/specs/geronimo-annotation_1.0_spec/1.1.1.redhat-1/geronimo-annotation_1.0_spec-1.1.1.redhat-1.pom",
-                        13245
+                        13245,
+                        ArtifactRest.Quality.NEW
                 )
         );
 

@@ -17,6 +17,7 @@ package org.jboss.pnc.causeway.pncclient;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.jboss.pnc.causeway.pncclient.model.ArtifactRest.Quality;
 
 @Deprecated
 public final class BuildArtifacts {
@@ -36,9 +37,10 @@ public final class BuildArtifacts {
         public final String deployPath;
         public final String checksum;
         public final String deployUrl;
+        public final Quality artifactQuality;
         public final long size;
 
-        public PncArtifact(int id, String type, String identifier, String deployPath, String checksum, String deployUrl, long size) {
+        public PncArtifact(int id, String type, String identifier, String deployPath, String checksum, String deployUrl, long size, Quality artifactQuality) {
             this.id = id;
             this.type = type;
             this.identifier = identifier;
@@ -46,6 +48,7 @@ public final class BuildArtifacts {
             this.checksum = checksum;
             this.deployUrl = deployUrl;
             this.size = size;
+            this.artifactQuality = artifactQuality;
         }
     }
 }

@@ -180,7 +180,8 @@ public class PncClientImpl implements PncClient
                 deployPath,
                 artifactRest.getMd5(),
                 artifactRest.getDeployUrl(),
-                artifactRest.getSize() == null ? 1 : artifactRest.getSize());
+                artifactRest.getSize() == null ? 1 : artifactRest.getSize(),
+                artifactRest.getArtifactQuality());
     }
 
     public Collection<ArtifactRest> getArtifacts(Integer buildId, IntFunction<Response> query) throws CausewayException{

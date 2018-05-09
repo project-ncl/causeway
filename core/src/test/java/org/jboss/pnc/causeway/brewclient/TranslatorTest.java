@@ -35,6 +35,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import org.jboss.pnc.causeway.pncclient.model.ArtifactRest;
 
 /**
  *
@@ -104,7 +105,8 @@ public class TranslatorTest {
                 "maven", identifier, filename,
                 "bedf8af1b107b36c72f52009e6fcc768",
                 "http://pnc-indy-branch-nightly.cloud.pnc.devel.engineering.redhat.com/api/hosted/build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/"+path,
-                13245);
+                13245,
+                ArtifactRest.Quality.NEW);
     }
 
     private String readResponseBodyFromTemplate(String name) throws IOException {
