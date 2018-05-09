@@ -46,6 +46,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.redhat.red.build.koji.model.json.KojiImport;
+import java.util.Iterator;
+import org.jboss.pnc.causeway.pncclient.model.ArtifactRest;
+import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
 
 @Deprecated
 @Stateless
@@ -157,13 +160,29 @@ public class PncImportControllerImpl implements PncImportController {
             return ret;
         }
 
+        List<BuildArtifacts.PncArtifact> blackArtifacts = new ArrayList<>();
         BuildArtifacts artifacts = pncClient.findBuildArtifacts(build.getId());
+        for (Iterator<BuildArtifacts.PncArtifact> it = artifacts.buildArtifacts.iterator(); it.hasNext();) {
+            BuildArtifacts.PncArtifact artifact = it.next();
+            if(artifact.artifactQuality == ArtifactRest.Quality.BLACKLISTED){
+                blackArtifacts.add(artifact);
+                it.remove();
+            }
+        }
         String log = pncClient.getBuildLog(build.getId());
 
         KojiImport kojiImport = translator.translate(nvr, build, artifacts, log, username);
         ImportFileGenerator importFiles = translator.getImportFiles(artifacts, log);
+        final BuildImportResultRest importedBuild = brewClient.importBuild(nvr, build.getId(), kojiImport, importFiles);
 
-        return brewClient.importBuild(nvr, build.getId(), kojiImport, importFiles);
+        for (BuildArtifacts.PncArtifact artifact : blackArtifacts) {
+            ArtifactImportError error = ArtifactImportError.builder()
+                    .artifactId(artifact.id)
+                    .errorMessage("This artifact is blacklisted, so ti was not imported.")
+                    .build();
+            importedBuild.getErrors().add(error);
+        }
+        return importedBuild;
     }
 
     static String messagePncReleaseNotFound(long releaseId, Exception e) {
