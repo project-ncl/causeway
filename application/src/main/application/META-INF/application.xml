@@ -31,6 +31,9 @@
         <ejb>causeway-rest.jar</ejb>
     </module>
     <module>
+        <ejb>causeway-metrics.jar</ejb>
+    </module>
+    <module>
         <web>
             <web-uri>causeway-web.war</web-uri>
             <context-root>causeway</context-root>
