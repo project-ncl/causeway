@@ -43,6 +43,11 @@
       <type>ejb</type>
     </dependency>
     <dependency>
+        <groupId>org.jboss.pnc.causeway</groupId>
+        <artifactId>causeway-metrics</artifactId>
+        <type>ejb</type>
+    </dependency>
+    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
     </dependency>
@@ -73,6 +78,12 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlets</artifactId>
+    </dependency>
+
+      <!-- Dropwizard deps -->
+    <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-core</artifactId>
     </dependency>
   </dependencies>
 
