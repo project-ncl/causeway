@@ -49,6 +49,11 @@
       <type>ejb</type>
     </dependency>
     <dependency>
+      <groupId>org.jboss.pnc.causeway</groupId>
+      <artifactId>causeway-metrics</artifactId>
+      <type>ejb</type>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
@@ -87,6 +92,10 @@
                 <groupId>org.jboss.pnc.causeway</groupId>
                 <artifactId>causeway-rest</artifactId>
               </ejbModule>
+            <ejbModule>
+              <groupId>org.jboss.pnc.causeway</groupId>
+              <artifactId>causeway-metrics</artifactId>
+            </ejbModule>
               <webModule>
                 <groupId>org.jboss.pnc.causeway</groupId>
                 <artifactId>causeway-web</artifactId>
