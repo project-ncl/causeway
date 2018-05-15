@@ -15,6 +15,9 @@
  */
 package org.jboss.pnc.causeway.ctl;
 
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.bpmclient.BPMClient;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
@@ -52,11 +55,18 @@ import com.redhat.red.build.koji.model.json.KojiImport;
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class PncImportControllerImpl implements PncImportController {
 
+    private static final String METRICS_BASE = "causeway.import.milestone";
+    private static final String METRICS_TIMER = ".timer";
+    private static final String METRICS_METER = ".meter";
+
     private final PncClient pncClient;
     private final BrewClient brewClient;
     private final BPMClient bpmClient;
     private final BuildTranslator translator;
     private final CausewayConfig config;
+
+    @Inject
+    private MetricRegistry registry;
 
     @Inject
     public PncImportControllerImpl(PncClient pnclClient, BrewClient brewClient, BPMClient bpmClient, BuildTranslator translator, CausewayConfig config) {
@@ -71,6 +81,13 @@ public class PncImportControllerImpl implements PncImportController {
     @Asynchronous
     public void importMilestone(int milestoneId, CallbackTarget callback, String callbackId, String username) {
         Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.INFO, "Entering importMilestone.");
+
+        Meter meter = registry.meter(METRICS_BASE + METRICS_METER);
+        meter.mark();
+
+        Timer timer = registry.timer(METRICS_BASE + METRICS_TIMER);
+        Timer.Context context = timer.time();
+
         MilestoneReleaseResultRest result = new MilestoneReleaseResultRest();
         result.setMilestoneId(milestoneId);
         try {
@@ -99,6 +116,9 @@ public class PncImportControllerImpl implements PncImportController {
             result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
             bpmClient.error(callback.getUrl(), callbackId, result);
         }
+
+        // stop the timer
+        context.stop();
     }
 
     private List<BuildImportResultRest> importProductMilestone(int milestoneId, String username) throws CausewayException {

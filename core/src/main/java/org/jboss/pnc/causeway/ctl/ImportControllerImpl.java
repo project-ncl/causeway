@@ -1,5 +1,8 @@
 package org.jboss.pnc.causeway.ctl;
 
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.CausewayFailure;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
@@ -12,7 +15,6 @@ import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.CallbackTarget;
 import org.jboss.pnc.causeway.rest.model.Build;
 import org.jboss.pnc.causeway.rest.model.TaggedBuild;
-import org.jboss.pnc.causeway.rest.model.UntagRequest;
 import org.jboss.pnc.causeway.rest.model.response.BuildRecordPushResultRest;
 import org.jboss.pnc.causeway.rest.model.response.BuildRecordPushResultRest.BuildRecordPushResultRestBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
@@ -40,8 +42,6 @@ import org.jboss.pnc.causeway.rest.model.response.OperationStatus;
 import org.jboss.pnc.causeway.rest.model.response.UntagResultRest;
 import org.jboss.pnc.causeway.rest.model.response.UntagResultRest.UntagResultRestBuilder;
 
-import com.redhat.red.build.koji.model.xmlrpc.messages.UntagBuildRequest;
-
 /**
  *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
@@ -52,6 +52,10 @@ public class ImportControllerImpl implements ImportController {
 
     private final Logger logger = Logger.getLogger(ImportControllerImpl.class.getName());
 
+    private static final String METRICS_BASE = "causeway.import.build";
+    private static final String METRICS_TIMER = ".timer";
+    private static final String METRICS_METER = ".meter";
+
     @Inject
     private BrewClient brewClient;
     @Inject
@@ -59,6 +63,9 @@ public class ImportControllerImpl implements ImportController {
     @Inject
     private CausewayConfig config;
     private ResteasyClient restClient;
+
+    @Inject
+    private MetricRegistry registry;
 
     @Inject
     public ImportControllerImpl() {
@@ -69,6 +76,12 @@ public class ImportControllerImpl implements ImportController {
     @Asynchronous
     public void importBuild(Build build, CallbackTarget callback, String username) {
         logger.log(Level.INFO, "Entering importBuild.");
+
+        Meter meter = registry.meter(METRICS_BASE + METRICS_METER);
+        meter.mark();
+
+        Timer timer = registry.timer(METRICS_BASE + METRICS_TIMER);
+        Timer.Context context = timer.time();
 
         BuildRecordPushResultRestBuilder response = BuildRecordPushResultRest.builder();
         response.buildRecordId(build.getExternalBuildID());
@@ -93,6 +106,9 @@ public class ImportControllerImpl implements ImportController {
             response.log(ex.getMessage());
         }
         respond(callback, response.build());
+
+        // stop the timer
+        context.stop();
     }
 
     @Override
