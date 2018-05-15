@@ -25,6 +25,7 @@
     <sub-deployment name="causeway-core.jar">
         <dependencies>
             <module name="deployment.causeway.ear.causeway-rest.jar"/>
+            <module name="deployment.causeway.ear.causeway-metrics.jar"/>
         </dependencies>
     </sub-deployment>
     <sub-deployment name="causeway-metrics.jar">
