@@ -35,6 +35,11 @@
       <type>ejb</type>
     </dependency>
     <dependency>
+      <groupId>org.jboss.pnc.causeway</groupId>
+      <artifactId>causeway-metrics</artifactId>
+      <type>ejb</type>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.util</groupId>
       <artifactId>jhttpc</artifactId>
     </dependency>
@@ -110,6 +115,12 @@
         <groupId>org.jboss.resteasy</groupId>
         <artifactId>resteasy-jackson-provider</artifactId>
         <scope>test</scope>
+    </dependency>
+
+    <!-- Dropwizard deps -->
+    <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-core</artifactId>
     </dependency>
   </dependencies>
   

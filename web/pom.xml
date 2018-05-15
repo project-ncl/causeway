@@ -80,7 +80,7 @@
       <artifactId>jetty-servlets</artifactId>
     </dependency>
 
-      <!-- Dropwizard deps -->
+    <!-- Dropwizard deps -->
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-core</artifactId>
