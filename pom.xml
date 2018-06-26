@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava</groupId>
     <artifactId>commonjava</artifactId>
-    <version>11</version>
+    <version>12</version>
   </parent>
   
   <groupId>org.jboss.pnc.causeway</groupId>
@@ -284,6 +284,15 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+          <groupId>com.mycila</groupId>
+          <artifactId>license-maven-plugin</artifactId>
+          <executions>
+              <execution>
+                  <phase>none</phase>
+              </execution>
+          </executions>
       </plugin>
     </plugins>
   </build>
