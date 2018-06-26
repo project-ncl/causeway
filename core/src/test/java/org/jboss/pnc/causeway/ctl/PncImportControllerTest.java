@@ -48,11 +48,16 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.*;
+
 import org.jboss.pnc.causeway.pncclient.model.ArtifactRest;
 
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 import org.mockito.InjectMocks;
+
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 
 public class PncImportControllerTest {
 
@@ -80,6 +85,9 @@ public class PncImportControllerTest {
     private CausewayConfig causewayConfig;
 
     @Mock
+    public MetricRegistry metricRegistry;
+
+    @Mock
     public BuildTranslatorImpl translator;
     
     @InjectMocks
@@ -88,6 +96,10 @@ public class PncImportControllerTest {
     @Before
     public void before() throws Exception {
         MockitoAnnotations.initMocks(this);
+        when(metricRegistry.meter(anyString())).thenReturn(mock(Meter.class));
+        Timer timer = mock(Timer.class);
+        when(metricRegistry.timer(anyString())).thenReturn(timer);
+        when(timer.time()).thenReturn(mock(Timer.Context.class));
         //importController = new PncImportControllerImpl(pncClient, brewClient, bpmClient, translator, causewayConfig);
     }
 

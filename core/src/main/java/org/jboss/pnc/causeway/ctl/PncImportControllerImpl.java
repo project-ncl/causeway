@@ -68,16 +68,16 @@ public class PncImportControllerImpl implements PncImportController {
     private final BuildTranslator translator;
     private final CausewayConfig config;
 
-    @Inject
-    private MetricRegistry registry;
+    private final MetricRegistry registry;
 
     @Inject
-    public PncImportControllerImpl(PncClient pnclClient, BrewClient brewClient, BPMClient bpmClient, BuildTranslator translator, CausewayConfig config) {
+    public PncImportControllerImpl(PncClient pnclClient, BrewClient brewClient, BPMClient bpmClient, BuildTranslator translator, CausewayConfig config, MetricRegistry registry) {
         this.pncClient = pnclClient;
         this.brewClient = brewClient;
         this.bpmClient = bpmClient;
         this.translator = translator;
         this.config = config;
+        this.registry = registry;
     }
 
     @Override

@@ -49,6 +49,9 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.stream.Collectors;
 
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -87,6 +90,9 @@ public class ImportControllerTest {
 
     @Mock
     public BuildTranslatorImpl translator;
+
+    @Mock
+    public MetricRegistry metricRegistry;
     
     @InjectMocks
     private ImportControllerImpl importController;
@@ -96,6 +102,10 @@ public class ImportControllerTest {
         MockitoAnnotations.initMocks(this);
         when(causewayConfig.getKojiURL()).thenReturn(KOJI_URL);
         when(causewayConfig.getKojiWebURL()).thenReturn(KOJI_BUILD_URL);
+        when(metricRegistry.meter(anyString())).thenReturn(mock(Meter.class));
+        Timer timer = mock(Timer.class);
+        when(metricRegistry.timer(anyString())).thenReturn(timer);
+        when(timer.time()).thenReturn(mock(Timer.Context.class));
 
         mapper.registerSubtypes(MavenBuild.class, MavenBuiltArtifact.class);
 
