@@ -12,7 +12,7 @@ import javax.ws.rs.core.Response;
 
 /**
  *
- * @author Honza Brázdil <janinko.g@gmail.com>
+ * @author Honza Brázdil &lt;janinko.g@gmail.com&gt;
  */
 
 @Path( "/import" )
