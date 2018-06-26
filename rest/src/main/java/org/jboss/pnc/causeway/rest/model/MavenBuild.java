@@ -16,7 +16,7 @@ import lombok.NonNull;
 
 /**
  *
- * @author Honza Brázdil <jbrazdil@redhat.com>
+ * @author Honza Brázdil &lt;janinko.g@gmail.com&gt;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

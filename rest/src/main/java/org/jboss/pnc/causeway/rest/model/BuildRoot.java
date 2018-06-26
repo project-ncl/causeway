@@ -12,7 +12,7 @@ import lombok.NonNull;
 
 /**
  *
- * @author Honza Brázdil <janinko.g@gmail.com>
+ * @author Honza Brázdil &lt;janinko.g@gmail.com&gt;
  */
 @Data
 @Builder
