@@ -32,7 +32,7 @@ public interface BrewClient {
      * Find Brew build with given name:version:release that was imported by Causeway. If there isn't
      * any such build, returns null. If there is build with the NVR but it wasn't imported by
      * causeway, CausewayFailure exception is thrown.
-     * @throws CausewayFailure when build with given NVR exists but wasn't imported by Causeway.
+     * @throws CausewayException when build with given NVR exists but wasn't imported by Causeway.
      */
     BrewBuild findBrewBuildOfNVR(BrewNVR nvr) throws CausewayException;
 
@@ -40,7 +40,7 @@ public interface BrewClient {
      * Find Brew build with given id that was imported by Causeway. If there isn't such build,
      * returns null. If there is build with the id but it wasn't imported by causeway,
      * CausewayFailure exception is thrown.
-     * @throws CausewayFailure when build with given id exists but wasn't imported by Causeway.
+     * @throws CausewayException when build with given id exists but wasn't imported by Causeway.
      */
     BrewBuild findBrewBuild(int id) throws CausewayException;
 

@@ -9,7 +9,7 @@ import lombok.Getter;
 /**
  * This class indicates just a failure, which can usually be solved by user themselve.
  *
- * @author Honza Brázdil <jbrazdil@redhat.com>
+ * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
 public class CausewayFailure extends CausewayException {
 
