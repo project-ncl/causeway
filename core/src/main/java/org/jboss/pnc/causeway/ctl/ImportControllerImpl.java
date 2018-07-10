@@ -75,7 +75,7 @@ public class ImportControllerImpl implements ImportController {
     @Override
     @Asynchronous
     public void importBuild(Build build, CallbackTarget callback, String username) {
-        logger.log(Level.INFO, "Entering importBuild.");
+        logger.log(Level.INFO, "Importing external build {0} to tag {1}", new Object[]{build.getExternalBuildID(), build.getTagPrefix()});
 
         Meter meter = registry.meter(METRICS_BASE + METRICS_METER);
         meter.mark();
@@ -114,7 +114,7 @@ public class ImportControllerImpl implements ImportController {
     @Override
     @Asynchronous
     public void untagBuild(TaggedBuild build, CallbackTarget callback) {
-        logger.log(Level.INFO, "Entering importBuild.");
+        logger.log(Level.INFO, "Untaging build {0} from tag {1}", new Object[]{build.getBrewBuildId(), build.getTagPrefix()});
 
         UntagResultRestBuilder response = UntagResultRest.builder();
         response.brewBuildId(build.getBrewBuildId());
