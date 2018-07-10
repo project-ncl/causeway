@@ -23,13 +23,13 @@ public class BrewBuild extends BrewNVR {
     private final Integer id;
 
     @JsonCreator
-    public BrewBuild(@JsonProperty("id")Integer id, @JsonProperty("name")String name, @JsonProperty("version")String version, @JsonProperty("release")String release) {
-        this(id, new BrewNVR(name, version, release));
+    public BrewBuild(@JsonProperty("id") Integer id, @JsonProperty("name") String name, @JsonProperty("version") String version, @JsonProperty("release") String release) {
+        super(name, version, release);
+        this.id = id;
     }
 
     public BrewBuild(Integer id, BrewNVR nvr) {
-        super(nvr.getName(), nvr.getRelease(), nvr.getVersion());
-        this.id = id;
+        this(id, nvr.getName(), nvr.getVersion(), nvr.getRelease());
     }
 
     public Integer getId() {
