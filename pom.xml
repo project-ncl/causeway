@@ -53,7 +53,6 @@
     <javaVersion>1.8</javaVersion>
     <jhttpcVersion>1.6</jhttpcVersion>
     <configVersion>0.8</configVersion>
-    <resteasyVersion>3.0.19.SP4-redhat-1</resteasyVersion>
     <mockitoVersion>1.10.19</mockitoVersion>
     <kojijiVersion>2.2</kojijiVersion>
   </properties>
@@ -82,61 +81,60 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.commonjava.boms</groupId>
-        <artifactId>web-commons-bom</artifactId>
-        <version>21</version>
+        <groupId>org.jboss.bom</groupId>
+        <artifactId>jboss-eap-javaee7-with-tools</artifactId>
+        <version>7.1.2.GA</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-
       <dependency>
         <groupId>org.jboss.bom</groupId>
-        <artifactId>jboss-eap-javaee7-with-tools</artifactId>
-        <version>7.0.8.GA</version>
+        <artifactId>eap-runtime-artifacts</artifactId>
+        <version>7.1.2.GA</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.jboss.spec</groupId>
         <artifactId>jboss-javaee-7.0</artifactId>
-        <version>1.0.3.Final</version>
+        <version>1.1.0.Final</version>
         <type>pom</type>
       </dependency>
 
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-model-java</artifactId>
-        <version>1.4.0-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-core</artifactId>
         <type>ejb</type>
-        <version>1.4.0-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-rest</artifactId>
         <type>ejb</type>
-        <version>1.4.0-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-web</artifactId>
         <type>war</type>
-        <version>1.4.0-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-tck</artifactId>
-        <version>1.4.0-SNAPSHOT</version>
+        <version>${project.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-metrics</artifactId>
         <type>ejb</type>
-        <version>1.4.0-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
 
       <dependency>
@@ -154,11 +152,21 @@
         <artifactId>atlas-identities</artifactId>
         <version>0.15.2</version>
       </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>jhttpc</artifactId>
+        <version>${jhttpcVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.rwx</groupId>
+        <artifactId>rwx-bindings</artifactId>
+        <version>1.1</version>
+      </dependency>
 
       <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
-        <version>1.16.10</version>
+        <version>1.16.20</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
@@ -172,32 +180,9 @@
       </dependency>
 
       <dependency>
-        <groupId>org.commonjava.util</groupId>
-        <artifactId>jhttpc</artifactId>
-        <version>${jhttpcVersion}</version>
-      </dependency>
-
-      <dependency>
         <groupId>com.redhat.red.build</groupId>
         <artifactId>kojiji</artifactId>
         <version>${kojijiVersion}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>javax.enterprise</groupId>
-        <artifactId>cdi-api</artifactId>
-        <version>1.2</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.rwx</groupId>
-        <artifactId>rwx-bindings</artifactId>
-        <version>1.1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.resteasy</groupId>
-        <artifactId>resteasy-jaxrs</artifactId>
-        <version>${resteasyVersion}</version>
       </dependency>
 
       <dependency>
@@ -243,19 +228,9 @@
   
   <dependencies>
     <dependency>
-      <groupId>javax.enterprise</groupId>
-      <artifactId>cdi-api</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>log4j-over-slf4j</artifactId>
-      <scope>runtime</scope>
     </dependency>
   </dependencies>
   <build>
