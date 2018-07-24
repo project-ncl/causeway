@@ -55,7 +55,7 @@
     <configVersion>0.8</configVersion>
     <resteasyVersion>3.0.19.SP4-redhat-1</resteasyVersion>
     <mockitoVersion>1.10.19</mockitoVersion>
-    <kojijiVersion>2.2</kojijiVersion>
+    <kojijiVersion>2.5</kojijiVersion>
   </properties>
 
   <modules>
