@@ -45,6 +45,7 @@
     <connection>scm:git:http://github.com/project-ncl/causeway.git</connection>
     <developerConnection>scm:git:git@github.com:project-ncl/causeway.git</developerConnection>
     <url>http://github.com/project-ncl/causeway</url>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>
