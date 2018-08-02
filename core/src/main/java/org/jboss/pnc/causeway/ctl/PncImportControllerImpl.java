@@ -25,6 +25,7 @@ import org.jboss.pnc.causeway.brewclient.BrewClientImpl;
 import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
+import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
@@ -68,16 +69,16 @@ public class PncImportControllerImpl implements PncImportController {
     private final BuildTranslator translator;
     private final CausewayConfig config;
 
-    private final MetricRegistry registry;
+    private final MetricsConfiguration metricsConfiguration;
 
     @Inject
-    public PncImportControllerImpl(PncClient pnclClient, BrewClient brewClient, BPMClient bpmClient, BuildTranslator translator, CausewayConfig config, MetricRegistry registry) {
+    public PncImportControllerImpl(PncClient pnclClient, BrewClient brewClient, BPMClient bpmClient, BuildTranslator translator, CausewayConfig config, MetricsConfiguration metricConfiguration) {
         this.pncClient = pnclClient;
         this.brewClient = brewClient;
         this.bpmClient = bpmClient;
         this.translator = translator;
         this.config = config;
-        this.registry = registry;
+        this.metricsConfiguration = metricConfiguration;
     }
 
     @Override
@@ -85,6 +86,7 @@ public class PncImportControllerImpl implements PncImportController {
     public void importMilestone(int milestoneId, CallbackTarget callback, String callbackId, String username) {
         Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.INFO, "Entering importMilestone.");
 
+        MetricRegistry registry = metricsConfiguration.getMetricRegistry();
         Meter meter = registry.meter(METRICS_BASE + METRICS_METER);
         meter.mark();
 
