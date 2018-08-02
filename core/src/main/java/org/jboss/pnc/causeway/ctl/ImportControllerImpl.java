@@ -10,6 +10,8 @@ import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageMissingTag;
+
+import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.CallbackTarget;
@@ -65,7 +67,7 @@ public class ImportControllerImpl implements ImportController {
     private ResteasyClient restClient;
 
     @Inject
-    private MetricRegistry registry;
+    private MetricsConfiguration metricsConfiguration;
 
     @Inject
     public ImportControllerImpl() {
@@ -77,6 +79,7 @@ public class ImportControllerImpl implements ImportController {
     public void importBuild(Build build, CallbackTarget callback, String username) {
         logger.log(Level.INFO, "Importing external build {0} to tag {1}", new Object[]{build.getExternalBuildID(), build.getTagPrefix()});
 
+        MetricRegistry registry = metricsConfiguration.getMetricRegistry();
         Meter meter = registry.meter(METRICS_BASE + METRICS_METER);
         meter.mark();
 

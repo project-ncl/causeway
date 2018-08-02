@@ -27,6 +27,8 @@ import org.jboss.pnc.causeway.brewclient.BuildTranslatorImpl;
 import org.jboss.pnc.causeway.brewclient.ExternalLogImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageMissingTag;
+
+import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.CallbackMethod;
@@ -92,6 +94,9 @@ public class ImportControllerTest {
     public BuildTranslatorImpl translator;
 
     @Mock
+    public MetricsConfiguration metricsConfiguration;
+
+    @Mock
     public MetricRegistry metricRegistry;
     
     @InjectMocks
@@ -102,6 +107,7 @@ public class ImportControllerTest {
         MockitoAnnotations.initMocks(this);
         when(causewayConfig.getKojiURL()).thenReturn(KOJI_URL);
         when(causewayConfig.getKojiWebURL()).thenReturn(KOJI_BUILD_URL);
+        when(metricsConfiguration.getMetricRegistry()).thenReturn(metricRegistry);
         when(metricRegistry.meter(anyString())).thenReturn(mock(Meter.class));
         Timer timer = mock(Timer.class);
         when(metricRegistry.timer(anyString())).thenReturn(timer);

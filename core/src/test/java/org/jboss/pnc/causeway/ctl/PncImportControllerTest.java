@@ -23,6 +23,7 @@ import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.brewclient.BuildTranslatorImpl;
 import org.jboss.pnc.causeway.brewclient.StringLogImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
+import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.PncClient;
 import org.jboss.pnc.causeway.pncclient.model.BuildConfigurationAuditedRest;
@@ -85,6 +86,9 @@ public class PncImportControllerTest {
     private CausewayConfig causewayConfig;
 
     @Mock
+    public MetricsConfiguration metricsConfiguration;
+
+    @Mock
     public MetricRegistry metricRegistry;
 
     @Mock
@@ -96,6 +100,7 @@ public class PncImportControllerTest {
     @Before
     public void before() throws Exception {
         MockitoAnnotations.initMocks(this);
+        when(metricsConfiguration.getMetricRegistry()).thenReturn(metricRegistry);
         when(metricRegistry.meter(anyString())).thenReturn(mock(Meter.class));
         Timer timer = mock(Timer.class);
         when(metricRegistry.timer(anyString())).thenReturn(timer);
