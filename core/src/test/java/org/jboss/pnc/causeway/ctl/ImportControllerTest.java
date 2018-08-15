@@ -28,7 +28,6 @@ import org.jboss.pnc.causeway.brewclient.ExternalLogImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageMissingTag;
 
-import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.CallbackMethod;
@@ -37,6 +36,7 @@ import org.jboss.pnc.causeway.rest.model.Build;
 import org.jboss.pnc.causeway.rest.model.MavenBuild;
 import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
 import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
+import org.jboss.pnc.pncmetrics.MetricsConfiguration;
 import org.junit.*;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
