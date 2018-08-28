@@ -43,8 +43,9 @@
       <type>ejb</type>
     </dependency>
     <dependency>
-        <groupId>org.jboss.pnc.metrics</groupId>
-        <artifactId>pncmetrics</artifactId>
+        <groupId>org.jboss.pnc.causeway</groupId>
+        <artifactId>causeway-metrics</artifactId>
+        <type>ejb</type>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
