@@ -56,6 +56,7 @@ public class ArtifactRest {
          * The artifact contains a severe defect, possibly a functional or security issue.
          */
         BLACKLISTED,
+        TEMPORARY,
 
     }
     public enum Type {
