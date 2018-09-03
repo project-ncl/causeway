@@ -16,6 +16,7 @@
 package org.jboss.pnc.causeway.pncclient;
 
 import static org.jboss.resteasy.util.HttpResponseCodes.SC_OK;
+import static org.jboss.resteasy.util.HttpResponseCodes.SC_NO_CONTENT;
 
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.config.CausewayConfig;
@@ -47,6 +48,7 @@ import javax.ws.rs.core.Response;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
@@ -184,17 +186,24 @@ public class PncClientImpl implements PncClient
                 artifactRest.getArtifactQuality());
     }
 
-    public Collection<ArtifactRest> getArtifacts(Integer buildId, IntFunction<Response> query) throws CausewayException{
+    private Collection<ArtifactRest> getArtifacts(Integer buildId, IntFunction<Response> query) throws CausewayException {
         Response response = null;
         try{
             Collection<ArtifactRest> artifacts = new ArrayList<>();
             response = query.apply(0);
-            if (response.getStatus() != SC_OK) {
-                throw new CausewayException("Can't read info for build id " + buildId + " - response " + response.getStatus() + ": " + response.getEntity());
-            }
-            Page<ArtifactRest> page = (Page<ArtifactRest>) response.readEntity(new GenericType<Page<ArtifactRest>>() {});
-            response.close();
+            Page<ArtifactRest> page;
+            switch (response.getStatus()) {
+                case SC_OK: // OK
+                    page = (Page<ArtifactRest>) response.readEntity(new GenericType<Page<ArtifactRest>>() {
+                    });
+                    response.close();
+                    break;
+                case SC_NO_CONTENT:
+                    return Collections.emptyList();
+                default:
+                    throw new CausewayException("Can't read info for build id " + buildId + " - response " + response.getStatus() + ": " + response.getEntity());
 
+            }
             artifacts.addAll(page.getContent());
             for(int p=1; p< page.getTotalPages(); p++){
                 response = query.apply(p);

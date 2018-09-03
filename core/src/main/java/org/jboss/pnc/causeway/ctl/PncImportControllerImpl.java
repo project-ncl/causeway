@@ -97,10 +97,10 @@ public class PncImportControllerImpl implements PncImportController {
             List<BuildImportResultRest> results = importProductMilestone(milestoneId, username);
             result.setBuilds(results);
 
-            if( results.stream().anyMatch(r -> r.getErrorMessage() != null)){
+            if (results.stream().anyMatch(r -> r.getStatus() == BuildImportStatus.ERROR)) {
                 result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
                 bpmClient.failure(callback.getUrl(), callbackId, result);
-            }else if( results.stream().anyMatch(r -> isNotEmpty(r.getErrors()))){
+            } else if (results.stream().anyMatch(r -> r.getStatus() == BuildImportStatus.FAILED)) {
                 result.setReleaseStatus(ReleaseStatus.IMPORT_ERROR);
                 bpmClient.failure(callback.getUrl(), callbackId, result);
             }else{
@@ -189,20 +189,28 @@ public class PncImportControllerImpl implements PncImportController {
                 it.remove();
             }
         }
-        String log = pncClient.getBuildLog(build.getId());
 
-        KojiImport kojiImport = translator.translate(nvr, build, artifacts, log, username);
-        ImportFileGenerator importFiles = translator.getImportFiles(artifacts, log);
-        final BuildImportResultRest importedBuild = brewClient.importBuild(nvr, build.getId(), kojiImport, importFiles);
+        final BuildImportResultRest buildResult;
+        if (artifacts.buildArtifacts.isEmpty()) {
+            buildResult = new BuildImportResultRest();
+            buildResult.setBuildRecordId(build.getId());
+            buildResult.setStatus(BuildImportStatus.SUCCESSFUL);
+            buildResult.setErrorMessage("Build doesn't contain any artifacts to import, skipping.");
+        } else {
+            String log = pncClient.getBuildLog(build.getId());
+            KojiImport kojiImport = translator.translate(nvr, build, artifacts, log, username);
+            ImportFileGenerator importFiles = translator.getImportFiles(artifacts, log);
+            buildResult = brewClient.importBuild(nvr, build.getId(), kojiImport, importFiles);
+        }
 
         for (BuildArtifacts.PncArtifact artifact : blackArtifacts) {
             ArtifactImportError error = ArtifactImportError.builder()
                     .artifactId(artifact.id)
-                    .errorMessage("This artifact is blacklisted, so ti was not imported.")
+                    .errorMessage("This artifact is blacklisted, so it was not imported.")
                     .build();
-            importedBuild.getErrors().add(error);
+            buildResult.getErrors().add(error);
         }
-        return importedBuild;
+        return buildResult;
     }
 
     static String messagePncReleaseNotFound(long releaseId, Exception e) {
