@@ -38,6 +38,8 @@ import org.jboss.pnc.causeway.rest.model.MavenBuild;
 import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
 import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
 import org.junit.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -48,6 +50,8 @@ import org.mockito.InjectMocks;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
 import java.util.stream.Collectors;
 
@@ -72,6 +76,7 @@ public class ImportControllerTest {
     private static final String USERNAME = "joe";
     private static final String TAG_PREFIX = "pnc-foo-0.1";
     private static final String BUILD_VERSION = "1.1.1";
+    private static final String ARTIFACTS_VERSION = "1.1.1.redhat_1";
     private static final String BUILD_NAME = "org.apache.geronimo.specs:geronimo-annotation_1.0_spec";
     private static final String CALLBACK_URL = "http://localhost:8081/callback";
     private static final CallbackTarget CALLBACK_TARGET = new CallbackTarget(CALLBACK_URL, CallbackMethod.POST);
@@ -237,6 +242,29 @@ public class ImportControllerTest {
 
         // Verify
         verifyFailure(messageMissingTag(TAG_PREFIX, KOJI_URL).replace("\n", "\\n"));
+    }
+
+    @Test
+    public void testGetNVR() throws IOException, CausewayException, ReflectiveOperationException{
+        Build build = getBuild();
+        BrewNVR nvr = importController.getNVR(build);
+        assertEquals(BUILD_NAME, nvr.getName());
+        assertEquals(BUILD_VERSION, nvr.getVersion());
+
+        setFinalField(build, Build.class.getDeclaredField("buildVersion"), null);
+        nvr = importController.getNVR(build);
+        assertEquals(BUILD_NAME, nvr.getName());
+        assertEquals(ARTIFACTS_VERSION, nvr.getVersion());
+    }
+
+    static void setFinalField(Object obj, Field field, Object newValue) throws ReflectiveOperationException {
+        field.setAccessible(true);
+
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+
+        field.set(obj, newValue);
     }
 
     private void verifySuccess(String log) {

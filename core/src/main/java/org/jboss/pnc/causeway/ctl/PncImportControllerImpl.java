@@ -138,9 +138,10 @@ public class PncImportControllerImpl implements PncImportController {
         for (BuildRecordRest build : builds) {
             BuildImportResultRest importResult;
             try{
-                importResult = importBuild(build, username);
+                BuildArtifacts artifacts = pncClient.findBuildArtifacts(build.getId());
+                importResult = importBuild(build, username, artifacts);
                 if(importResult.getStatus() == BuildImportStatus.SUCCESSFUL){
-                    brewClient.tagBuild(tagPrefix, getNVR(build));
+                    brewClient.tagBuild(tagPrefix, getNVR(build, artifacts));
                 }
             }catch(CausewayException ex){
                 Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import build.", ex);
@@ -168,8 +169,8 @@ public class PncImportControllerImpl implements PncImportController {
         return builds;
     }
     
-    private BuildImportResultRest importBuild(BuildRecordRest build, String username) throws CausewayException {
-        BrewNVR nvr = getNVR(build);
+    private BuildImportResultRest importBuild(BuildRecordRest build, String username, BuildArtifacts artifacts) throws CausewayException {
+        BrewNVR nvr = getNVR(build, artifacts);
         BrewBuild brewBuild = brewClient.findBrewBuildOfNVR(nvr);
         if (brewBuild != null) {
             // FIXME clarify behavior - if the build already exists in brew log as successful import ?
@@ -183,7 +184,6 @@ public class PncImportControllerImpl implements PncImportController {
         }
 
         List<BuildArtifacts.PncArtifact> blackArtifacts = new ArrayList<>();
-        BuildArtifacts artifacts = pncClient.findBuildArtifacts(build.getId());
         for (Iterator<BuildArtifacts.PncArtifact> it = artifacts.buildArtifacts.iterator(); it.hasNext();) {
             BuildArtifacts.PncArtifact artifact = it.next();
             if(artifact.artifactQuality == ArtifactRest.Quality.BLACKLISTED){
@@ -235,11 +235,20 @@ public class PncImportControllerImpl implements PncImportController {
               + "(Note that tag " + child + " should inherit from tag " + parent + ")";
     }
 
-    private BrewNVR getNVR(BuildRecordRest build) throws CausewayException {
-        if(build.getExecutionRootVersion() == null || build.getExecutionRootName() == null){
-            throw new CausewayException("Build executionRootVersion and executionRootName can't be null");
+    BrewNVR getNVR(BuildRecordRest build, BuildArtifacts artifacts) throws CausewayException {
+        if(build.getExecutionRootName() == null){
+            throw new CausewayException("Build executionRootName can't be null");
         }
-        return new BrewNVR(build.getExecutionRootName(), build.getExecutionRootVersion(), "1");
+        String version = build.getExecutionRootVersion();
+        if(version == null){
+            version = artifacts.buildArtifacts.stream()
+                    .map(a -> a.identifier.split(":"))
+                    .filter(i -> i.length >= 4)
+                    .map(i -> i[3])
+                    .findAny()
+                    .orElseThrow(() -> new CausewayException("Build version not specified and couldn't determine any from artifacts."));
+        }
+        return new BrewNVR(build.getExecutionRootName(), version, "1");
     }
 
     private boolean isNotEmpty(Collection<?> collection) {
