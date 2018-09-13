@@ -3,6 +3,7 @@ package org.jboss.pnc.causeway.ctl;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.CausewayFailure;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
@@ -16,6 +17,8 @@ import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.CallbackTarget;
 import org.jboss.pnc.causeway.rest.model.Build;
+import org.jboss.pnc.causeway.rest.model.BuiltArtifact;
+import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
 import org.jboss.pnc.causeway.rest.model.TaggedBuild;
 import org.jboss.pnc.causeway.rest.model.response.BuildRecordPushResultRest;
 import org.jboss.pnc.causeway.rest.model.response.BuildRecordPushResultRest.BuildRecordPushResultRestBuilder;
@@ -165,8 +168,24 @@ public class ImportControllerImpl implements ImportController {
                 message + brewBuild.getId());
     }
 
-    private BrewNVR getNVR(Build build) {
-        return new BrewNVR(build.getBuildName(), build.getBuildVersion(), "1");
+    BrewNVR getNVR(Build build) throws CausewayException{
+        String buildVersion = build.getBuildVersion();
+        if(buildVersion == null){
+            buildVersion = build.getBuiltArtifacts().stream()
+                    .map(ImportControllerImpl::getArtifactVersion)
+                    .filter(v -> v != null)
+                    .findAny()
+                    .orElseThrow(() -> new CausewayException("Build version not specified and couldn't determine any from artifacts."));
+        }
+
+        return new BrewNVR(build.getBuildName(), buildVersion, "1");
+    }
+
+    private static String getArtifactVersion(BuiltArtifact artifact){
+        if(artifact instanceof MavenBuiltArtifact){
+            return ((MavenBuiltArtifact) artifact).getVersion();
+        }
+        return null;
     }
 
     private <T> void respond(CallbackTarget callback, T responseEntity) {

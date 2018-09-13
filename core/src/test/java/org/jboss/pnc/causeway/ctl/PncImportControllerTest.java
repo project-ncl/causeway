@@ -56,6 +56,8 @@ import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 import org.mockito.InjectMocks;
 
+import java.io.IOException;
+
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
@@ -115,6 +117,28 @@ public class PncImportControllerTest {
     private void mockPNC(Integer milestoneId, Integer buildId) throws CausewayException{
         Integer id = generator.nextInt();
 
+        BuildEnvironmentRest env = createEnvironment();
+
+        // Mock BuildConfigurationAudited
+        BuildConfigurationAuditedRest bcar = createBuildConfiguration(id, env);
+
+        // Mock BuildRecord
+        BuildRecordRest buildRecordRest = createBuildRecord(buildId, bcar);
+
+        Collection<BuildRecordRest> buildRecords = new HashSet<>();
+        buildRecords.add(buildRecordRest);
+
+        // Mock BuildArtifacts
+        BuildArtifacts buildArtifacts = new BuildArtifacts();
+        buildArtifacts.buildArtifacts.add(createArtifact(buildId));
+
+        doReturn(buildRecords).when(pncClient).findBuildsOfProductMilestone(eq(milestoneId));
+        doReturn(TAG_PREFIX).when(pncClient).getTagForMilestone(eq(milestoneId));
+        doReturn(buildArtifacts).when(pncClient).findBuildArtifacts(eq(buildId));
+        doAnswer(i -> "Log of build " + i.getArguments()[0]).when(pncClient).getBuildLog(anyInt());
+    }
+
+    private BuildEnvironmentRest createEnvironment() {
         // Mock BuildEnvironment
         Map<String, String> attrs = new HashMap();
         attrs.put("OS", "Fedora25");
@@ -122,55 +146,22 @@ public class PncImportControllerTest {
         BuildEnvironmentRest env = new BuildEnvironmentRest();
         env.setAttributes(attrs);
         env.setSystemImageType(SystemImageType.DOCKER_IMAGE);
+        return env;
+    }
 
-        // Mock RepositoryConfiguration
+    private BuildConfigurationAuditedRest createBuildConfiguration(Integer id, BuildEnvironmentRest env) {
+
         RepositoryConfigurationRest rc = RepositoryConfigurationRest.builder()
                 .id(1)
                 .internalUrl("http://repo.url")
                 .build();
 
-        // Mock BuildConfigurationAudited
         BuildConfigurationAuditedRest bcar = new BuildConfigurationAuditedRest();
         bcar.setIdRev(new IdRev(id, 1));
         bcar.setRepositoryConfiguration(rc);
         bcar.setScmRevision("r21345");
         bcar.setEnvironment(env);
-        
-        // Mock UserRest
-        UserRest user = new UserRest();
-        user.setId(1);
-
-        // Mock BuildRecord
-        Date submit = new Date();
-        Date start = new Date(submit.getTime() + 1000L);
-        Date end = new Date(start.getTime() + 100000L);
-        BuildRecordRest buildRecordRest = new BuildRecordRest(buildId, BuildCoordinationStatus.BUILD_COMPLETED, submit, start, end, user, bcar);
-        buildRecordRest.setExecutionRootName(EXEC_ROOT_NAME);
-        buildRecordRest.setExecutionRootVersion(EXEC_ROOT_VERSION);
-
-        Collection<BuildRecordRest> buildRecords = new HashSet<>();
-        buildRecords.add(buildRecordRest);
-        
-        // Mock BuildArtifacts
-        BuildArtifacts buildArtifacts = new BuildArtifacts();
-        buildArtifacts.buildArtifacts.add(
-                new BuildArtifacts.PncArtifact(
-                        buildId,
-                        "maven",
-                        "org.apache.geronimo.specs:geronimo-annotation_1.0_spec:1.1.1.redhat-1:pom",
-                        "geronimo-annotation_1.0_spec-1.1.1.redhat-1.pom",
-                        "bedf8af1b107b36c72f52009e6fcc768",
-                        "http://pnc-indy-branch-nightly.cloud.pnc.devel.engineering.redhat.com/api/hosted/"
-                            + "build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/org/apache/geronimo/specs/geronimo-annotation_1.0_spec/1.1.1.redhat-1/geronimo-annotation_1.0_spec-1.1.1.redhat-1.pom",
-                        13245,
-                        ArtifactRest.Quality.NEW
-                )
-        );
-
-        doReturn(buildRecords).when(pncClient).findBuildsOfProductMilestone(eq(milestoneId));
-        doReturn(TAG_PREFIX).when(pncClient).getTagForMilestone(eq(milestoneId));
-        doReturn(buildArtifacts).when(pncClient).findBuildArtifacts(eq(buildId));
-        doAnswer(i -> "Log of build " + i.getArguments()[0]).when(pncClient).getBuildLog(anyInt());
+        return bcar;
     }
 
     private void mockBrew() throws CausewayException {
@@ -353,6 +344,32 @@ public class PncImportControllerTest {
         assertTrue(result.getErrorMessage().contains(TAG_PREFIX)); // We inform user about missing tag
     }
 
+    @Test
+    public void testGetNVR() throws IOException, CausewayException, ReflectiveOperationException{
+        BuildEnvironmentRest env = createEnvironment();
+        BuildConfigurationAuditedRest bcar = createBuildConfiguration(1, env);
+        BuildRecordRest buildRecordRest = createBuildRecord(1, bcar);
+        BuildArtifacts buildArtifacts = new BuildArtifacts();
+        buildArtifacts.buildArtifacts.add(createArtifact(1));
+
+        BrewNVR nvr = importController.getNVR(buildRecordRest, buildArtifacts);
+        assertEquals(EXEC_ROOT_NAME, nvr.getName());
+        assertEquals(EXEC_ROOT_VERSION, nvr.getVersion());
+
+        buildRecordRest.setExecutionRootVersion(null);
+        nvr = importController.getNVR(buildRecordRest, buildArtifacts);
+        assertEquals(EXEC_ROOT_NAME, nvr.getName());
+        assertEquals("1.1.1.redhat_1", nvr.getVersion());
+
+        buildRecordRest.setExecutionRootName(null);
+        try{
+            importController.getNVR(buildRecordRest, buildArtifacts);
+            fail("Expected CausewayException to be thrown.");
+        }catch(CausewayException ex){
+            // ok
+        }
+    }
+
     private void verifySuccess() {
         ArgumentCaptor<MilestoneReleaseResultRest> resultArgument = ArgumentCaptor.forClass(MilestoneReleaseResultRest.class);
         verify(bpmClient).success(eq(CALLBACK_URL), eq(CALLBACK_ID), resultArgument.capture());
@@ -373,6 +390,33 @@ public class PncImportControllerTest {
         assertEquals(expectedStatus, milestoneReleaseResultRest.getReleaseStatus());
         assertFalse(milestoneReleaseResultRest.isSuccessful());
         return milestoneReleaseResultRest;
+    }
+
+    private static BuildArtifacts.PncArtifact createArtifact(Integer buildId) {
+        return new BuildArtifacts.PncArtifact(
+                buildId,
+                "maven",
+                "org.apache.geronimo.specs:geronimo-annotation_1.0_spec:pom:1.1.1.redhat-1",
+                "geronimo-annotation_1.0_spec-1.1.1.redhat-1.pom",
+                "bedf8af1b107b36c72f52009e6fcc768",
+                "http://pnc-indy-branch-nightly.cloud.pnc.devel.engineering.redhat.com/api/hosted/"
+                        + "build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/org/apache/geronimo/specs/geronimo-annotation_1.0_spec/1.1.1.redhat-1/geronimo-annotation_1.0_spec-1.1.1.redhat-1.pom",
+                13245,
+                ArtifactRest.Quality.NEW
+        );
+    }
+
+    private BuildRecordRest createBuildRecord(Integer buildId, BuildConfigurationAuditedRest bcar) {
+        UserRest user = new UserRest();
+        user.setId(1);
+
+        Date submit = new Date();
+        Date start = new Date(submit.getTime() + 1000L);
+        Date end = new Date(start.getTime() + 100000L);
+        BuildRecordRest buildRecordRest = new BuildRecordRest(buildId, BuildCoordinationStatus.BUILD_COMPLETED, submit, start, end, user, bcar);
+        buildRecordRest.setExecutionRootName(EXEC_ROOT_NAME);
+        buildRecordRest.setExecutionRootVersion(EXEC_ROOT_VERSION);
+        return buildRecordRest;
     }
 
     public static String createRandomString() {
