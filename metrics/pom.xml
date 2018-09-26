@@ -62,4 +62,19 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
+  <build>
+      <plugins>
+          <plugin>
+              <artifactId>maven-javadoc-plugin</artifactId>
+              <executions>
+                  <execution>
+                      <id>attach-javadocs</id>
+                      <configuration>
+                          <skip>true</skip>
+                      </configuration>
+                  </execution>
+              </executions>
+          </plugin>
+      </plugins>
+  </build>
 </project>
