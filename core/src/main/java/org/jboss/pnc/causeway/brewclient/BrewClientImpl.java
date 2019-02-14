@@ -212,27 +212,32 @@ public class BrewClientImpl implements BrewClient {
 
     private List<ArtifactImportError> getImportErrors(KojiImportResult result, ImportFileGenerator importFiles) {
         List<ArtifactImportError> importErrors = new ArrayList<>();
-        Map<String, KojijiErrorInfo> kojiErrors = result == null ? null : result.getUploadErrors();
-        if (kojiErrors != null) {
-            for (Map.Entry<String, KojijiErrorInfo> e : kojiErrors.entrySet()) {
-                ArtifactImportError importError = ArtifactImportError.builder()
-                        .artifactId(importFiles.getId(e.getKey()))
-                        .errorMessage(e.getValue().getError().getMessage())
-                        .build();
-                importErrors.add(importError);
-                logger.log(Level.WARNING, "Failed to import.", e.getValue());
+
+        try {
+            Map<String, KojijiErrorInfo> kojiErrors = result == null ? null : result.getUploadErrors();
+            if (kojiErrors != null) {
+                for (Map.Entry<String, KojijiErrorInfo> e : kojiErrors.entrySet()) {
+                    ArtifactImportError importError = ArtifactImportError.builder()
+                            .artifactId(importFiles.getId(e.getKey()))
+                            .errorMessage(e.getValue().getError().getMessage())
+                            .build();
+                    importErrors.add(importError);
+                    logger.log(Level.WARNING, "Failed to import.", e.getValue());
+                }
             }
-        }
-        Map<Integer, String> importerErrors = importFiles.getErrors();
-        if (!importerErrors.isEmpty()) {
-            for (Map.Entry<Integer, String> e : importerErrors.entrySet()) {
-                ArtifactImportError importError = ArtifactImportError.builder()
-                        .artifactId(e.getKey())
-                        .errorMessage(e.getValue())
-                        .build();
-                importErrors.add(importError);
-                logger.log(Level.WARNING, "Failed to import: {0}", e.getValue());
+            Map<Integer, String> importerErrors = importFiles.getErrors();
+            if (!importerErrors.isEmpty()) {
+                for (Map.Entry<Integer, String> e : importerErrors.entrySet()) {
+                    ArtifactImportError importError = ArtifactImportError.builder()
+                            .artifactId(e.getKey())
+                            .errorMessage(e.getValue())
+                            .build();
+                    importErrors.add(importError);
+                    logger.log(Level.WARNING, "Failed to import: {0}", e.getValue());
+                }
             }
+        } catch (Exception exception) {
+            logger.log(Level.SEVERE, "Couldn't capture import errors", exception);
         }
         return importErrors;
     }
