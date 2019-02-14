@@ -36,6 +36,8 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -101,15 +103,11 @@ public class ImportControllerImpl implements ImportController {
             logger.log(Level.SEVERE, "Failed to import build.", ex);
             response.status(OperationStatus.FAILED);
             response.artifactImportErrors(ex.getArtifactErrors());
-            response.log(ex.getMessage());
-        } catch (CausewayException ex) {
+            response.log(getMessageOrStacktrace(ex));
+        } catch (CausewayException | RuntimeException ex) {
             logger.log(Level.SEVERE, "Error while importing build.", ex);
             response.status(OperationStatus.SYSTEM_ERROR);
-            response.log(ex.getMessage());
-        } catch (RuntimeException ex) {
-            logger.log(Level.SEVERE, "Error while importing build.", ex);
-            response.status(OperationStatus.SYSTEM_ERROR);
-            response.log(ex.getMessage());
+            response.log(getMessageOrStacktrace(ex));
         }
         respond(callback, response.build());
 
@@ -131,11 +129,11 @@ public class ImportControllerImpl implements ImportController {
         } catch (CausewayFailure ex) {
             logger.log(Level.SEVERE, "Failed to untag build.", ex);
             response.status(OperationStatus.FAILED);
-            response.log(ex.getMessage());
+            response.log(getMessageOrStacktrace(ex));
         } catch (CausewayException | RuntimeException ex) {
             logger.log(Level.SEVERE, "Error while untaging build.", ex);
             response.status(OperationStatus.SYSTEM_ERROR);
-            response.log(ex.getMessage());
+            response.log(getMessageOrStacktrace(ex));
         }
         respond(callback, response.build());
     }
@@ -207,6 +205,30 @@ public class ImportControllerImpl implements ImportController {
             throw new CausewayFailure("Build with given id (" + brewBuildId + ") not found");
         }
         brewClient.untagBuild(tagPrefix, build);
+    }
+
+    /**
+     * If the exception.getMessage() is null, return the stacktrace instead
+     * If exception.getMessage() is not-null, just return the message
+     *
+     * @param e exception
+     * @return reason for exception
+     */
+    private String getMessageOrStacktrace(Exception e) {
+
+        // get the message
+        String message = e.getMessage();
+
+        // it can be null for NullPointerException for example!
+        if (message != null) {
+            return message;
+        }
+
+        // if message is null, return the stacktrace instead
+        StringWriter sw = new StringWriter();
+        e.printStackTrace(new PrintWriter(sw));
+
+        return sw.toString();
     }
 
     @Data
