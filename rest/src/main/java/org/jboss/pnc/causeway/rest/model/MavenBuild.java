@@ -44,7 +44,6 @@ public class MavenBuild extends Build {
     private final String groupId;
     @NonNull
     private final String artifactId;
-    @NonNull
     private final String version;
 
     @Builder
@@ -59,6 +58,13 @@ public class MavenBuild extends Build {
         this.groupId = Objects.requireNonNull(groupId);
         this.artifactId = Objects.requireNonNull(artifactId);
         this.version = Objects.requireNonNull(version);
+    }
+    
+    public String getVersion(){
+        if(version == null){
+            return getBuildVersion();
+        }
+        return version;
     }
 
     @JsonPOJOBuilder(withPrefix = "")

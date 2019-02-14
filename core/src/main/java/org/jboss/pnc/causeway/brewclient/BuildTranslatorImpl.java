@@ -94,7 +94,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 .withExternalBuildId(externalBuildId)
                 .withExternalBuildUrl(externalBuildUrl)
                 .withBuildSystem(PNC)
-                .withMavenInfoAndType(buildRootToGAV(build))
+                .withMavenInfoAndType(buildRootToGAV(build, artifacts))
                 .parent();
 
         int buildRootId = 42;
@@ -305,15 +305,18 @@ public class BuildTranslatorImpl implements BuildTranslator {
         return url;
     }
 
-    private ProjectVersionRef buildRootToGAV(BuildRecordRest build) {
+    private ProjectVersionRef buildRootToGAV(BuildRecordRest build, BuildArtifacts artifacts) throws CausewayException {
         String[] splittedName = build.getExecutionRootName().split(":");
         if(splittedName.length != 2)
             throw new IllegalArgumentException("Execution root '"+build.getExecutionRootName()+"' doesnt seem to be maven G:A.");
+        String version = build.getExecutionRootVersion();
+        if(version == null){
+            version = BuildTranslator.guessVersion(build, artifacts);
+        }
 
         return new SimpleProjectVersionRef(
                         splittedName[0],
-                        splittedName.length < 2 ? null : splittedName[1],
-                        build.getExecutionRootVersion());
+                        splittedName.length < 2 ? null : splittedName[1], version);
     }
 
     private void addTools(BuildRoot.Builder buildRootBuilder, Map<String, String> tools) {
@@ -322,7 +325,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }
     }
 
-    private void setBuildType(BuildDescription.Builder buildDescription, Build build) {
+    private void setBuildType(BuildDescription.Builder buildDescription, Build build) throws CausewayException {
         if (build.getClass().equals(MavenBuild.class)) {
             buildDescription.withMavenInfoAndType(mavenBuildToGAV((MavenBuild) build));
         } else {
@@ -330,11 +333,16 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }
     }
 
-    private ProjectVersionRef mavenBuildToGAV(MavenBuild mb) {
-        return new SimpleProjectVersionRef(mb.getGroupId(), mb.getArtifactId(), mb.getVersion());
+    private ProjectVersionRef mavenBuildToGAV(MavenBuild mb) throws CausewayException {
+        String version = mb.getVersion();
+        if(version == null){
+            version = BuildTranslator.guessVersion(mb);
+        }
+        return new SimpleProjectVersionRef(mb.getGroupId(), mb.getArtifactId(), version);
     }
 
     private ProjectVersionRef mavenArtifactToGAV(MavenBuiltArtifact mba) {
         return new SimpleProjectVersionRef(mba.getGroupId(), mba.getArtifactId(), mba.getVersion());
     }
+    
 }
