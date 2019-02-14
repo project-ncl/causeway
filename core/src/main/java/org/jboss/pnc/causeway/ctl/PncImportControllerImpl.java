@@ -241,12 +241,7 @@ public class PncImportControllerImpl implements PncImportController {
         }
         String version = build.getExecutionRootVersion();
         if(version == null){
-            version = artifacts.buildArtifacts.stream()
-                    .map(a -> a.identifier.split(":"))
-                    .filter(i -> i.length >= 4)
-                    .map(i -> i[3])
-                    .findAny()
-                    .orElseThrow(() -> new CausewayException("Build version not specified and couldn't determine any from artifacts."));
+            version = BuildTranslator.guessVersion(build, artifacts);
         }
         return new BrewNVR(build.getExecutionRootName(), version, "1");
     }

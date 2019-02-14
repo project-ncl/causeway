@@ -22,6 +22,7 @@ import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.model.Build;
 
 import com.redhat.red.build.koji.model.json.KojiImport;
+import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
 
 /**
  *
@@ -39,4 +40,22 @@ public interface BuildTranslator {
 
     public KojiImport translate(BrewNVR nvr, Build build, String username) throws CausewayException;
 
+    public static String guessVersion(Build build) throws CausewayException {
+        return build.getBuiltArtifacts().stream()
+                .filter(a -> a instanceof MavenBuiltArtifact)
+                .map(a -> ((MavenBuiltArtifact)a).getVersion())
+                .filter(v -> v != null)
+                .findAny()
+                .orElseThrow(() -> new CausewayException("Build version not specified and couldn't determine any from artifacts."));
+    }
+
+    @Deprecated
+    public static String guessVersion(BuildRecordRest build, BuildArtifacts artifacts) throws CausewayException {
+        return artifacts.buildArtifacts.stream()
+                .map(a -> a.identifier.split(":"))
+                .filter(i -> i.length >= 4)
+                .map(i -> i[3])
+                .findAny()
+                .orElseThrow(() -> new CausewayException("Build version not specified and couldn't determine any from artifacts."));
+    }
 }
