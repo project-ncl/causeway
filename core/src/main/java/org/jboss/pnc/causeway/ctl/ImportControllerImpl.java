@@ -169,21 +169,10 @@ public class ImportControllerImpl implements ImportController {
     BrewNVR getNVR(Build build) throws CausewayException{
         String buildVersion = build.getBuildVersion();
         if(buildVersion == null){
-            buildVersion = build.getBuiltArtifacts().stream()
-                    .map(ImportControllerImpl::getArtifactVersion)
-                    .filter(v -> v != null)
-                    .findAny()
-                    .orElseThrow(() -> new CausewayException("Build version not specified and couldn't determine any from artifacts."));
+            buildVersion = BuildTranslator.guessVersion(build);
         }
 
         return new BrewNVR(build.getBuildName(), buildVersion, "1");
-    }
-
-    private static String getArtifactVersion(BuiltArtifact artifact){
-        if(artifact instanceof MavenBuiltArtifact){
-            return ((MavenBuiltArtifact) artifact).getVersion();
-        }
-        return null;
     }
 
     private <T> void respond(CallbackTarget callback, T responseEntity) {
