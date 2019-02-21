@@ -215,8 +215,13 @@ public class BrewClientImpl implements BrewClient {
         Map<String, KojijiErrorInfo> kojiErrors = result == null ? null : result.getUploadErrors();
         if (kojiErrors != null) {
             for (Map.Entry<String, KojijiErrorInfo> e : kojiErrors.entrySet()) {
+                Integer artifactId = importFiles.getId(e.getKey());
+                if(artifactId == null) {
+                    logger.log(Level.SEVERE, "Artifact id is null for path {0}. This shouldn't happen.", e.getKey());
+                    artifactId = -1;
+                }
                 ArtifactImportError importError = ArtifactImportError.builder()
-                        .artifactId(importFiles.getId(e.getKey()))
+                        .artifactId(artifactId)
                         .errorMessage(e.getValue().getError().getMessage())
                         .build();
                 importErrors.add(importError);
