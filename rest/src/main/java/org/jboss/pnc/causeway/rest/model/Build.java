@@ -72,7 +72,7 @@ public abstract class Build {
             String scmURL, String scmRevision, BuildRoot buildRoot, Set<Logfile> logs,
             Set<Dependency> dependencies, Set<BuiltArtifact> builtArtifacts, String tagPrefix) {
         this.buildName = Objects.requireNonNull(buildName);
-        this.buildVersion = Objects.requireNonNull(buildVersion);
+        this.buildVersion = buildVersion;
         this.externalBuildSystem = Objects.requireNonNull(externalBuildSystem);
         this.externalBuildID = externalBuildID;
         this.externalBuildURL = Objects.requireNonNull(externalBuildURL);

@@ -57,7 +57,7 @@ public class MavenBuild extends Build {
                 builtArtifacts, tagPrefix);
         this.groupId = Objects.requireNonNull(groupId);
         this.artifactId = Objects.requireNonNull(artifactId);
-        this.version = Objects.requireNonNull(version);
+        this.version = version;
     }
     
     public String getVersion(){
