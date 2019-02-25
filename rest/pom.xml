@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.jboss.pnc.causeway</groupId>
     <artifactId>causeway</artifactId>
-    <version>1.4.2-SNAPSHOT</version>
+    <version>1.4.2</version>
   </parent>
   
   <artifactId>causeway-rest</artifactId>
