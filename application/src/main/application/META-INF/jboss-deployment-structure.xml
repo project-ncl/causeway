@@ -22,18 +22,18 @@
             <resource-root path="lib/bcprov-jdk15on.jar" use-physical-code-source="true"/>
         </resources>
     </deployment>
+    <sub-deployment name="pncmetrics.jar">
+    </sub-deployment>
     <sub-deployment name="causeway-core.jar">
         <dependencies>
             <module name="deployment.causeway.ear.causeway-rest.jar"/>
-            <module name="deployment.causeway.ear.causeway-metrics.jar"/>
+            <module name="deployment.causeway.ear.pncmetrics.jar"/>
         </dependencies>
-    </sub-deployment>
-    <sub-deployment name="causeway-metrics.jar">
     </sub-deployment>
     <sub-deployment name="causeway-web.war">
         <dependencies>
             <module name="deployment.causeway.ear.causeway-core.jar"/>
-            <module name="deployment.causeway.ear.causeway-metrics.jar"/>
+            <module name="deployment.causeway.ear.pncmetrics.jar"/>
         </dependencies>
     </sub-deployment>
     <sub-deployment name="causeway-rest.jar">

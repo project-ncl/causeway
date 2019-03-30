@@ -66,7 +66,6 @@
     <module>application</module>
     <module>tck</module>
     <module>ftest</module>
-    <module>metrics</module>
   </modules>
 
   <repositories>
@@ -130,12 +129,6 @@
         <artifactId>causeway-tck</artifactId>
         <version>${project.version}</version>
         <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.pnc.causeway</groupId>
-        <artifactId>causeway-metrics</artifactId>
-        <type>ejb</type>
-        <version>${project.version}</version>
       </dependency>
 
       <dependency>
@@ -204,26 +197,16 @@
         <version>1.57</version>
         <scope>test</scope>
       </dependency>
-
-                  <!-- Metrics dependencies -->
+      <dependency>
+        <groupId>org.jboss.pnc.metrics</groupId>
+        <artifactId>pncmetrics</artifactId>
+        <version>1.1.0</version>
+      </dependency>
       <dependency>
         <groupId>io.dropwizard.metrics</groupId>
         <artifactId>metrics-core</artifactId>
-        <version>4.0.2</version>
+        <version>4.0.5</version>
       </dependency>
-
-      <dependency>
-        <groupId>io.dropwizard.metrics</groupId>
-        <artifactId>metrics-jvm</artifactId>
-        <version>4.0.2</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.dropwizard.metrics</groupId>
-        <artifactId>metrics-graphite</artifactId>
-        <version>4.0.2</version>
-      </dependency>
-
     </dependencies>
   </dependencyManagement>
   

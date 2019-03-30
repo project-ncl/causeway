@@ -25,7 +25,6 @@ import org.jboss.pnc.causeway.brewclient.BrewClientImpl;
 import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
-import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
@@ -53,6 +52,7 @@ import com.redhat.red.build.koji.model.json.KojiImport;
 import java.util.Iterator;
 import org.jboss.pnc.causeway.pncclient.model.ArtifactRest;
 import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
+import org.jboss.pnc.pncmetrics.MetricsConfiguration;
 
 @Deprecated
 @Stateless

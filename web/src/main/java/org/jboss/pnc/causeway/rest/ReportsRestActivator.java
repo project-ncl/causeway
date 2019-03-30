@@ -15,7 +15,6 @@
  */
 package org.jboss.pnc.causeway.rest;
 
-
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
@@ -30,6 +29,8 @@ import java.util.Set;
  */
 @ApplicationPath("/rest")
 public class ReportsRestActivator extends Application {
+
+    private Set<Class<?>> resources;
 
     @Override
     public Set<Class<?>> getClasses() {
