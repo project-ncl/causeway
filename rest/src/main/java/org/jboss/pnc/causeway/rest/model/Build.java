@@ -51,6 +51,8 @@ public abstract class Build {
     private final String scmURL;
     @NonNull
     private final String scmRevision;
+
+    private final String scmTag;
     @NonNull
     private final BuildRoot buildRoot;
     @NonNull
@@ -74,6 +76,7 @@ public abstract class Build {
             Date endTime,
             String scmURL,
             String scmRevision,
+            String scmTag,
             BuildRoot buildRoot,
             Set<Logfile> logs,
             Set<Dependency> dependencies,
@@ -88,6 +91,7 @@ public abstract class Build {
         this.endTime = Objects.requireNonNull(endTime);
         this.scmURL = Objects.requireNonNull(scmURL);
         this.scmRevision = Objects.requireNonNull(scmRevision);
+        this.scmTag = scmTag;
         this.buildRoot = Objects.requireNonNull(buildRoot);
         this.logs = Objects.requireNonNull(logs);
         this.dependencies = Objects.requireNonNull(dependencies);

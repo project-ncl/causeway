@@ -100,6 +100,9 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 .withExternalBuildUrl(externalBuildUrl)
                 .withBuildSystem(PNC);
         setBuildType(descriptionBuilder, build, artifacts);
+        if (build.getScmTag() != null) {
+            descriptionBuilder.withSCMTag(build.getScmTag());
+        }
 
         int buildRootId = 42;
         BuildRoot.Builder buildRootBuilder = builder.withNewBuildRoot(buildRootId)
@@ -133,6 +136,9 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 .withExternalBuildId(String.valueOf(build.getExternalBuildID()))
                 .withExternalBuildUrl(build.getExternalBuildURL())
                 .withBuildSystem(PNC);
+        if (build.getScmTag() != null) {
+            descriptionBuilder.withSCMTag(build.getScmTag());
+        }
         setBuildType(descriptionBuilder, build);
 
         int buildRootId = 42;
