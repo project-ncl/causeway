@@ -61,6 +61,10 @@ public class BuildRecordRest {
 
     private String scmRevision;
 
+    @Getter
+    @Setter
+    private String scmTag;
+
     private Integer buildEnvironmentId;
 
     private Map<String, String> attributes = new HashMap<>();

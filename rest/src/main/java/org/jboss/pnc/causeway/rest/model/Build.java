@@ -54,6 +54,8 @@ public abstract class Build {
     private final String scmURL;
     @NonNull
     private final String scmRevision;
+
+    private final String scmTag;
     @NonNull
     private final BuildRoot buildRoot;
     @NonNull
@@ -69,7 +71,7 @@ public abstract class Build {
     // parametr names.
     protected Build(String buildName, String buildVersion, String externalBuildSystem,
             int externalBuildID, String externalBuildURL, Date startTime, Date endTime,
-            String scmURL, String scmRevision, BuildRoot buildRoot, Set<Logfile> logs,
+            String scmURL, String scmRevision, String scmTag, BuildRoot buildRoot, Set<Logfile> logs,
             Set<Dependency> dependencies, Set<BuiltArtifact> builtArtifacts, String tagPrefix) {
         this.buildName = Objects.requireNonNull(buildName);
         this.buildVersion = buildVersion;
@@ -80,6 +82,7 @@ public abstract class Build {
         this.endTime = Objects.requireNonNull(endTime);
         this.scmURL = Objects.requireNonNull(scmURL);
         this.scmRevision = Objects.requireNonNull(scmRevision);
+        this.scmTag = scmTag;
         this.buildRoot = Objects.requireNonNull(buildRoot);
         this.logs = Objects.requireNonNull(logs);
         this.dependencies = Objects.requireNonNull(dependencies);
