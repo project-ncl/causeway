@@ -15,8 +15,6 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-
 import com.redhat.red.build.koji.model.json.BuildContainer;
 import com.redhat.red.build.koji.model.json.BuildOutput;
 import com.redhat.red.build.koji.model.json.BuildRoot;
@@ -25,8 +23,9 @@ import com.redhat.red.build.koji.model.json.KojiImport;
 import com.redhat.red.build.koji.model.json.StandardArchitecture;
 import com.redhat.red.build.koji.model.json.VerificationException;
 
-import org.commonjava.maven.atlas.ident.ref.SimpleArtifactRef;
-import org.commonjava.maven.atlas.ident.ref.SimpleProjectVersionRef;
+import org.commonjava.atlas.maven.ident.ref.ProjectVersionRef;
+import org.commonjava.atlas.maven.ident.ref.SimpleArtifactRef;
+import org.commonjava.atlas.maven.ident.ref.SimpleProjectVersionRef;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
@@ -86,7 +85,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
         if (externalBuildsUrl != null) {
             externalBuildUrl = externalBuildsUrl + externalBuildId;
         }
-        KojiImport.Builder builder = new KojiImport.Builder()
+        BuildDescription.Builder descriptionBuilder = new KojiImport.Builder()
                 .withNewBuildDescription(nvr.getKojiName(), nvr.getVersion(), nvr.getRelease())
                 .withStartTime(build.getStartTime())
                 .withEndTime(build.getEndTime())
@@ -94,8 +93,11 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 .withExternalBuildId(externalBuildId)
                 .withExternalBuildUrl(externalBuildUrl)
                 .withBuildSystem(PNC)
-                .withMavenInfoAndType(buildRootToGAV(build, artifacts))
-                .parent();
+                .withMavenInfoAndType(buildRootToGAV(build, artifacts));
+        if(build.getScmTag() != null){
+            descriptionBuilder.withSCMTag(build.getScmTag());
+        }
+        KojiImport.Builder builder = descriptionBuilder.parent();
 
         int buildRootId = 42;
         BuildRoot.Builder buildRootBuilder = builder.withNewBuildRoot(buildRootId)
@@ -127,6 +129,9 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 .withExternalBuildId(String.valueOf(build.getExternalBuildID()))
                 .withExternalBuildUrl(build.getExternalBuildURL())
                 .withBuildSystem(PNC);
+        if(build.getScmTag() != null){
+            descriptionBuilder.withSCMTag(build.getScmTag());
+        }
         setBuildType(descriptionBuilder, build);
 
         int buildRootId = 42;
