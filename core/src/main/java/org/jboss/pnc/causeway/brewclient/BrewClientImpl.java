@@ -124,11 +124,11 @@ public class BrewClientImpl implements BrewClient {
     }
 
     @Override
-    public void tagBuild(String tag, BrewNVR nvr) throws CausewayException {
+    public void tagBuild(String tag, BrewBuild build) throws CausewayException {
         KojiSessionInfo session = login();
         try {
-            koji.addPackageToTag(tag, nvr.getKojiName(), session);
-            koji.tagBuild(tag + BUILD_TAG_SUFIX, nvr.getNVR(), session);
+            koji.addPackageToTag(tag, build.getKojiName(), session);
+            koji.tagBuild(tag + BUILD_TAG_SUFIX, build.getNVR(), session);
         } catch (KojiClientException ex) {
             String msg = KOJI_COMMUNICATION_FAILURE;
             if (ex.getMessage().contains("policy violation")){

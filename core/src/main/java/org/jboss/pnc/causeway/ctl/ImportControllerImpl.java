@@ -167,7 +167,7 @@ public class ImportControllerImpl implements ImportController {
                 message = "Build was already imported with id " + brewBuild.getId() + " but not previously tagged. Tagged now.";
             }
         }
-        brewClient.tagBuild(tagPrefix, getNVR(build));
+        brewClient.tagBuild(tagPrefix, brewBuild);
 
         return new BuildResult(brewBuild.getId(), brewClient.getBuildUrl(brewBuild.getId()),
                 message);
