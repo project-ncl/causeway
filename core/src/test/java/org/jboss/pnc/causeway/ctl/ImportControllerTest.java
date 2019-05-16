@@ -46,6 +46,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.InjectMocks;
+import static org.junit.Assert.assertEquals;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -62,6 +63,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageMissingTag;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doNothing;
@@ -70,6 +72,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.skyscreamer.jsonassert.JSONCompareMode.LENIENT;
 
@@ -92,6 +95,7 @@ public class ImportControllerTest {
     private static final String ARTIFACT_NPM_VERSION = "3.1.0.redhat_1";
 
     private static final BrewNVR NVR = new BrewNVR(BUILD_NAME, BUILD_VERSION, "1");
+    private static final BrewNVR NVR2 = new BrewNVR(BUILD_NAME, BUILD_VERSION, "2");
 
     private static final ExternalLogImportFileGenerator IMPORT_FILE_GENERATOR = mock(
             ExternalLogImportFileGenerator.class);
@@ -151,8 +155,8 @@ public class ImportControllerTest {
 
     private void mockBrew() throws CausewayException {
         doReturn(true).when(brewClient).tagsExists(eq(TAG_PREFIX));
-        doReturn(KOJI_BUILD_URL + "11").when(brewClient).getBuildUrl(11);
-        doNothing().when(brewClient).tagBuild(TAG_PREFIX, NVR);
+        when(brewClient.getBuildUrl(anyInt())).then(inv -> KOJI_BUILD_URL + inv.getArguments()[0]);
+        doNothing().when(brewClient).tagBuild(eq(TAG_PREFIX), any());
     }
 
     private void mockTranslator() throws CausewayException {
@@ -160,19 +164,81 @@ public class ImportControllerTest {
         doReturn(IMPORT_FILE_GENERATOR).when(translator).getImportFiles(any());
     }
 
+    private BrewBuild mockExistingBuild(int id, BrewNVR nvr, boolean tagged) throws Exception {
+        BrewBuild brewBuild = new BrewBuild(id, nvr);
+        when(brewClient.findBrewBuildOfNVR(eq(nvr))).thenReturn(brewBuild);
+        when(brewClient.findBrewBuild(eq(id))).thenReturn(brewBuild);
+        when(brewClient.isBuildTagged(eq(TAG_PREFIX), same(brewBuild))).thenReturn(tagged);
+        return brewBuild;
+    }
+
     @Test
-    public void testImportBuildWhenExistingBrewBuildIsImported() throws Exception {
+    public void testReImportBuildWhenPreviousUntagedImportExists() throws Exception {
         // Test setup
         mockBrew();
 
         // Mock existing Brew build
-        doReturn(new BrewBuild(11, NVR)).when(brewClient).findBrewBuildOfNVR(eq(NVR));
+        BrewBuild brewBuild = mockExistingBuild(11, NVR, false);
 
         // Run import
-        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME);
+        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME, true);
+
+        // Verify
+        verify(brewClient).tagBuild(eq(TAG_PREFIX), same(brewBuild));
+        verifySuccess("Build was already imported with id 11 but not previously tagged. Tagged now.");
+    }
+
+    @Test
+    public void testReImportBuildWhenPreviousTaggedImportExists() throws Exception {
+        // Test setup
+        mockBrew();
+        mockTranslator();
+
+        // Mock existing Brew build
+        mockExistingBuild(11, NVR, true);
+        // Mock Brew import
+        KojiImport kojiImport = mock(KojiImport.class);
+        doReturn(kojiImport).when(translator).translate(eq(NVR2), any(), any());
+        BrewBuild brewBuild = new BrewBuild(12, NVR2);
+        doReturn(brewBuild).when(brewClient).importBuild(eq(NVR2), same(kojiImport), same(IMPORT_FILE_GENERATOR));
+
+        // Run import
+        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME, true);
+
+        // Verify
+        verify(brewClient).tagBuild(eq(TAG_PREFIX), same(brewBuild));
+        verifySuccess("Build was previously imported. Reimported again with revision 2 and with id 12.", "12");
+    }
+
+    @Test
+    public void testImportBuildWhenPreviousTaggedImportExists() throws Exception {
+        // Test setup
+        mockBrew();
+        mockTranslator();
+
+        // Mock existing Brew build
+        mockExistingBuild(11, NVR, true);
+
+        // Run import
+        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME, false);
 
         // Verify
         verifySuccess("Build was already imported with id 11");
+    }
+
+    @Test
+    public void testImportBuildWhenConflictingBrewBuildExists() throws Exception {
+        // Test setup
+        mockBrew();
+
+        // Mock existing Brew build
+        doThrow(new CausewayException("Conflicting brew build exists.")).when(brewClient).findBrewBuildOfNVR(eq(NVR));
+
+        // Run import
+        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME, true);
+
+        // Verify
+        verifyError("Conflicting brew build exists.");
     }
 
     @Test
@@ -186,10 +252,11 @@ public class ImportControllerTest {
         doReturn(brewBuild).when(brewClient).importBuild(eq(NVR), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
 
         // Run import
-        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME);
+        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME, true);
 
         // Verify
-        verifySuccess("Build imported with id 11");
+        verify(brewClient).tagBuild(eq(TAG_PREFIX), same(brewBuild));
+        verifySuccess("Build imported with id 11.");
     }
 
     @Test
@@ -202,7 +269,7 @@ public class ImportControllerTest {
         build.getBuiltArtifacts().clear();
 
         // Run import
-        importController.importBuild(build, CALLBACK_TARGET, USERNAME);
+        importController.importBuild(build, CALLBACK_TARGET, USERNAME, false);
 
         // Verify
         verifyFailure("Build doesn't contain any artifacts");
@@ -219,7 +286,7 @@ public class ImportControllerTest {
         doThrow(new CausewayException(exceptionMessage)).when(brewClient).findBrewBuildOfNVR(eq(NVR));
 
         // Run import
-        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME);
+        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME, true);
 
         // Verify
         verifyError(exceptionMessage);
@@ -237,7 +304,7 @@ public class ImportControllerTest {
                 .importBuild(eq(NVR), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
 
         // Run import
-        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME);
+        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME, true);
 
         // Verify
         verifyFailure(exceptionMessage);
@@ -251,7 +318,7 @@ public class ImportControllerTest {
         doReturn(false).when(brewClient).tagsExists(TAG_PREFIX);
 
         // Run import
-        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME);
+        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME, true);
 
         // Verify
         verifyFailure(messageMissingTag(TAG_PREFIX, KOJI_URL).replace("\n", "\\n"));
@@ -289,10 +356,14 @@ public class ImportControllerTest {
         field.set(obj, newValue);
     }
 
-    private void verifySuccess(String message) {
+    private void verifySuccess(String log) {
+        verifySuccess(log, "11");
+    }
 
+    private void verifySuccess(String log, String id) {
         String result = "{" + "\"id\":null," + "\"buildId\":\"61\"," + "\"status\":\"SUCCESS\"," + "\"message\":\""
-                + message + "\"," + "\"brewBuildId\":11," + "\"brewBuildUrl\":\"" + KOJI_BUILD_URL + "11\"" + "}";
+                + log + "\"," + "\"brewBuildId\":" + id + "," + "\"brewBuildUrl\":\"" + KOJI_BUILD_URL + id + "\""
+                + "}";
 
         WireMock.verify(
                 postRequestedFor(urlEqualTo("/callback")).withRequestBody(WireMock.equalToJson(result, LENIENT)));

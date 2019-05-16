@@ -34,8 +34,10 @@ import org.jboss.pnc.causeway.rest.pnc.BuildImportStatus;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 
 @ApplicationScoped
 @Slf4j
@@ -117,12 +119,12 @@ public class BrewClientImpl implements BrewClient {
     }
 
     @Override
-    public void tagBuild(String tag, BrewNVR nvr) throws CausewayException {
-        log.info("Applying tag {} on build {}.", tag, nvr.getNVR());
+    public void tagBuild(String tag, BrewBuild build) throws CausewayException {
+        log.info("Applying tag {} on build {}.", tag, build.getNVR());
         KojiSessionInfo session = login();
         try {
-            koji.addPackageToTag(tag, nvr.getKojiName(), session);
-            koji.tagBuild(tag + BUILD_TAG_SUFIX, nvr.getNVR(), session);
+            koji.addPackageToTag(tag, build.getKojiName(), session);
+            koji.tagBuild(tag + BUILD_TAG_SUFIX, build.getNVR(), session);
         } catch (KojiClientException ex) {
             String msg = KOJI_COMMUNICATION_FAILURE;
             if (ex.getMessage().contains("policy violation")) {
@@ -134,6 +136,20 @@ public class BrewClientImpl implements BrewClient {
             throw new CausewayFailure(msg + ex.getMessage(), ex);
         }
         koji.logout(session);
+    }
+
+    @Override
+    public boolean isBuildTagged(String tag, BrewBuild build) throws CausewayException {
+        KojiSessionInfo session = login();
+        String tagName = tag + BUILD_TAG_SUFIX;
+        try {
+            List<KojiTagInfo> tags = koji.listTags(build.getId(), session);
+            return tags.stream().map(KojiTagInfo::getName).anyMatch(n -> tagName.equals(n));
+        } catch (KojiClientException ex) {
+            throw new CausewayException("Failure while getting tag information from build: " + ex.getMessage(), ex);
+        } finally {
+            koji.logout(session);
+        }
     }
 
     @Override

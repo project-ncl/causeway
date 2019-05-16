@@ -200,7 +200,7 @@ public class PncImportControllerTest {
 
     private void mockBrew() throws CausewayException {
         doReturn(true).when(brewClient).tagsExists(eq(TAG_PREFIX));
-        doNothing().when(brewClient).tagBuild(TAG_PREFIX, NVR);
+        doNothing().when(brewClient).tagBuild(eq(TAG_PREFIX), any());
     }
 
     private void mockTranslator() throws CausewayException {

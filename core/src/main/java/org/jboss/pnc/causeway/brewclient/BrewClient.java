@@ -58,7 +58,24 @@ public interface BrewClient {
 
     public boolean tagsExists(String tag) throws CausewayException;
 
-    void tagBuild(String tag, BrewNVR nvr) throws CausewayException;
+    /**
+     * Check if build is tagged in given tag.
+     * 
+     * @param tag Tag name to be checked.
+     * @param build Brew build to get tag information.
+     * @return True if the build is tagged in the given tag.
+     * @throws CausewayException when there was problem communicating with Brew.
+     */
+    boolean isBuildTagged(String tag, BrewBuild build) throws CausewayException;
+
+    /**
+     * Tag build into given tag.
+     * 
+     * @param tag Tag name.
+     * @param build Build to be tagegd.
+     * @throws CausewayException when there was problem communicating with Brew or problems with permisions.
+     */
+    void tagBuild(String tag, BrewBuild build) throws CausewayException;
 
     void untagBuild(String tag, BrewNVR nvr) throws CausewayException;
 
