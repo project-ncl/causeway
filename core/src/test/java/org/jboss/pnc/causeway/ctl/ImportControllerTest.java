@@ -39,7 +39,6 @@ import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
 import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
 import org.junit.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -84,6 +83,7 @@ public class ImportControllerTest {
     private static final String KOJI_BUILD_URL = KOJI_URL + "/build?id=";
 
     private static final BrewNVR NVR = new BrewNVR(BUILD_NAME, BUILD_VERSION, "1");
+    private static final BrewNVR NVR2 = new BrewNVR(BUILD_NAME, BUILD_VERSION, "2");
 
     private static final ExternalLogImportFileGenerator IMPORT_FILE_GENERATOR = mock(ExternalLogImportFileGenerator.class);
     private static final KojiImport KOJI_IMPORT = mock(KojiImport.class);
@@ -132,8 +132,8 @@ public class ImportControllerTest {
 
     private void mockBrew() throws CausewayException {
         doReturn(true).when(brewClient).tagsExists(eq(TAG_PREFIX));
-        doReturn(KOJI_BUILD_URL + "11").when(brewClient).getBuildUrl(11);
-        doNothing().when(brewClient).tagBuild(TAG_PREFIX, NVR);
+        when(brewClient.getBuildUrl(anyInt())).then(inv -> KOJI_BUILD_URL + inv.getArguments()[0]);
+        doNothing().when(brewClient).tagBuild(eq(TAG_PREFIX), any());
     }
 
     private void mockTranslator() throws CausewayException {
@@ -141,19 +141,63 @@ public class ImportControllerTest {
         doReturn(IMPORT_FILE_GENERATOR).when(translator).getImportFiles(any());
     }
 
+    private BrewBuild mockExistingBuild(int id, BrewNVR nvr, boolean tagged) throws Exception{
+        BrewBuild brewBuild = new BrewBuild(id, nvr);
+        when(brewClient.findBrewBuildOfNVR(eq(nvr))).thenReturn(brewBuild);
+        when(brewClient.findBrewBuild(eq(id))).thenReturn(brewBuild);
+        when(brewClient.isBuildTagged(eq(TAG_PREFIX), same(brewBuild))).thenReturn(tagged);
+        return brewBuild;
+    }
+
     @Test
-    public void testImportBuildWhenExistingBrewBuildIsImported() throws Exception {
+    public void testReImportBuildWhenPreviousUntagedImportExists() throws Exception {
         // Test setup
         mockBrew();
-        
+
         // Mock existing Brew build
-        doReturn(new BrewBuild(11, NVR)).when(brewClient).findBrewBuildOfNVR(eq(NVR));
+        mockExistingBuild(11, NVR, false);
 
         // Run import
         importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
 
         // Verify
-        verifySuccess("Build was already imported with id 11");
+        verifySuccess("Build was already imported with id 11 but not previously tagged. Tagged now.");
+    }
+
+    @Test
+    public void testReImportBuildWhenPreviousTaggedImportExists() throws Exception {
+        // Test setup
+        mockBrew();
+        mockTranslator();
+        
+        // Mock existing Brew build
+        mockExistingBuild(11, NVR, true);
+        // Mock Brew import
+        KojiImport kojiImport = mock(KojiImport.class);
+        doReturn(kojiImport).when(translator).translate(eq(NVR2), any(), any());
+        doReturn(new BrewBuild(12, NVR2)).when(brewClient)
+                .importBuild(eq(NVR2), same(kojiImport), same(IMPORT_FILE_GENERATOR));
+
+        // Run import
+        importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
+
+        // Verify
+        verifySuccess("Build was previously imported. Reimported again with revision 2 and with id 12.", "12");
+    }
+
+    @Test
+    public void testImportBuildWhenConflictingBrewBuildExists() throws Exception {
+        // Test setup
+        mockBrew();
+
+        // Mock existing Brew build
+        doThrow(new CausewayException("Conflicting brew build exists.")).when(brewClient).findBrewBuildOfNVR(eq(NVR));
+
+        // Run import
+        importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
+
+        // Verify
+        verifyError("Conflicting brew build exists.");
     }
 
     @Test
@@ -170,7 +214,7 @@ public class ImportControllerTest {
         importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
 
         // Verify
-        verifySuccess("Build imported with id 11");
+        verifySuccess("Build imported with id 11.");
     }
 
     @Test
@@ -267,16 +311,20 @@ public class ImportControllerTest {
         field.set(obj, newValue);
     }
 
-    private void verifySuccess(String log) {
 
+    private void verifySuccess(String log) {
+        verifySuccess(log, "11");
+    }
+
+    private void verifySuccess(String log, String id) {
         String result = "{"
                 + "\"id\":null,"
                 + "\"buildRecordId\":61,"
                 + "\"status\":\"SUCCESS\","
                 + "\"log\":\"" + log + "\","
                 + "\"artifactImportErrors\":null,"
-                + "\"brewBuildId\":11,"
-                + "\"brewBuildUrl\":\"" + KOJI_BUILD_URL + "11\""
+                + "\"brewBuildId\":" + id + ","
+                + "\"brewBuildUrl\":\"" + KOJI_BUILD_URL + id +"\""
                 + "}";
 
         WireMock.verify(postRequestedFor(urlEqualTo("/callback"))

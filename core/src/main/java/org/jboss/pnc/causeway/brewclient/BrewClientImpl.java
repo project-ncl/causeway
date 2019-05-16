@@ -43,6 +43,7 @@ import java.util.logging.Logger;
 
 import com.redhat.red.build.koji.KojijiErrorInfo;
 import com.redhat.red.build.koji.model.json.KojiJsonConstants;
+import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 
 @ApplicationScoped
 public class BrewClientImpl implements BrewClient {
@@ -139,6 +140,23 @@ public class BrewClientImpl implements BrewClient {
             throw new CausewayFailure(msg + ex.getMessage(), ex);
         }
         koji.logout(session);
+    }
+
+    @Override
+    public boolean isBuildTagged(String tag, BrewBuild build) throws CausewayException {
+        KojiSessionInfo session = login();
+        String tagName = tag + BUILD_TAG_SUFIX;
+        try {
+            List<KojiTagInfo> tags = koji.listTags(build.getId(), session);
+            return tags.stream()
+                    .map(KojiTagInfo::getName)
+                    .anyMatch(n -> tagName.equals(n));
+        } catch (KojiClientException ex) {
+            throw new CausewayException("Failure while getting tag information from build: "
+                    + ex.getMessage(), ex);
+        }finally{
+            koji.logout(session);
+        }
     }
 
     @Override

@@ -151,19 +151,32 @@ public class ImportControllerImpl implements ImportController {
         BrewBuild brewBuild = brewClient.findBrewBuildOfNVR(nvr);
         String message;
         if (brewBuild == null) {
-            KojiImport kojiImport = translator.translate(nvr, build, username);
-            ImportFileGenerator importFiles = translator.getImportFiles(build);
-
-            brewBuild = brewClient.importBuild(nvr, kojiImport, importFiles);
-            message = "Build imported with id ";
+            brewBuild = translateAndImport(nvr, build, username);
+            message = "Build imported with id " + brewBuild.getId() + ".";
         } else {
-            message = "Build was already imported with id ";
+            int revision = 1;
+            while (brewBuild != null && brewClient.isBuildTagged(tagPrefix, brewBuild)) {
+                nvr = getNVR(build, ++revision);
+                brewBuild = brewClient.findBrewBuildOfNVR(nvr);
+            }
+            if (brewBuild == null) {
+                brewBuild = translateAndImport(nvr, build, username);
+                message = "Build was previously imported. Reimported again with revision " + revision
+                        + " and with id " + brewBuild.getId() + ".";
+            } else {
+                message = "Build was already imported with id " + brewBuild.getId() + " but not previously tagged. Tagged now.";
+            }
         }
-
         brewClient.tagBuild(tagPrefix, getNVR(build));
 
         return new BuildResult(brewBuild.getId(), brewClient.getBuildUrl(brewBuild.getId()),
-                message + brewBuild.getId());
+                message);
+    }
+
+    private BrewBuild translateAndImport(BrewNVR nvr, Build build, String username) throws CausewayException {
+        KojiImport kojiImport = translator.translate(nvr, build, username);
+        ImportFileGenerator importFiles = translator.getImportFiles(build);
+        return brewClient.importBuild(nvr, kojiImport, importFiles);
     }
 
     BrewNVR getNVR(Build build) throws CausewayException{
@@ -173,6 +186,16 @@ public class ImportControllerImpl implements ImportController {
         }
 
         return new BrewNVR(build.getBuildName(), buildVersion, "1");
+    }
+
+    BrewNVR getNVR(Build build, int revision) throws CausewayException{
+        if(revision <= 0) throw new IllegalArgumentException("Revison must be positive, is " + revision);
+        String buildVersion = build.getBuildVersion();
+        if(buildVersion == null){
+            buildVersion = BuildTranslator.guessVersion(build);
+        }
+
+        return new BrewNVR(build.getBuildName(), buildVersion, Integer.toString(revision));
     }
 
     private <T> void respond(CallbackTarget callback, T responseEntity) {
