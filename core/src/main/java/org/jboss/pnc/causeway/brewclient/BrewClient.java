@@ -62,7 +62,13 @@ public interface BrewClient {
      */
     boolean isBuildTagged(String tag, BrewBuild build) throws CausewayException;
 
-    void tagBuild(String tag, BrewNVR nvr) throws CausewayException;
+    /**
+     * Tag build into given tag.
+     * @param tag Tag name.
+     * @param build Build to be tagegd.
+     * @throws CausewayException when there was problem communicating with Brew or problems with permisions.
+     */
+    void tagBuild(String tag, BrewBuild build) throws CausewayException;
 
     void untagBuild(String tag, BrewNVR nvr) throws CausewayException;
 

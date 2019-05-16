@@ -155,12 +155,13 @@ public class ImportControllerTest {
         mockBrew();
 
         // Mock existing Brew build
-        mockExistingBuild(11, NVR, false);
+        BrewBuild brewBuild = mockExistingBuild(11, NVR, false);
 
         // Run import
         importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
 
         // Verify
+        verify(brewClient).tagBuild(eq(TAG_PREFIX), same(brewBuild));
         verifySuccess("Build was already imported with id 11 but not previously tagged. Tagged now.");
     }
 
@@ -175,13 +176,15 @@ public class ImportControllerTest {
         // Mock Brew import
         KojiImport kojiImport = mock(KojiImport.class);
         doReturn(kojiImport).when(translator).translate(eq(NVR2), any(), any());
-        doReturn(new BrewBuild(12, NVR2)).when(brewClient)
+        BrewBuild brewBuild = new BrewBuild(12, NVR2);
+        doReturn(brewBuild).when(brewClient)
                 .importBuild(eq(NVR2), same(kojiImport), same(IMPORT_FILE_GENERATOR));
 
         // Run import
         importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
 
         // Verify
+        verify(brewClient).tagBuild(eq(TAG_PREFIX), same(brewBuild));
         verifySuccess("Build was previously imported. Reimported again with revision 2 and with id 12.", "12");
     }
 
@@ -214,6 +217,7 @@ public class ImportControllerTest {
         importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
 
         // Verify
+        verify(brewClient).tagBuild(eq(TAG_PREFIX), same(brewBuild));
         verifySuccess("Build imported with id 11.");
     }
 
