@@ -68,6 +68,7 @@ public class MavenBuild extends Build {
     }
 
     @JsonPOJOBuilder(withPrefix = "")
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class MavenBuildBuilder {
     }
 }
