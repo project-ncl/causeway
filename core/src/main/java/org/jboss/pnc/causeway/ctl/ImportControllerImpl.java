@@ -63,6 +63,9 @@ public class ImportControllerImpl implements ImportController {
     private static final String METRICS_TIMER = ".timer";
     private static final String METRICS_METER = ".meter";
 
+    private static final String BUILD_NOT_TAGGED = " but not previously tagged. Tagged now.";
+    private static final String BUILD_ALREADY_IMPORTED = "Build was already imported with id ";
+
     @Inject
     private BrewClient brewClient;
     @Inject
@@ -81,7 +84,7 @@ public class ImportControllerImpl implements ImportController {
 
     @Override
     @Asynchronous
-    public void importBuild(Build build, CallbackTarget callback, String username) {
+    public void importBuild(Build build, CallbackTarget callback, String username, boolean reimport) {
         logger.log(Level.INFO, "Importing external build {0} to tag {1}", new Object[]{build.getExternalBuildID(), build.getTagPrefix()});
 
         MetricRegistry registry = metricsConfiguration.getMetricRegistry();
@@ -94,7 +97,7 @@ public class ImportControllerImpl implements ImportController {
         BuildRecordPushResultRestBuilder response = BuildRecordPushResultRest.builder();
         response.buildRecordId(build.getExternalBuildID());
         try {
-            BuildResult result = importBuild(build, build.getTagPrefix(), username);
+            BuildResult result = importBuild(build, build.getTagPrefix(), username, reimport);
             response.brewBuildId(result.getBrewID());
             response.brewBuildUrl(result.getBrewURL());
             response.status(OperationStatus.SUCCESS);
@@ -138,7 +141,7 @@ public class ImportControllerImpl implements ImportController {
         respond(callback, response.build());
     }
 
-    private BuildResult importBuild(Build build, String tagPrefix, String username) throws CausewayException {
+    private BuildResult importBuild(Build build, String tagPrefix, String username, boolean reimport) throws CausewayException {
         if (build.getBuiltArtifacts().isEmpty()) {
             throw new CausewayFailure("Build doesn't contain any artifacts");
         }
@@ -154,17 +157,24 @@ public class ImportControllerImpl implements ImportController {
             brewBuild = translateAndImport(nvr, build, username);
             message = "Build imported with id " + brewBuild.getId() + ".";
         } else {
-            int revision = 1;
-            while (brewBuild != null && brewClient.isBuildTagged(tagPrefix, brewBuild)) {
-                nvr = getNVR(build, ++revision);
-                brewBuild = brewClient.findBrewBuildOfNVR(nvr);
-            }
-            if (brewBuild == null) {
-                brewBuild = translateAndImport(nvr, build, username);
-                message = "Build was previously imported. Reimported again with revision " + revision
-                        + " and with id " + brewBuild.getId() + ".";
+            if(reimport){
+                int revision = 1;
+                while (brewBuild != null && brewClient.isBuildTagged(tagPrefix, brewBuild)) {
+                    nvr = getNVR(build, ++revision);
+                    brewBuild = brewClient.findBrewBuildOfNVR(nvr);
+                }
+                if (brewBuild == null) {
+                    brewBuild = translateAndImport(nvr, build, username);
+                    message = "Build was previously imported. Reimported again with revision " + revision
+                            + " and with id " + brewBuild.getId() + ".";
+                } else {
+                    message = BUILD_ALREADY_IMPORTED + brewBuild.getId() + BUILD_NOT_TAGGED;
+                }
             } else {
-                message = "Build was already imported with id " + brewBuild.getId() + " but not previously tagged. Tagged now.";
+                message = BUILD_ALREADY_IMPORTED + brewBuild.getId();
+                if (!brewClient.isBuildTagged(tagPrefix, brewBuild)) {
+                    message += BUILD_NOT_TAGGED;
+                }
             }
         }
         brewClient.tagBuild(tagPrefix, brewBuild);
