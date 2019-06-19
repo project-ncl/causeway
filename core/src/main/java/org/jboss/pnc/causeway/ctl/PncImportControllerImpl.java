@@ -238,11 +238,12 @@ public class PncImportControllerImpl implements PncImportController {
             return ret;
         }
 
-        List<BuildArtifacts.PncArtifact> blackArtifacts = new ArrayList<>();
+        List<BuildArtifacts.PncArtifact> badArtifacts = new ArrayList<>();
         for (Iterator<BuildArtifacts.PncArtifact> it = artifacts.buildArtifacts.iterator(); it.hasNext();) {
             BuildArtifacts.PncArtifact artifact = it.next();
-            if (artifact.artifactQuality == ArtifactQuality.BLACKLISTED) {
-                blackArtifacts.add(artifact);
+            if (artifact.artifactQuality == ArtifactQuality.BLACKLISTED
+                    || artifact.artifactQuality == ArtifactQuality.DELETED) {
+                badArtifacts.add(artifact);
                 it.remove();
             }
         }
@@ -274,11 +275,11 @@ public class PncImportControllerImpl implements PncImportController {
             updateHistogram(metricsConfiguration, METRICS_LOGS_NUMBER_KEY, 1);
         }
 
-        for (BuildArtifacts.PncArtifact artifact : blackArtifacts) {
+        for (BuildArtifacts.PncArtifact artifact : badArtifacts) {
             log.warn(
                     "Failed to import artifact {}: {}",
                     artifact.id,
-                    "This artifact is blacklisted, so it was not imported.");
+                    "This artifact is blacklisted or deleted, so it was not imported.");
         }
         return buildResult;
     }
