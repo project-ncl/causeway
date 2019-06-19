@@ -183,11 +183,11 @@ public class PncImportControllerImpl implements PncImportController {
             return ret;
         }
 
-        List<BuildArtifacts.PncArtifact> blackArtifacts = new ArrayList<>();
+        List<BuildArtifacts.PncArtifact> badArtifacts = new ArrayList<>();
         for (Iterator<BuildArtifacts.PncArtifact> it = artifacts.buildArtifacts.iterator(); it.hasNext();) {
             BuildArtifacts.PncArtifact artifact = it.next();
-            if(artifact.artifactQuality == ArtifactRest.Quality.BLACKLISTED){
-                blackArtifacts.add(artifact);
+            if(artifact.artifactQuality == ArtifactRest.Quality.BLACKLISTED || artifact.artifactQuality == ArtifactRest.Quality.DELETED ){
+                badArtifacts.add(artifact);
                 it.remove();
             }
         }
@@ -205,10 +205,10 @@ public class PncImportControllerImpl implements PncImportController {
             buildResult = brewClient.importBuild(nvr, build.getId(), kojiImport, importFiles);
         }
 
-        for (BuildArtifacts.PncArtifact artifact : blackArtifacts) {
+        for (BuildArtifacts.PncArtifact artifact : badArtifacts) {
             ArtifactImportError error = ArtifactImportError.builder()
                     .artifactId(artifact.id)
-                    .errorMessage("This artifact is blacklisted, so it was not imported.")
+                    .errorMessage("This artifact is blacklisted or deleted, so it was not imported.")
                     .build();
             buildResult.getErrors().add(error);
         }

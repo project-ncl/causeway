@@ -56,6 +56,17 @@ public class ArtifactRest {
          * The artifact contains a severe defect, possibly a functional or security issue.
          */
         BLACKLISTED,
+        /**
+         * Artifact with DELETED quality is used to show BuildRecord dependencies although the
+         * artifact itself was deleted OR can identify artifacts, which are were removed from
+         * repository manager (e.g. due to conflicts), but the metadata were kept for archival
+         * purposes.
+         */
+        DELETED,
+        /**
+         * The artifact is built as temporary and it is planned to remove it later. The artifact
+         * cannot be used for product releases.
+         */
         TEMPORARY,
 
     }
