@@ -140,7 +140,7 @@ public class PncImportControllerImpl implements PncImportController {
             try{
                 BuildArtifacts artifacts = pncClient.findBuildArtifacts(build.getId());
                 importResult = importBuild(build, username, artifacts);
-                if(importResult.getStatus() == BuildImportStatus.SUCCESSFUL){
+                if(importResult.getStatus() == BuildImportStatus.SUCCESSFUL && importResult.getBrewBuildId() != null){
                     brewClient.tagBuild(tagPrefix, new BrewBuild(importResult.getBrewBuildId(), getNVR(build, artifacts)));
                 }
             }catch(CausewayException ex){
