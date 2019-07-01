@@ -16,7 +16,7 @@
 package org.jboss.pnc.causeway.pncclient;
 
 import org.jboss.pnc.causeway.CausewayException;
-import org.jboss.pnc.causeway.pncclient.model.BuildRecordRest;
+import org.jboss.pnc.dto.Build;
 
 import java.util.Collection;
 
@@ -29,7 +29,7 @@ public interface PncClient {
 
     BuildArtifacts findBuildArtifacts(Integer buildId) throws CausewayException;
 
-    public Collection<BuildRecordRest> findBuildsOfProductMilestone(int milestoneId) throws CausewayException;
+    public Collection<Build> findBuildsOfProductMilestone(int milestoneId) throws CausewayException;
 
     public String getTagForMilestone(int milestoneId) throws CausewayException;
 
