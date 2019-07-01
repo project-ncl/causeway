@@ -27,7 +27,9 @@ import org.jboss.pnc.causeway.rest.model.NpmBuild;
 import org.jboss.pnc.causeway.rest.model.NpmBuiltArtifact;
 import org.jboss.pnc.enums.BuildType;
 
+import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  *
@@ -46,18 +48,23 @@ public interface BuildTranslator {
     public KojiImport translate(BrewNVR nvr, Build build, String username) throws CausewayException;
 
     public static String guessVersion(Build build) throws CausewayException {
-        //If we have Maven builds, this filters out non MavenArtifacts. Same thing for NPM. Default option to not allow any Artifacts.
-        Function<BuiltArtifact, Boolean> filter = (build instanceof MavenBuild) ? (artifact -> artifact instanceof MavenBuiltArtifact) :
-                ((build instanceof NpmBuild) ? (artifact -> artifact instanceof NpmBuiltArtifact) : (artifact -> false));
-
-        //This function specifies the method to get Version from each type of Artifact. Default option is null.
-        Function<BuiltArtifact, String> getVersion = artifact -> (artifact instanceof MavenBuiltArtifact) ? ((MavenBuiltArtifact) artifact).getVersion() :
-                ((artifact instanceof  NpmBuiltArtifact) ? ((NpmBuiltArtifact) artifact).getVersion() : null);
+        final Predicate<BuiltArtifact> filter;
+        final Function<BuiltArtifact, String> getVersion;
+        if (build instanceof MavenBuild) {
+            filter = (artifact -> artifact instanceof MavenBuiltArtifact);
+            getVersion = (artifact -> ((MavenBuiltArtifact) artifact).getVersion());
+        } else if (build instanceof NpmBuild) {
+            filter = (artifact -> artifact instanceof NpmBuiltArtifact);
+            getVersion = (artifact -> ((NpmBuiltArtifact) artifact).getVersion());
+        } else {
+            filter = (artifact -> false);
+            getVersion = (artifact -> null);
+        }
 
         return build.getBuiltArtifacts().stream()
-                .filter( artifact -> filter.apply(artifact))
-                .map(a -> getVersion.apply(a))
-                .filter(v -> v != null)
+                .filter(filter)
+                .map(getVersion)
+                .filter(Objects::nonNull)
                 .findAny()
                 .orElseThrow(() -> new CausewayException("Build version or BuildType (MVN,NPM...) not specified and couldn't determine any from artifacts."));
     }
@@ -69,11 +76,19 @@ public interface BuildTranslator {
 
         // Maven and Gradle artifacts identifiers have 4 parts (G:A:P:V = org.jboss.pnc.causeway:causeway-web:war:2.0.0) and Npm 2 (N:V = async:3.1.0)
         // Last part for each is the version.
-        int parts = (buildType.equals(BuildType.MVN) || buildType.equals(BuildType.GRADLE)) ? 4 :
-                ((buildType.equals(BuildType.NPM) ? 2 : 0));
+        final int parts;
+        switch (buildType) {
+            case MVN:
+            case GRADLE:
+                parts = 4; break;
+            case NPM:
+                parts = 2; break;
+            default:
+                parts = 0; break;
+        }
 
         return artifacts.buildArtifacts.stream()
-                .map(a -> a.identifier.split(delim))
+                .map(artifact -> artifact.identifier.split(delim))
                 .filter(i -> i.length >= parts)
                 .map(i -> i[parts-1])
                 .findAny()

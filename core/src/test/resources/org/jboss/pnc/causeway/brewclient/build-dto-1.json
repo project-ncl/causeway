@@ -1,0 +1,56 @@
+{
+  "id": 1,
+  "submitTime": "2019-02-15T01:59:36.644Z",
+  "startTime": "2019-02-15T02:02:36.645Z",
+  "endTime": "2019-02-15T02:07:36.645Z",
+  "status": "SUCCESS",
+  "buildContentId": null,
+  "temporaryBuild": false,
+  "scmRepositoryURL": "http://github.com/project-ncl/pnc.git",
+  "project": {
+    "id": 100,
+    "name": "Project Newcastle Demo Project 1",
+    "description": "Example Project for Newcastle Demo",
+    "issueTrackerUrl": null,
+    "projectUrl": "https://github.com/project-ncl/pnc"
+  },
+  "repository": {
+    "id": 100,
+    "internalUrl": "git+ssh://internal.github.com/project-ncl/pnc.git",
+    "externalUrl": "https://github.com/project-ncl/pnc.git",
+    "preBuildSyncEnabled": true
+  },
+  "environment": {
+    "id": 100,
+    "name": "Demo Environment 1",
+    "description": "Basic Java and Maven Environment",
+    "systemImageRepositoryUrl": "my.registry/newcastle",
+    "systemImageId": "12345678",
+    "attributes": {
+      "JDK": "1.7.0",
+      "OS": "Linux"
+    },
+    "systemImageType": "DOCKER_IMAGE",
+    "deprecated": false
+  },
+  "attributes": {
+    "BrewBuildName" : "org.jboss.pnc:parent",
+    "BrewBuildVersion" : "2.0.0"},
+  "user": {
+    "id": 100,
+    "username": "demo-user"
+  },
+  "buildConfigurationRevision": {
+    "id": 100,
+    "rev": 1,
+    "name": "pnc-1.0.0.DR1",
+    "description": "Test build config for project newcastle",
+    "buildScript": "mvn deploy -DskipTests=true",
+    "scmRevision": "*/v0.2",
+    "creationTime": "2019-02-15T02:07:35.158Z",
+    "modificationTime": "2019-02-15T02:07:35.062Z",
+    "buildType": "MVN"
+  },
+  "dependentBuildIds": [],
+  "dependencyBuildIds": []
+}
