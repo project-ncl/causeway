@@ -7,7 +7,7 @@
     "externalBuildURL": "/pnc-rest/rest/build-records/61",
     "startTime": 1470309691844,
     "endTime": 1470309936668,
-    "scmURL": "http://code-stage.eng.nay.redhat.com/gerrit/productization-test3/geronimo-specs",
+    "scmURL": "http://internal.maven.repo.com/productization-test3/geronimo-specs",
     "scmRevision": "repour-57ebfa20374d708e232fc8b45f37def055300260",
     "buildRoot": {
         "container": "DOCKER_IMAGE",
@@ -72,7 +72,7 @@
             "architecture": "noarch",
             "md5": "bedf8af1b107b36c72f52009e6fcc768",
             "repositoryPath": "/api/hosted/build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721",
-            "artifactPath": "org/apache/geronimo/specs/geronimo-annotation_1.0_spec/1.1.1.redhat-1/geronimo-annotation_1.0_spec-1.1.1.redhat-1.jar",
+            "artifactPath": "/org/apache/geronimo/specs/geronimo-annotation_1.0_spec/1.1.1.redhat-1/geronimo-annotation_1.0_spec-1.1.1.redhat-1.jar",
             "size": 13245,
             "groupId": "org.apache.geronimo.specs",
             "artifactId": "geronimo-annotation_1.0_spec",

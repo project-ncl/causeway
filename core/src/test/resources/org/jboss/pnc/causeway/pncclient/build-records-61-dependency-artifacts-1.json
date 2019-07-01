@@ -56,7 +56,7 @@
         190
       ],
       "importDate": 1468310993023,
-      "originUrl": "http://download.eng.bos.redhat.com/brewroot/repos/jb-eap-7.0-rhel-7-maven-build/latest/maven/org/apache/maven/maven-project/2.0.6/maven-project-2.0.6.pom",
+      "originUrl": "http://ulozto.cz/brewroot/repos/jb-eap-7.0-rhel-7-maven-build/latest/maven/org/apache/maven/maven-project/2.0.6/maven-project-2.0.6.pom",
       "built": false,
       "imported": true,
       "status": "BINARY_IMPORTED"
@@ -114,7 +114,7 @@
         190
       ],
       "importDate": 1468310992928,
-      "originUrl": "http://download.eng.bos.redhat.com/brewroot/repos/jb-eap-7.0-rhel-7-maven-build/latest/maven/org/apache/maven/shared/maven-shared-io/1.1/maven-shared-io-1.1.jar",
+      "originUrl": "http://ulozto.cz/brewroot/repos/jb-eap-7.0-rhel-7-maven-build/latest/maven/org/apache/maven/shared/maven-shared-io/1.1/maven-shared-io-1.1.jar",
       "built": false,
       "imported": true,
       "status": "BINARY_IMPORTED"
@@ -172,7 +172,7 @@
         190
       ],
       "importDate": 1468310992553,
-      "originUrl": "http://download.eng.bos.redhat.com/brewroot/repos/jb-eap-7.0-rhel-7-maven-build/latest/maven/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar",
+      "originUrl": "http://ulozto.cz/brewroot/repos/jb-eap-7.0-rhel-7-maven-build/latest/maven/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar",
       "built": false,
       "imported": true,
       "status": "BINARY_IMPORTED"

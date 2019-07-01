@@ -76,7 +76,7 @@ public class PncClientImpl implements PncClient
     public Collection<Build> findBuildsOfProductMilestone(int milestoneId) throws CausewayException {
         Collection<Build> builds = new HashSet<>();
         try {
-            RemoteCollection<Build> buildPages = milestoneClient.getPerformedBuilds(milestoneId);
+            RemoteCollection<Build> buildPages = milestoneClient.getBuilds(milestoneId, new BuildsFilterParameters(), Optional.empty(), Optional.of("status==SUCCESS"));
             for (Build build : buildPages) {
                 if (build.getStatus().equals(BuildStatus.SUCCESS));
                     builds.add(build);
@@ -92,13 +92,10 @@ public class PncClientImpl implements PncClient
         Optional<String> log;
         try {
             log = buildClient.getBuildLogs(buildId);
-            if (!log.isPresent()) {
-                throw new CausewayException("Build log for Build " + buildId + " is empty - response " + NOT_FOUND_CODE);
-            }
+            return log.orElseThrow(() -> new CausewayException("Build log for Build " + buildId + " is empty - response " + NOT_FOUND_CODE));
         } catch (RemoteResourceException e) {
             throw new CausewayException("Can not read build log of build " + buildId + " because PNC responded with an error - response " + e.getStatus(), e);
         }
-        return log.get();
     }
 
     @Override

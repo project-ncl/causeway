@@ -17,25 +17,24 @@ package org.jboss.pnc.causeway.brewclient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.redhat.red.build.koji.model.json.KojiImport;
 import com.redhat.red.build.koji.model.json.util.KojiObjectMapper;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
-import org.jboss.pnc.causeway.pncclient.model.BuildRecordRest;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.model.Build;
 import org.jboss.pnc.causeway.rest.model.MavenBuild;
 import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
+import org.jboss.pnc.enums.ArtifactQuality;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import org.jboss.pnc.causeway.pncclient.model.ArtifactRest;
 
 /**
  *
@@ -50,13 +49,15 @@ public class TranslatorTest {
     public static void setUp() {
         config.setPnclBuildsURL("http://example.com/build-records/");
         mapper.registerSubtypes(MavenBuild.class, MavenBuiltArtifact.class);
+        mapper.registerModule(new JavaTimeModule());
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
     @Test
     public void testReadBuildArtifacts() throws Exception {
-        String json = readResponseBodyFromTemplate("build-records-61-1.json");
+        String json = readResponseBodyFromTemplate("build-dto-1.json");
 
-        BuildRecordRest build = mapper.readValue(json, BuildRecordRest.class);
+        org.jboss.pnc.dto.Build build = mapper.readValue(json, org.jboss.pnc.dto.Build.class);
         BuildArtifacts artifacts = new BuildArtifacts();
         artifacts.buildArtifacts.add(newArtifact(2369, "org.apache.geronimo.specs", "geronimo-annotation_1.0_spec", "1.1.1.redhat-1", "pom"));
         artifacts.buildArtifacts.add(newArtifact(2370, "org.apache.geronimo.specs", "geronimo-annotation_1.0_spec", "1.1.1.redhat-1", "jar"));
@@ -102,11 +103,11 @@ public class TranslatorTest {
         }
         final String path = groupId.replace('.', '/')+"/"+artifactId+"/"+version+"/"+filename;
         return new BuildArtifacts.PncArtifact(id,
-                "maven", identifier, filename,
+                identifier, filename,
                 "bedf8af1b107b36c72f52009e6fcc768",
-                "http://pnc-indy-branch-nightly.cloud.pnc.devel.engineering.redhat.com/api/hosted/build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/"+path,
+                "http://ulozto.cz/api/hosted/build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/"+path,
                 13245,
-                ArtifactRest.Quality.NEW);
+                ArtifactQuality.NEW);
     }
 
     private String readResponseBodyFromTemplate(String name) throws IOException {

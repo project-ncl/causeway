@@ -10,7 +10,7 @@
       "repoType": "MAVEN",
       "checksum": "bedf8af1b107b36c72f52009e6fcc768",
       "filename": "geronimo-annotation_1.0_spec-1.1.1.redhat-1.pom",
-      "deployUrl": "http://pnc-indy-branch-nightly.cloud.pnc.devel.engineering.redhat.com/api/hosted/build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/org/apache/geronimo/specs/geronimo-annotation_1.0_spec/1.1.1.redhat-1/geronimo-annotation_1.0_spec-1.1.1.redhat-1.pom",
+      "deployUrl": "http://maven.repo.com/api/hosted/build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/org/apache/geronimo/specs/geronimo-annotation_1.0_spec/1.1.1.redhat-1/geronimo-annotation_1.0_spec-1.1.1.redhat-1.pom",
       "buildRecordIds": [
         61
       ],
@@ -28,7 +28,7 @@
       "repoType": "MAVEN",
       "checksum": "445fd69dce3c1cb8b0945d0b02aff79c",
       "filename": "geronimo-annotation_1.0_spec-1.1.1.redhat-1.jar",
-      "deployUrl": "http://pnc-indy-branch-nightly.cloud.pnc.devel.engineering.redhat.com/api/hosted/build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/org/apache/geronimo/specs/geronimo-annotation_1.0_spec/1.1.1.redhat-1/geronimo-annotation_1.0_spec-1.1.1.redhat-1.jar",
+      "deployUrl": "http://maven.repo.com/api/hosted/build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/org/apache/geronimo/specs/geronimo-annotation_1.0_spec/1.1.1.redhat-1/geronimo-annotation_1.0_spec-1.1.1.redhat-1.jar",
       "buildRecordIds": [
         61
       ],
@@ -46,7 +46,7 @@
       "repoType": "MAVEN",
       "checksum": "e58845340c278024bd1d6165caf109d7",
       "filename": "geronimo-annotation_1.0_spec-1.1.1.redhat-1-project-sources.tar.gz",
-      "deployUrl": "http://pnc-indy-branch-nightly.cloud.pnc.devel.engineering.redhat.com/api/hosted/build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/org/apache/geronimo/specs/geronimo-annotation_1.0_spec/1.1.1.redhat-1/geronimo-annotation_1.0_spec-1.1.1.redhat-1-project-sources.tar.gz",
+      "deployUrl": "http://maven.repo.com/api/hosted/build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/org/apache/geronimo/specs/geronimo-annotation_1.0_spec/1.1.1.redhat-1/geronimo-annotation_1.0_spec-1.1.1.redhat-1-project-sources.tar.gz",
       "buildRecordIds": [
         61
       ],
