@@ -15,16 +15,15 @@
  */
 package org.jboss.pnc.causeway.rest.model;
 
-import java.util.Date;
-import java.util.Objects;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import lombok.Data;
 import lombok.NonNull;
+
+import java.util.Date;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  *
@@ -35,7 +34,8 @@ import lombok.NonNull;
         property = "@buildType")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonSubTypes(
-    @JsonSubTypes.Type(MavenBuild.class))
+        {@JsonSubTypes.Type(MavenBuild.class),
+        @JsonSubTypes.Type(NpmBuild.class)})
 public abstract class Build {
 
     @NonNull

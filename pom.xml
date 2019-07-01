@@ -55,7 +55,10 @@
     <jhttpcVersion>1.6</jhttpcVersion>
     <configVersion>0.8</configVersion>
     <mockitoVersion>1.10.19</mockitoVersion>
-    <kojijiVersion>2.6</kojijiVersion>
+    <kojijiVersion>2.11</kojijiVersion>
+    <semverVersion>0.9.0</semverVersion>
+    <atlasVersion>1.0.1</atlasVersion>
+    <pncVersion>2.0.0-SNAPSHOT</pncVersion>
   </properties>
 
   <modules>
@@ -81,6 +84,27 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+       <groupId>com.github.zafarkhaja</groupId>
+        <artifactId>java-semver</artifactId>
+        <version>${semverVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.pnc</groupId>
+        <artifactId>constants</artifactId>
+        <version>${pncVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.pnc</groupId>
+        <artifactId>dto</artifactId>
+        <version>${pncVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.pnc</groupId>
+        <artifactId>rest-api</artifactId>
+        <version>${pncVersion}</version>
+        <classifier>java-client</classifier>
+      </dependency>
       <dependency>
         <groupId>org.jboss.bom</groupId>
         <artifactId>jboss-eap-javaee8-with-tools</artifactId>
@@ -154,9 +178,14 @@
         <version>${configVersion}</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.maven.atlas</groupId>
+        <groupId>org.commonjava.atlas</groupId>
         <artifactId>atlas-identities</artifactId>
-        <version>0.15.2</version>
+        <version>${atlasVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.atlas</groupId>
+        <artifactId>atlas-npm-identities</artifactId>
+        <version>${atlasVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.util</groupId>

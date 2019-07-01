@@ -15,13 +15,12 @@
  */
 package org.jboss.pnc.causeway.rest.model;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import lombok.Data;
 import lombok.NonNull;
+
+import java.util.Objects;
 
 /**
  *
@@ -30,8 +29,9 @@ import lombok.NonNull;
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY,
         property = "@artifactType")
-@JsonSubTypes(
-        @JsonSubTypes.Type(MavenBuiltArtifact.class))
+@JsonSubTypes({
+        @JsonSubTypes.Type(NpmBuiltArtifact.class),
+        @JsonSubTypes.Type(MavenBuiltArtifact.class)})
 public class BuiltArtifact {
     private final int id;
     @NonNull
