@@ -3,25 +3,25 @@ package org.jboss.pnc.causeway.ctl;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-
+import com.redhat.red.build.koji.model.json.KojiImport;
+import lombok.Data;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.CausewayFailure;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
-import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageMissingTag;
-
 import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.CallbackTarget;
 import org.jboss.pnc.causeway.rest.model.Build;
-import org.jboss.pnc.causeway.rest.model.BuiltArtifact;
-import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
 import org.jboss.pnc.causeway.rest.model.TaggedBuild;
 import org.jboss.pnc.causeway.rest.model.response.BuildRecordPushResultRest;
 import org.jboss.pnc.causeway.rest.model.response.BuildRecordPushResultRest.BuildRecordPushResultRestBuilder;
+import org.jboss.pnc.causeway.rest.model.response.OperationStatus;
+import org.jboss.pnc.causeway.rest.model.response.UntagResultRest;
+import org.jboss.pnc.causeway.rest.model.response.UntagResultRest.UntagResultRestBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
@@ -35,19 +35,12 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.redhat.red.build.koji.model.json.KojiImport;
-
-import lombok.Data;
-
-import org.jboss.pnc.causeway.rest.model.response.OperationStatus;
-import org.jboss.pnc.causeway.rest.model.response.UntagResultRest;
-import org.jboss.pnc.causeway.rest.model.response.UntagResultRest.UntagResultRestBuilder;
+import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageMissingTag;
 
 /**
  *

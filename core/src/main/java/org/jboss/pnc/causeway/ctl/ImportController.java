@@ -10,7 +10,7 @@ import org.jboss.pnc.causeway.rest.model.TaggedBuild;
  */
 public interface ImportController {
 
-    public void importBuild(Build build, CallbackTarget callback, String username);
+    void importBuild(Build build, CallbackTarget callback, String username);
 
-    public void untagBuild(TaggedBuild build, CallbackTarget callback);
+    void untagBuild(TaggedBuild build, CallbackTarget callback);
 }
