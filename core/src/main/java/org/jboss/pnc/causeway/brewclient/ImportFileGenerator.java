@@ -15,6 +15,9 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
+import com.redhat.red.build.koji.model.ImportFile;
+import lombok.Data;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -28,10 +31,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.redhat.red.build.koji.model.ImportFile;
-
-import lombok.Data;
 
 /**
  *
