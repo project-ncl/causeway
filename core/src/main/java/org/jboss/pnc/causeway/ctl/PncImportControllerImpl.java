@@ -18,6 +18,7 @@ package org.jboss.pnc.causeway.ctl;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.redhat.red.build.koji.model.json.KojiImport;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.bpmclient.BPMClient;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
@@ -27,32 +28,29 @@ import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
+import org.jboss.pnc.causeway.pncclient.PncClient;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
-import org.jboss.pnc.causeway.pncclient.PncClient;
-import org.jboss.pnc.causeway.pncclient.model.BuildRecordRest;
 import org.jboss.pnc.causeway.rest.CallbackTarget;
+import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportResultRest;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportStatus;
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
 import org.jboss.pnc.causeway.rest.pnc.ReleaseStatus;
+import org.jboss.pnc.dto.Build;
+import org.jboss.pnc.enums.ArtifactQuality;
 
 import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
-
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.redhat.red.build.koji.model.json.KojiImport;
-import java.util.Iterator;
-import org.jboss.pnc.causeway.pncclient.model.ArtifactRest;
-import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
 
 @Deprecated
 @Stateless
@@ -62,6 +60,8 @@ public class PncImportControllerImpl implements PncImportController {
     private static final String METRICS_BASE = "causeway.import.milestone";
     private static final String METRICS_TIMER = ".timer";
     private static final String METRICS_METER = ".meter";
+    public static final String BREW_BUILD_NAME = "BrewBuildName";
+    public static final String BREW_BUILD_VERSION = "BrewBuildVersion";
 
     private final PncClient pncClient;
     private final BrewClient brewClient;
@@ -132,10 +132,10 @@ public class PncImportControllerImpl implements PncImportController {
             throw new CausewayException(messageMissingTag(tagPrefix, config.getKojiURL()));
         }
 
-        Collection<BuildRecordRest> builds = findAndAssertBuilds(milestoneId);
+        Collection<Build> builds = findAndAssertBuilds(milestoneId);
 
         List<BuildImportResultRest> results = new ArrayList<>();
-        for (BuildRecordRest build : builds) {
+        for (Build build : builds) {
             BuildImportResultRest importResult;
             try{
                 BuildArtifacts artifacts = pncClient.findBuildArtifacts(build.getId());
@@ -156,8 +156,8 @@ public class PncImportControllerImpl implements PncImportController {
         return results;
     }
 
-    private Collection<BuildRecordRest> findAndAssertBuilds(int milestoneId) throws CausewayException {
-        Collection<BuildRecordRest> builds;
+    private Collection<Build> findAndAssertBuilds(int milestoneId) throws CausewayException {
+        Collection<Build> builds;
         try {
             builds = pncClient.findBuildsOfProductMilestone(milestoneId);
         } catch (Exception e) {
@@ -169,7 +169,7 @@ public class PncImportControllerImpl implements PncImportController {
         return builds;
     }
     
-    private BuildImportResultRest importBuild(BuildRecordRest build, String username, BuildArtifacts artifacts) throws CausewayException {
+    private BuildImportResultRest importBuild(Build build, String username, BuildArtifacts artifacts) throws CausewayException {
         BrewNVR nvr = getNVR(build, artifacts);
         BrewBuild brewBuild = brewClient.findBrewBuildOfNVR(nvr);
         if (brewBuild != null) {
@@ -186,7 +186,7 @@ public class PncImportControllerImpl implements PncImportController {
         List<BuildArtifacts.PncArtifact> blackArtifacts = new ArrayList<>();
         for (Iterator<BuildArtifacts.PncArtifact> it = artifacts.buildArtifacts.iterator(); it.hasNext();) {
             BuildArtifacts.PncArtifact artifact = it.next();
-            if(artifact.artifactQuality == ArtifactRest.Quality.BLACKLISTED){
+            if(artifact.artifactQuality == ArtifactQuality.BLACKLISTED){
                 blackArtifacts.add(artifact);
                 it.remove();
             }
@@ -235,15 +235,15 @@ public class PncImportControllerImpl implements PncImportController {
               + "(Note that tag " + child + " should inherit from tag " + parent + ")";
     }
 
-    BrewNVR getNVR(BuildRecordRest build, BuildArtifacts artifacts) throws CausewayException {
-        if(build.getExecutionRootName() == null){
-            throw new CausewayException("Build executionRootName can't be null");
+    BrewNVR getNVR(Build build, BuildArtifacts artifacts) throws CausewayException {
+        if(!build.getAttributes().containsKey(BREW_BUILD_NAME)){
+            throw new CausewayException("Build attribute " + BREW_BUILD_NAME + " can't be missing");
         }
-        String version = build.getExecutionRootVersion();
+        String version = build.getAttributes().get(BREW_BUILD_VERSION);
         if(version == null){
             version = BuildTranslator.guessVersion(build, artifacts);
         }
-        return new BrewNVR(build.getExecutionRootName(), version, "1");
+        return new BrewNVR(build.getAttributes().get(BREW_BUILD_NAME), version, "1");
     }
 
     private boolean isNotEmpty(Collection<?> collection) {
