@@ -15,9 +15,10 @@
  */
 package org.jboss.pnc.causeway.pncclient;
 
+import org.jboss.pnc.enums.ArtifactQuality;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.jboss.pnc.causeway.pncclient.model.ArtifactRest.Quality;
 
 @Deprecated
 public final class BuildArtifacts {
@@ -32,17 +33,15 @@ public final class BuildArtifacts {
 
     public static class PncArtifact {
         public final int id;
-        public final String type;
         public final String identifier;
         public final String deployPath;
         public final String checksum;
         public final String deployUrl;
-        public final Quality artifactQuality;
+        public final ArtifactQuality artifactQuality;
         public final long size;
 
-        public PncArtifact(int id, String type, String identifier, String deployPath, String checksum, String deployUrl, long size, Quality artifactQuality) {
+        public PncArtifact(int id,  String identifier, String deployPath, String checksum, String deployUrl, long size, ArtifactQuality artifactQuality) {
             this.id = id;
-            this.type = type;
             this.identifier = identifier;
             this.deployPath = deployPath;
             this.checksum = checksum;

@@ -22,11 +22,13 @@ import org.commonjava.util.jhttpc.model.SiteTrustType;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
+import org.jboss.pnc.client.Configuration;
 
 import javax.enterprise.context.ApplicationScoped;
-
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +79,8 @@ public class CausewayConfig
     
     private static final Integer DEFAULT_CONNECTIONS = 10;
 
+    private static final Integer DEFAULT_PAGE_SIZE = 50;
+
     private boolean configured;
 
     private String kojiClientKeyCertificateFile;
@@ -116,6 +120,8 @@ public class CausewayConfig
     private SiteConfig kojiSiteConfig;
 
     private SiteConfig pnclSiteConfig;
+
+    private Configuration configuration;
 
     public Boolean getKojiTrustSelfSigned()
     {
@@ -309,6 +315,27 @@ public class CausewayConfig
         }
 
         return pnclSiteConfig;
+    }
+
+    public synchronized Configuration getPncClientConfig() {
+        if ( configuration == null ) {
+            Configuration.ConfigurationBuilder builder = Configuration.builder();
+
+            try {
+                URL url = new URL(getPnclURL());
+
+                builder.host(url.getHost())
+                        .protocol(url.getProtocol())
+                        .pageSize(DEFAULT_PAGE_SIZE)
+                        .port((url.getPort() != -1) ? url.getPort() : url.getDefaultPort());
+            } catch (MalformedURLException e) {
+                throw new IllegalStateException("Value of the '" + PNCL_URL_OPTION + "' field in Causeway configuration is not parsable URL", e);
+            }
+
+            configuration = builder.build();
+        }
+
+        return configuration;
     }
 
     public void setConfigDir( File configDir )
