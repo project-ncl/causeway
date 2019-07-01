@@ -63,6 +63,23 @@
       <artifactId>configuration-dotconf</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.github.zafarkhaja</groupId>
+      <artifactId>java-semver</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.pnc</groupId>
+      <artifactId>dto</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.pnc</groupId>
+      <artifactId>constants</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.pnc</groupId>
+      <artifactId>rest-api</artifactId>
+      <classifier>java-client</classifier>
+    </dependency>
+    <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
     </dependency>
@@ -87,6 +104,10 @@
       <artifactId>resteasy-client</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.redhat.red.build</groupId>
       <artifactId>kojiji</artifactId>
     </dependency>
@@ -108,8 +129,12 @@
       <artifactId>wiremock</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.maven.atlas</groupId>
+      <groupId>org.commonjava.atlas</groupId>
       <artifactId>atlas-identities</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.atlas</groupId>
+      <artifactId>atlas-npm-identities</artifactId>
     </dependency>
     <dependency>
         <groupId>org.jboss.resteasy</groupId>
