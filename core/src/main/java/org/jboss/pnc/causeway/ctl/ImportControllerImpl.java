@@ -55,6 +55,7 @@ public class ImportControllerImpl implements ImportController {
     private static final String METRICS_BASE = "causeway.import.build";
     private static final String METRICS_TIMER = ".timer";
     private static final String METRICS_METER = ".meter";
+    private static final String METRICS_ERRORS = ".errors";
 
     @Inject
     private BrewClient brewClient;
@@ -84,6 +85,7 @@ public class ImportControllerImpl implements ImportController {
         Timer timer = registry.timer(METRICS_BASE + METRICS_TIMER);
         Timer.Context context = timer.time();
 
+        Meter errors = registry.meter(METRICS_BASE + METRICS_ERRORS);
         BuildPushResult.Builder response = BuildPushResult.builder();
         response.buildId(build.getExternalBuildID());
         try {
@@ -97,10 +99,12 @@ public class ImportControllerImpl implements ImportController {
             response.status(BuildPushStatus.FAILED);
             response.artifactImportErrors(ex.getArtifactErrors());
             response.log(getMessageOrStacktrace(ex));
+            errors.mark();
         } catch (CausewayException | RuntimeException ex) {
             logger.log(Level.SEVERE, "Error while importing build.", ex);
             response.status(BuildPushStatus.SYSTEM_ERROR);
             response.log(getMessageOrStacktrace(ex));
+            errors.mark();
         }
         respond(callback, response.build());
 
