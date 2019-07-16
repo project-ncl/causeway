@@ -62,6 +62,7 @@ public class PncImportControllerImpl implements PncImportController {
     private static final String METRICS_BASE = "causeway.import.milestone";
     private static final String METRICS_TIMER = ".timer";
     private static final String METRICS_METER = ".meter";
+    private static final String METRICS_ERRORS = ".errors";
 
     private final PncClient pncClient;
     private final BrewClient brewClient;
@@ -93,6 +94,8 @@ public class PncImportControllerImpl implements PncImportController {
         Timer timer = registry.timer(METRICS_BASE + METRICS_TIMER);
         Timer.Context context = timer.time();
 
+        Meter errors = registry.meter(METRICS_BASE + METRICS_ERRORS);
+
         MilestoneReleaseResultRest result = new MilestoneReleaseResultRest();
         result.setMilestoneId(milestoneId);
         try {
@@ -102,9 +105,11 @@ public class PncImportControllerImpl implements PncImportController {
             if (results.stream().anyMatch(r -> r.getStatus() == BuildImportStatus.ERROR)) {
                 result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
                 bpmClient.failure(callback.getUrl(), callbackId, result);
+                errors.mark();
             } else if (results.stream().anyMatch(r -> r.getStatus() == BuildImportStatus.FAILED)) {
                 result.setReleaseStatus(ReleaseStatus.IMPORT_ERROR);
                 bpmClient.failure(callback.getUrl(), callbackId, result);
+                errors.mark();
             }else{
                 result.setReleaseStatus(ReleaseStatus.SUCCESS);
                 bpmClient.success(callback.getUrl(), callbackId, result);
@@ -115,11 +120,13 @@ public class PncImportControllerImpl implements PncImportController {
             result.setErrorMessage(ex.getMessage());
             result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
             bpmClient.failure(callback.getUrl(), callbackId, result);
+            errors.mark();
         } catch (RuntimeException ex) {
             Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import milestone.", ex);
             result.setErrorMessage(ex.getMessage());
             result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
             bpmClient.error(callback.getUrl(), callbackId, result);
+            errors.mark();
         }
 
         // stop the timer
