@@ -106,9 +106,11 @@ public class PncImportControllerImpl implements PncImportController {
             if (results.stream().anyMatch(r -> r.getStatus() == BuildImportStatus.ERROR)) {
                 result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
                 bpmClient.failure(callback.getUrl(), callbackId, result);
+                errors.mark();
             } else if (results.stream().anyMatch(r -> r.getStatus() == BuildImportStatus.FAILED)) {
                 result.setReleaseStatus(ReleaseStatus.IMPORT_ERROR);
                 bpmClient.failure(callback.getUrl(), callbackId, result);
+                errors.mark();
             }else{
                 result.setReleaseStatus(ReleaseStatus.SUCCESS);
                 bpmClient.success(callback.getUrl(), callbackId, result);
