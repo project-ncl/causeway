@@ -59,7 +59,8 @@ public class ImportControllerImpl implements ImportController {
 
     private final Logger logger = Logger.getLogger(ImportControllerImpl.class.getName());
 
-    private static final String METRICS_BASE = "causeway.import.build";
+    private static final String METRICS_IMPORT_BASE = "causeway.import.build";
+    private static final String METRICS_UNTAG_BASE = "causeway.untag.build";
     private static final String METRICS_TIMER = ".timer";
     private static final String METRICS_METER = ".meter";
     private static final String METRICS_ERRORS = ".errors";
@@ -86,13 +87,13 @@ public class ImportControllerImpl implements ImportController {
         logger.log(Level.INFO, "Importing external build {0} to tag {1}", new Object[]{build.getExternalBuildID(), build.getTagPrefix()});
 
         MetricRegistry registry = metricsConfiguration.getMetricRegistry();
-        Meter meter = registry.meter(METRICS_BASE + METRICS_METER);
+        Meter meter = registry.meter(METRICS_IMPORT_BASE + METRICS_METER);
         meter.mark();
 
-        Timer timer = registry.timer(METRICS_BASE + METRICS_TIMER);
+        Timer timer = registry.timer(METRICS_IMPORT_BASE + METRICS_TIMER);
         Timer.Context context = timer.time();
 
-        Meter errors = registry.meter(METRICS_BASE + METRICS_ERRORS);
+        Meter errors = registry.meter(METRICS_IMPORT_BASE + METRICS_ERRORS);
 
         BuildRecordPushResultRestBuilder response = BuildRecordPushResultRest.builder();
         response.buildRecordId(build.getExternalBuildID());
@@ -125,6 +126,15 @@ public class ImportControllerImpl implements ImportController {
     public void untagBuild(TaggedBuild build, CallbackTarget callback) {
         logger.log(Level.INFO, "Untaging build {0} from tag {1}", new Object[]{build.getBrewBuildId(), build.getTagPrefix()});
 
+        MetricRegistry registry = metricsConfiguration.getMetricRegistry();
+        Meter meter = registry.meter(METRICS_UNTAG_BASE + METRICS_METER);
+        meter.mark();
+
+        Timer timer = registry.timer(METRICS_UNTAG_BASE + METRICS_TIMER);
+        Timer.Context context = timer.time();
+
+        Meter errors = registry.meter(METRICS_UNTAG_BASE + METRICS_ERRORS);
+
         UntagResultRestBuilder response = UntagResultRest.builder();
         response.brewBuildId(build.getBrewBuildId());
         try {
@@ -135,12 +145,17 @@ public class ImportControllerImpl implements ImportController {
             logger.log(Level.SEVERE, "Failed to untag build.", ex);
             response.status(OperationStatus.FAILED);
             response.log(getMessageOrStacktrace(ex));
+            errors.mark();
         } catch (CausewayException | RuntimeException ex) {
             logger.log(Level.SEVERE, "Error while untaging build.", ex);
             response.status(OperationStatus.SYSTEM_ERROR);
             response.log(getMessageOrStacktrace(ex));
+            errors.mark();
         }
         respond(callback, response.build());
+
+        // stop the timer
+        context.stop();
     }
 
     private BuildResult importBuild(Build build, String tagPrefix, String username) throws CausewayException {
