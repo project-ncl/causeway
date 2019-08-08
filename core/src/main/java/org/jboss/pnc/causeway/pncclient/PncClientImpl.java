@@ -29,6 +29,7 @@ import org.jboss.pnc.dto.Artifact;
 import org.jboss.pnc.dto.Build;
 import org.jboss.pnc.dto.ProductMilestone;
 import org.jboss.pnc.enums.BuildStatus;
+import org.jboss.pnc.rest.api.parameters.BuildsFilterParameters;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -68,7 +69,7 @@ public class PncClientImpl implements PncClient
         } catch (ClientException e) {
             throw new CausewayException("Unknown error - message = " + e.getMessage(), e);
         }
-        return milestone.getProductVersion().getAttributes().get(Attributes.ATTRIBUTE_KEY_BREW_TAG_PREFIX);
+        return milestone.getProductVersion().getAttributes().get(Attributes.BREW_TAG_PREFIX);
     }
 
 

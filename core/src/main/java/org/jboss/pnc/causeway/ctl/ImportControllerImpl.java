@@ -17,11 +17,11 @@ import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.CallbackTarget;
 import org.jboss.pnc.causeway.rest.model.Build;
 import org.jboss.pnc.causeway.rest.model.TaggedBuild;
-import org.jboss.pnc.causeway.rest.model.response.BuildRecordPushResultRest;
-import org.jboss.pnc.causeway.rest.model.response.BuildRecordPushResultRest.BuildRecordPushResultRestBuilder;
 import org.jboss.pnc.causeway.rest.model.response.OperationStatus;
 import org.jboss.pnc.causeway.rest.model.response.UntagResultRest;
 import org.jboss.pnc.causeway.rest.model.response.UntagResultRest.UntagResultRestBuilder;
+import org.jboss.pnc.dto.BuildPushResult;
+import org.jboss.pnc.enums.BuildPushStatus;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
@@ -84,22 +84,22 @@ public class ImportControllerImpl implements ImportController {
         Timer timer = registry.timer(METRICS_BASE + METRICS_TIMER);
         Timer.Context context = timer.time();
 
-        BuildRecordPushResultRestBuilder response = BuildRecordPushResultRest.builder();
-        response.buildRecordId(build.getExternalBuildID());
+        BuildPushResult.Builder response = BuildPushResult.builder();
+        response.buildId(build.getExternalBuildID());
         try {
             BuildResult result = importBuild(build, build.getTagPrefix(), username);
             response.brewBuildId(result.getBrewID());
             response.brewBuildUrl(result.getBrewURL());
-            response.status(OperationStatus.SUCCESS);
+            response.status(BuildPushStatus.SUCCESS);
             response.log(result.getMessage());
         } catch (CausewayFailure ex) {
             logger.log(Level.SEVERE, "Failed to import build.", ex);
-            response.status(OperationStatus.FAILED);
+            response.status(BuildPushStatus.FAILED);
             response.artifactImportErrors(ex.getArtifactErrors());
             response.log(getMessageOrStacktrace(ex));
         } catch (CausewayException | RuntimeException ex) {
             logger.log(Level.SEVERE, "Error while importing build.", ex);
-            response.status(OperationStatus.SYSTEM_ERROR);
+            response.status(BuildPushStatus.SYSTEM_ERROR);
             response.log(getMessageOrStacktrace(ex));
         }
         respond(callback, response.build());

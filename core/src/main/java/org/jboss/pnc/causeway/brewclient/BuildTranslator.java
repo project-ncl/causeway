@@ -72,7 +72,7 @@ public interface BuildTranslator {
     @Deprecated
     public static String guessVersion(org.jboss.pnc.dto.Build build, BuildArtifacts artifacts) throws CausewayException {
         String delim = ":";
-        BuildType buildType = build.getBuildConfigurationRevision().getBuildType();
+        BuildType buildType = build.getBuildConfigRevision().getBuildType();
 
         // Maven and Gradle artifacts identifiers have 4 parts (G:A:P:V = org.jboss.pnc.causeway:causeway-web:war:2.0.0) and Npm 2 (N:V = async:3.1.0)
         // Last part for each is the version.

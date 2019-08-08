@@ -56,6 +56,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.jboss.pnc.constants.Attributes.BUILD_BREW_NAME;
+import static org.jboss.pnc.constants.Attributes.BUILD_BREW_VERSION;
+
 /**
  *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
@@ -65,8 +68,6 @@ public class BuildTranslatorImpl implements BuildTranslator {
     private static final String CONTENT_GENERATOR_NAME = "Project Newcastle";
     static final String PNC = "PNC";
     private static final String MD5 = "md5";
-    private static final String BREW_BUILD_NAME = "BrewBuildName";
-    private static final String BREW_BUILD_VERSION = "BrewBuildVersion";
 
     private final CausewayConfig config;
 
@@ -94,7 +95,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 .withNewBuildDescription(nvr.getKojiName(), nvr.getVersion(), nvr.getRelease())
                 .withStartTime(Date.from(build.getStartTime()))
                 .withEndTime(Date.from(build.getEndTime()))
-                .withBuildSource(normalizeScmUrl(build.getScmRepositoryURL()), build.getBuildConfigurationRevision().getScmRevision())
+                .withBuildSource(normalizeScmUrl(build.getScmRepositoryURL()),
+                        build.getBuildConfigRevision().getScmRevision())
                 .withExternalBuildId(externalBuildId)
                 .withExternalBuildUrl(externalBuildUrl)
                 .withBuildSystem(PNC);
@@ -108,8 +110,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
                         .getAttributes().get("OS"), StandardArchitecture.noarch);
 
         addTool(buildRootBuilder, build);
-        addDependencies(artifacts.dependencies, buildRootBuilder, build.getBuildConfigurationRevision().getBuildType());
-        addBuiltArtifacts(artifacts.buildArtifacts, builder, buildRootId, build.getBuildConfigurationRevision().getBuildType());
+        addDependencies(artifacts.dependencies, buildRootBuilder, build.getBuildConfigRevision().getBuildType());
+        addBuiltArtifacts(artifacts.buildArtifacts, builder, buildRootId, build.getBuildConfigRevision().getBuildType());
         addLog(log, builder, buildRootId);
 
         KojiImport translatedBuild = buildTranslatedBuild(builder);
@@ -320,13 +322,13 @@ public class BuildTranslatorImpl implements BuildTranslator {
 
 
     private ProjectVersionRef buildRootToGAV(org.jboss.pnc.dto.Build build, BuildArtifacts artifacts) throws CausewayException{
-        if (!build.getAttributes().containsKey(BREW_BUILD_NAME)) {
-            throw new CausewayException("Build attribute " + BREW_BUILD_NAME + " can't be missing");
+        if (!build.getAttributes().containsKey(BUILD_BREW_NAME)) {
+            throw new CausewayException("Build attribute " + BUILD_BREW_NAME + " can't be missing");
         }
-        String[] splittedName = build.getAttributes().get(BREW_BUILD_NAME).split(":");
+        String[] splittedName = build.getAttributes().get(BUILD_BREW_NAME).split(":");
         if(splittedName.length != 2)
-            throw new IllegalArgumentException(BREW_BUILD_NAME + " attribute '" + build.getAttributes().get(BREW_BUILD_NAME) + "' doesn't seem to be maven G:A.");
-        String version = build.getAttributes().get(BREW_BUILD_VERSION);
+            throw new IllegalArgumentException(BUILD_BREW_NAME + " attribute '" + build.getAttributes().get(BUILD_BREW_NAME) + "' doesn't seem to be maven G:A.");
+        String version = build.getAttributes().get(BUILD_BREW_VERSION);
         if(version == null){
             version = BuildTranslator.guessVersion(build, artifacts);
         }
@@ -337,11 +339,11 @@ public class BuildTranslatorImpl implements BuildTranslator {
     }
 
     private NpmPackageRef buildRootToNV(org.jboss.pnc.dto.Build build, BuildArtifacts artifacts) throws CausewayException {
-        if (!build.getAttributes().containsKey(BREW_BUILD_NAME)) {
-            throw new CausewayException("Build attribute " + BREW_BUILD_NAME + " can't be missing");
+        if (!build.getAttributes().containsKey(BUILD_BREW_NAME)) {
+            throw new CausewayException("Build attribute " + BUILD_BREW_NAME + " can't be missing");
         }
-        String name = build.getAttributes().get(BREW_BUILD_NAME);
-        String version = build.getAttributes().get(BREW_BUILD_VERSION);
+        String name = build.getAttributes().get(BUILD_BREW_NAME);
+        String version = build.getAttributes().get(BUILD_BREW_VERSION);
         if (version == null) {
             version = BuildTranslator.guessVersion(build, artifacts);
         }
@@ -365,7 +367,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
     }
 
     private void setBuildType(BuildDescription.Builder buildDescription, org.jboss.pnc.dto.Build build, BuildArtifacts artifacts) throws CausewayException {
-        BuildType buildType = build.getBuildConfigurationRevision().getBuildType();
+        BuildType buildType = build.getBuildConfigRevision().getBuildType();
         switch (buildType) {
             case MVN:
             case GRADLE:
@@ -380,7 +382,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
     }
 
     private void addTool(BuildRoot.Builder buildRootBuilder, org.jboss.pnc.dto.Build build) throws CausewayException {
-        BuildType buildType = build.getBuildConfigurationRevision().getBuildType();
+        BuildType buildType = build.getBuildConfigRevision().getBuildType();
         switch (buildType) {
             case MVN:
                 buildRootBuilder.withTool("JDK", build.getEnvironment().getAttributes().get("JDK"));

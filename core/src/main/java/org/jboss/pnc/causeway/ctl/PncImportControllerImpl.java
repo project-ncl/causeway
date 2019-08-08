@@ -32,11 +32,11 @@ import org.jboss.pnc.causeway.pncclient.PncClient;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.CallbackTarget;
-import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportResultRest;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportStatus;
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
 import org.jboss.pnc.causeway.rest.pnc.ReleaseStatus;
+import org.jboss.pnc.dto.ArtifactImportError;
 import org.jboss.pnc.dto.Build;
 import org.jboss.pnc.enums.ArtifactQuality;
 
@@ -52,6 +52,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static org.jboss.pnc.constants.Attributes.BUILD_BREW_NAME;
+import static org.jboss.pnc.constants.Attributes.BUILD_BREW_VERSION;
+
 @Deprecated
 @Stateless
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
@@ -60,8 +63,6 @@ public class PncImportControllerImpl implements PncImportController {
     private static final String METRICS_BASE = "causeway.import.milestone";
     private static final String METRICS_TIMER = ".timer";
     private static final String METRICS_METER = ".meter";
-    public static final String BREW_BUILD_NAME = "BrewBuildName";
-    public static final String BREW_BUILD_VERSION = "BrewBuildVersion";
 
     private final PncClient pncClient;
     private final BrewClient brewClient;
@@ -236,14 +237,14 @@ public class PncImportControllerImpl implements PncImportController {
     }
 
     BrewNVR getNVR(Build build, BuildArtifacts artifacts) throws CausewayException {
-        if(!build.getAttributes().containsKey(BREW_BUILD_NAME)){
-            throw new CausewayException("Build attribute " + BREW_BUILD_NAME + " can't be missing");
+        if(!build.getAttributes().containsKey(BUILD_BREW_NAME)){
+            throw new CausewayException("Build attribute " + BUILD_BREW_NAME + " can't be missing");
         }
-        String version = build.getAttributes().get(BREW_BUILD_VERSION);
+        String version = build.getAttributes().get(BUILD_BREW_VERSION);
         if(version == null){
             version = BuildTranslator.guessVersion(build, artifacts);
         }
-        return new BrewNVR(build.getAttributes().get(BREW_BUILD_NAME), version, "1");
+        return new BrewNVR(build.getAttributes().get(BUILD_BREW_NAME), version, "1");
     }
 
     private boolean isNotEmpty(Collection<?> collection) {

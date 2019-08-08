@@ -32,11 +32,11 @@ import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.CallbackMethod;
 import org.jboss.pnc.causeway.rest.CallbackTarget;
-import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportResultRest;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportStatus;
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
 import org.jboss.pnc.causeway.rest.pnc.ReleaseStatus;
+import org.jboss.pnc.dto.ArtifactImportError;
 import org.jboss.pnc.dto.Build;
 import org.jboss.pnc.dto.BuildConfigurationRevision;
 import org.jboss.pnc.dto.Environment;
@@ -63,6 +63,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import static org.jboss.pnc.constants.Attributes.BUILD_BREW_NAME;
+import static org.jboss.pnc.constants.Attributes.BUILD_BREW_VERSION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -187,7 +189,7 @@ public class PncImportControllerTest {
         return BuildConfigurationRevision.builder()
                 .id(id)
                 .rev(1)
-                .repository(scm)
+                .scmRepository(scm)
                 .buildType(buildType)
                 .scmRevision("r21345")
                 .environment(env)
@@ -473,10 +475,10 @@ public class PncImportControllerTest {
         Date end = new Date(start.getTime() + 100000L);
         Map<String,String> attributes = new HashMap<>();
         if (brewBuildName != null) {
-            attributes.put(PncImportControllerImpl.BREW_BUILD_NAME, brewBuildName);
+            attributes.put(BUILD_BREW_NAME, brewBuildName);
         }
         if (brewBuildVersion != null) {
-            attributes.put(PncImportControllerImpl.BREW_BUILD_VERSION, brewBuildVersion);
+            attributes.put(BUILD_BREW_VERSION, brewBuildVersion);
         }
         Build buildRecord = Build.builder()
                 .id(buildId)
@@ -486,7 +488,7 @@ public class PncImportControllerTest {
                 .endTime(end.toInstant())
                 .user(user)
                 .attributes(attributes)
-                .buildConfigurationRevision(bcar)
+                .buildConfigRevision(bcar)
                 .build();
         return buildRecord;
     }
