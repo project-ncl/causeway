@@ -41,7 +41,7 @@ import org.jboss.pnc.causeway.rest.model.MavenBuild;
 import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
 import org.jboss.pnc.causeway.rest.model.NpmBuild;
 import org.jboss.pnc.causeway.rest.model.NpmBuiltArtifact;
-import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
+import org.jboss.pnc.dto.ArtifactImportError;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -298,7 +298,7 @@ public class ImportControllerTest {
 
         String result = "{"
                 + "\"id\":null,"
-                + "\"buildRecordId\":61,"
+                + "\"buildId\":61,"
                 + "\"status\":\"SUCCESS\","
                 + "\"log\":\"" + log + "\","
                 + "\"artifactImportErrors\":null,"
@@ -327,7 +327,7 @@ public class ImportControllerTest {
 
         String result = "{"
                 + "\"id\":null,"
-                + "\"buildRecordId\":61,"
+                + "\"buildId\":61,"
                 + "\"status\":\"FAILED\","
                 + "\"log\":\"" + log + "\","
                 + "\"artifactImportErrors\":" + artifacts + ","
@@ -342,7 +342,7 @@ public class ImportControllerTest {
     private void verifyError(String log) {
         String result = "{"
                 + "\"id\":null,"
-                + "\"buildRecordId\":61,"
+                + "\"buildId\":61,"
                 + "\"status\":\"SYSTEM_ERROR\","
                 + "\"log\":\"" + log + "\","
                 + "\"artifactImportErrors\":null,"
