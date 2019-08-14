@@ -17,32 +17,29 @@ package org.jboss.pnc.causeway.brewclient;
 
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
+import com.redhat.red.build.koji.KojijiErrorInfo;
 import com.redhat.red.build.koji.model.KojiImportResult;
 import com.redhat.red.build.koji.model.json.KojiImport;
+import com.redhat.red.build.koji.model.json.KojiJsonConstants;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiNVR;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
-
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.CausewayFailure;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
-import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
+import org.jboss.pnc.dto.ArtifactImportError;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportResultRest;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportStatus;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.redhat.red.build.koji.KojijiErrorInfo;
-import com.redhat.red.build.koji.model.json.KojiJsonConstants;
 
 @ApplicationScoped
 public class BrewClientImpl implements BrewClient {

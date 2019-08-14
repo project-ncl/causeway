@@ -15,19 +15,22 @@
  */
 package org.jboss.pnc.causeway.ctl;
 
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.redhat.red.build.koji.model.json.KojiImport;
+import com.redhat.red.build.koji.model.json.util.KojiObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-
-import com.redhat.red.build.koji.model.json.KojiImport;
-
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.CausewayFailure;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.brewclient.BuildTranslatorImpl;
 import org.jboss.pnc.causeway.brewclient.ExternalLogImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
-import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageMissingTag;
-
 import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
@@ -36,37 +39,42 @@ import org.jboss.pnc.causeway.rest.CallbackTarget;
 import org.jboss.pnc.causeway.rest.model.Build;
 import org.jboss.pnc.causeway.rest.model.MavenBuild;
 import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
-import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
-import org.junit.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import org.jboss.pnc.causeway.rest.model.NpmBuild;
+import org.jboss.pnc.causeway.rest.model.NpmBuiltArtifact;
+import org.jboss.pnc.dto.ArtifactImportError;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.util.*;
-
-import static org.mockito.Mockito.*;
-import org.mockito.InjectMocks;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.redhat.red.build.koji.model.json.util.KojiObjectMapper;
+import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageMissingTag;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.when;
 
 public class ImportControllerTest {
 
@@ -82,6 +90,9 @@ public class ImportControllerTest {
     private static final CallbackTarget CALLBACK_TARGET = new CallbackTarget(CALLBACK_URL, CallbackMethod.POST);
     private static final String KOJI_URL = "http://koji.example.com/koji";
     private static final String KOJI_BUILD_URL = KOJI_URL + "/build?id=";
+
+    private static final String BUILD_NPM_NAME = "npm_async_3.1.0-npm";
+    private static final String ARTIFACT_NPM_VERSION = "3.1.0.redhat_1";
 
     private static final BrewNVR NVR = new BrewNVR(BUILD_NAME, BUILD_VERSION, "1");
 
@@ -118,15 +129,23 @@ public class ImportControllerTest {
         when(metricRegistry.timer(anyString())).thenReturn(timer);
         when(timer.time()).thenReturn(mock(Timer.Context.class));
 
-        mapper.registerSubtypes(MavenBuild.class, MavenBuiltArtifact.class);
+        mapper.registerSubtypes(MavenBuild.class, NpmBuild.class, MavenBuiltArtifact.class, NpmBuiltArtifact.class);
 
         stubFor(post(urlEqualTo("/callback"))
                 .willReturn(aResponse()
                         .withStatus(200)));
     }
 
-    private Build getBuild() throws IOException {
-        String json = readResponseBodyFromTemplate("build.json");
+    private Build getMavenBuild() throws IOException {
+        return getBuild("build.json");
+    }
+
+    private Build getNpmBuild() throws IOException {
+        return getBuild("npmbuild.json");
+    }
+
+    private Build getBuild(String buildFileName) throws IOException {
+        String json = readResponseBodyFromTemplate(buildFileName);
         return mapper.readValue(json, Build.class);
     }
 
@@ -150,7 +169,7 @@ public class ImportControllerTest {
         doReturn(new BrewBuild(11, NVR)).when(brewClient).findBrewBuildOfNVR(eq(NVR));
 
         // Run import
-        importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
+        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME);
 
         // Verify
         verifySuccess("Build was already imported with id 11");
@@ -167,7 +186,7 @@ public class ImportControllerTest {
         doReturn(brewBuild).when(brewClient).importBuild(eq(NVR), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
 
         // Run import
-        importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
+        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME);
 
         // Verify
         verifySuccess("Build imported with id 11");
@@ -179,7 +198,7 @@ public class ImportControllerTest {
         mockBrew();
 
         // Mock no builds in milestone
-        Build build = getBuild();
+        Build build = getMavenBuild();
         build.getBuiltArtifacts().clear();
 
         // Run import
@@ -200,7 +219,7 @@ public class ImportControllerTest {
         doThrow(new CausewayException(exceptionMessage)).when(brewClient).findBrewBuildOfNVR(eq(NVR));
 
         // Run import
-        importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
+        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME);
 
         // Verify
         verifyError(exceptionMessage);
@@ -224,7 +243,7 @@ public class ImportControllerTest {
         doThrow(new CausewayFailure(artifactImportErrors, exceptionMessage)).when(brewClient).importBuild(eq(NVR), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
 
         // Run import
-        importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
+        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME);
 
         // Verify
         verifyFailure(exceptionMessage, artifactImportErrors);
@@ -238,7 +257,7 @@ public class ImportControllerTest {
         doReturn(false).when(brewClient).tagsExists(TAG_PREFIX);
 
         // Run import
-        importController.importBuild(getBuild(), CALLBACK_TARGET, USERNAME);
+        importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME);
 
         // Verify
         verifyFailure(messageMissingTag(TAG_PREFIX, KOJI_URL).replace("\n", "\\n"));
@@ -246,7 +265,7 @@ public class ImportControllerTest {
 
     @Test
     public void testGetNVR() throws IOException, CausewayException, ReflectiveOperationException{
-        Build build = getBuild();
+        Build build = getMavenBuild();
         BrewNVR nvr = importController.getNVR(build);
         assertEquals(BUILD_NAME, nvr.getName());
         assertEquals(BUILD_VERSION, nvr.getVersion());
@@ -257,6 +276,14 @@ public class ImportControllerTest {
         assertEquals(ARTIFACTS_VERSION, nvr.getVersion());
     }
 
+    @Test
+    public void testAutomaticVersionNpm() throws IOException, CausewayException, ReflectiveOperationException{
+        Build build = getNpmBuild();
+        setFinalField(build, Build.class.getDeclaredField("buildVersion"), null);
+        BrewNVR nvr = importController.getNVR(build);
+        assertEquals(BUILD_NPM_NAME, nvr.getName());
+        assertEquals(ARTIFACT_NPM_VERSION, nvr.getVersion());
+    }
     static void setFinalField(Object obj, Field field, Object newValue) throws ReflectiveOperationException {
         field.setAccessible(true);
 
@@ -271,7 +298,7 @@ public class ImportControllerTest {
 
         String result = "{"
                 + "\"id\":null,"
-                + "\"buildRecordId\":61,"
+                + "\"buildId\":61,"
                 + "\"status\":\"SUCCESS\","
                 + "\"log\":\"" + log + "\","
                 + "\"artifactImportErrors\":null,"
@@ -300,7 +327,7 @@ public class ImportControllerTest {
 
         String result = "{"
                 + "\"id\":null,"
-                + "\"buildRecordId\":61,"
+                + "\"buildId\":61,"
                 + "\"status\":\"FAILED\","
                 + "\"log\":\"" + log + "\","
                 + "\"artifactImportErrors\":" + artifacts + ","
@@ -315,7 +342,7 @@ public class ImportControllerTest {
     private void verifyError(String log) {
         String result = "{"
                 + "\"id\":null,"
-                + "\"buildRecordId\":61,"
+                + "\"buildId\":61,"
                 + "\"status\":\"SYSTEM_ERROR\","
                 + "\"log\":\"" + log + "\","
                 + "\"artifactImportErrors\":null,"

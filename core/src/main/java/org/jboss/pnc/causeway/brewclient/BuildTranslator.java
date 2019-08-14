@@ -15,14 +15,21 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
+import com.redhat.red.build.koji.model.json.KojiImport;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
-import org.jboss.pnc.causeway.pncclient.model.BuildRecordRest;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.model.Build;
-
-import com.redhat.red.build.koji.model.json.KojiImport;
+import org.jboss.pnc.causeway.rest.model.BuiltArtifact;
+import org.jboss.pnc.causeway.rest.model.MavenBuild;
 import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
+import org.jboss.pnc.causeway.rest.model.NpmBuild;
+import org.jboss.pnc.causeway.rest.model.NpmBuiltArtifact;
+import org.jboss.pnc.enums.BuildType;
+
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  *
@@ -34,28 +41,57 @@ public interface BuildTranslator {
     ImportFileGenerator getImportFiles(BuildArtifacts build, String log) throws CausewayException;
 
     @Deprecated
-    KojiImport translate(BrewNVR nvr, BuildRecordRest build, BuildArtifacts artifacts, String log, String username) throws CausewayException;
+    KojiImport translate(BrewNVR nvr, org.jboss.pnc.dto.Build build, BuildArtifacts artifacts, String log, String username) throws CausewayException;
 
     public ImportFileGenerator getImportFiles(Build build) throws CausewayException;
 
     public KojiImport translate(BrewNVR nvr, Build build, String username) throws CausewayException;
 
     public static String guessVersion(Build build) throws CausewayException {
+        final Predicate<BuiltArtifact> filter;
+        final Function<BuiltArtifact, String> getVersion;
+        if (build instanceof MavenBuild) {
+            filter = (artifact -> artifact instanceof MavenBuiltArtifact);
+            getVersion = (artifact -> ((MavenBuiltArtifact) artifact).getVersion());
+        } else if (build instanceof NpmBuild) {
+            filter = (artifact -> artifact instanceof NpmBuiltArtifact);
+            getVersion = (artifact -> ((NpmBuiltArtifact) artifact).getVersion());
+        } else {
+            filter = (artifact -> false);
+            getVersion = (artifact -> null);
+        }
+
         return build.getBuiltArtifacts().stream()
-                .filter(a -> a instanceof MavenBuiltArtifact)
-                .map(a -> ((MavenBuiltArtifact)a).getVersion())
-                .filter(v -> v != null)
+                .filter(filter)
+                .map(getVersion)
+                .filter(Objects::nonNull)
                 .findAny()
-                .orElseThrow(() -> new CausewayException("Build version not specified and couldn't determine any from artifacts."));
+                .orElseThrow(() -> new CausewayException("Build version or BuildType (MVN,NPM...) not specified and couldn't determine any from artifacts."));
     }
 
     @Deprecated
-    public static String guessVersion(BuildRecordRest build, BuildArtifacts artifacts) throws CausewayException {
+    public static String guessVersion(org.jboss.pnc.dto.Build build, BuildArtifacts artifacts) throws CausewayException {
+        String delim = ":";
+        BuildType buildType = build.getBuildConfigRevision().getBuildType();
+
+        // Maven and Gradle artifacts identifiers have 4 parts (G:A:P:V = org.jboss.pnc.causeway:causeway-web:war:2.0.0) and Npm 2 (N:V = async:3.1.0)
+        // Last part for each is the version.
+        final int parts;
+        switch (buildType) {
+            case MVN:
+            case GRADLE:
+                parts = 4; break;
+            case NPM:
+                parts = 2; break;
+            default:
+                parts = 0; break;
+        }
+
         return artifacts.buildArtifacts.stream()
-                .map(a -> a.identifier.split(":"))
-                .filter(i -> i.length >= 4)
-                .map(i -> i[3])
+                .map(artifact -> artifact.identifier.split(delim))
+                .filter(i -> i.length >= parts)
+                .map(i -> i[parts-1])
                 .findAny()
-                .orElseThrow(() -> new CausewayException("Build version not specified and couldn't determine any from artifacts."));
+                .orElseThrow(() -> new CausewayException("Build version or BuildType (MVN,NPM...) not specified and couldn't determine any from artifacts."));
     }
 }

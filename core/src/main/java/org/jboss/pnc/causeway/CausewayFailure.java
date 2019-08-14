@@ -1,10 +1,9 @@
 package org.jboss.pnc.causeway;
 
-import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
+import lombok.Getter;
+import org.jboss.pnc.dto.ArtifactImportError;
 
 import java.util.List;
-
-import lombok.Getter;
 
 /**
  * This class indicates just a failure, which can usually be solved by user themselve.

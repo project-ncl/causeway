@@ -15,23 +15,25 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-
+import com.github.zafarkhaja.semver.Version;
 import com.redhat.red.build.koji.model.json.BuildContainer;
+import com.redhat.red.build.koji.model.json.BuildDescription;
 import com.redhat.red.build.koji.model.json.BuildOutput;
 import com.redhat.red.build.koji.model.json.BuildRoot;
 import com.redhat.red.build.koji.model.json.FileBuildComponent;
 import com.redhat.red.build.koji.model.json.KojiImport;
 import com.redhat.red.build.koji.model.json.StandardArchitecture;
+import com.redhat.red.build.koji.model.json.StandardOutputType;
 import com.redhat.red.build.koji.model.json.VerificationException;
-
-import org.commonjava.maven.atlas.ident.ref.SimpleArtifactRef;
-import org.commonjava.maven.atlas.ident.ref.SimpleProjectVersionRef;
+import org.commonjava.atlas.maven.ident.ref.ProjectVersionRef;
+import org.commonjava.atlas.maven.ident.ref.SimpleArtifactRef;
+import org.commonjava.atlas.maven.ident.ref.SimpleProjectVersionRef;
+import org.commonjava.atlas.npm.ident.ref.NpmPackageRef;
+import org.commonjava.atlas.npm.ident.util.NpmVersionUtils;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact;
-import org.jboss.pnc.causeway.pncclient.model.BuildRecordRest;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.model.Build;
 import org.jboss.pnc.causeway.rest.model.BuiltArtifact;
@@ -39,20 +41,23 @@ import org.jboss.pnc.causeway.rest.model.Dependency;
 import org.jboss.pnc.causeway.rest.model.Logfile;
 import org.jboss.pnc.causeway.rest.model.MavenBuild;
 import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
+import org.jboss.pnc.causeway.rest.model.NpmBuild;
+import org.jboss.pnc.causeway.rest.model.NpmBuiltArtifact;
+import org.jboss.pnc.enums.BuildType;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.redhat.red.build.koji.model.json.BuildDescription;
-import com.redhat.red.build.koji.model.json.StandardOutputType;
+import static org.jboss.pnc.constants.Attributes.BUILD_BREW_NAME;
+import static org.jboss.pnc.constants.Attributes.BUILD_BREW_VERSION;
 
 /**
  *
@@ -60,7 +65,6 @@ import com.redhat.red.build.koji.model.json.StandardOutputType;
  */
 @ApplicationScoped
 public class BuildTranslatorImpl implements BuildTranslator {
-    private static final String MAVEN = "maven";
     private static final String CONTENT_GENERATOR_NAME = "Project Newcastle";
     static final String PNC = "PNC";
     private static final String MD5 = "md5";
@@ -76,7 +80,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
 
     @Override
     public KojiImport translate(BrewNVR nvr,
-            BuildRecordRest build,
+            org.jboss.pnc.dto.Build build,
             BuildArtifacts artifacts,
             String log,
             String username) throws CausewayException {
@@ -86,28 +90,28 @@ public class BuildTranslatorImpl implements BuildTranslator {
         if (externalBuildsUrl != null) {
             externalBuildUrl = externalBuildsUrl + externalBuildId;
         }
-        KojiImport.Builder builder = new KojiImport.Builder()
+        KojiImport.Builder builder = new KojiImport.Builder();
+        BuildDescription.Builder descriptionBuilder = builder
                 .withNewBuildDescription(nvr.getKojiName(), nvr.getVersion(), nvr.getRelease())
-                .withStartTime(build.getStartTime())
-                .withEndTime(build.getEndTime())
-                .withBuildSource(normalizeScmUrl(build.getScmRepoURL()), build.getScmRevision())
+                .withStartTime(Date.from(build.getStartTime()))
+                .withEndTime(Date.from(build.getEndTime()))
+                .withBuildSource(normalizeScmUrl(build.getScmRepositoryURL()),
+                        build.getBuildConfigRevision().getScmRevision())
                 .withExternalBuildId(externalBuildId)
                 .withExternalBuildUrl(externalBuildUrl)
-                .withBuildSystem(PNC)
-                .withMavenInfoAndType(buildRootToGAV(build, artifacts))
-                .parent();
+                .withBuildSystem(PNC);
+        setBuildType(descriptionBuilder, build, artifacts);
 
         int buildRootId = 42;
         BuildRoot.Builder buildRootBuilder = builder.withNewBuildRoot(buildRootId)
                 .withContentGenerator(CONTENT_GENERATOR_NAME, config.getPNCSystemVersion())
                 .withContainer(getContainer(build))
-                .withHost(build.getBuildConfigurationAudited().getEnvironment()
-                        .getAttributes().get("OS"), StandardArchitecture.noarch)
-                .withTool("JDK", build.getBuildConfigurationAudited().getEnvironment()
-                        .getAttributes().get("JDK"));
+                .withHost(build.getEnvironment()
+                        .getAttributes().get("OS"), StandardArchitecture.noarch);
 
-        addDependencies(artifacts.dependencies, buildRootBuilder);
-        addBuiltArtifacts(artifacts.buildArtifacts, builder, buildRootId);
+        addTool(buildRootBuilder, build);
+        addDependencies(artifacts.dependencies, buildRootBuilder, build.getBuildConfigRevision().getBuildType());
+        addBuiltArtifacts(artifacts.buildArtifacts, builder, buildRootId, build.getBuildConfigRevision().getBuildType());
         addLog(log, builder, buildRootId);
 
         KojiImport translatedBuild = buildTranslatedBuild(builder);
@@ -178,14 +182,16 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }
     }
 
-    private void addDependencies(List<PncArtifact> dependencies, BuildRoot.Builder buildRootBuilder) throws CausewayException {
+    private void addDependencies(List<PncArtifact> dependencies, BuildRoot.Builder buildRootBuilder, BuildType buildType) throws CausewayException {
         for (PncArtifact artifact : dependencies) {
             FileBuildComponent.Builder componentBuilder = buildRootBuilder
                     .withFileComponent(artifact.deployPath);
             componentBuilder.withChecksum(MD5, artifact.checksum);
 
-            switch (artifact.type) {
-                case MAVEN: {
+            switch (buildType) {
+                case GRADLE:
+                case NPM:
+                case MVN: {
                     componentBuilder.withFileSize(artifact.size);
                     break;
                 }
@@ -205,19 +211,26 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }
     }
 
-    private void addBuiltArtifacts(List<PncArtifact> buildArtifacts, KojiImport.Builder builder,
-            int buildRootId) throws CausewayException {
+    private void addBuiltArtifacts(List<PncArtifact> buildArtifacts, KojiImport.Builder builder, int buildRootId,
+            BuildType buildType) throws CausewayException {
         for (BuildArtifacts.PncArtifact artifact : buildArtifacts) {
             BuildOutput.Builder outputBuilder = builder
                     .withNewOutput(buildRootId, artifact.deployPath)
                     .withArch(StandardArchitecture.noarch)
                     .withChecksum(MD5, artifact.checksum);
 
-            switch (artifact.type) {
-                case MAVEN: {
+            switch (buildType) {
+                case GRADLE:
+                case MVN: {
                     SimpleArtifactRef ref = SimpleArtifactRef.parse(artifact.identifier);
                     outputBuilder.withFileSize((int) artifact.size);
                     outputBuilder.withMavenInfoAndType(ref);
+                    break;
+                }
+                case NPM: {
+                    NpmPackageRef ref = NpmPackageRef.parse(artifact.identifier);
+                    outputBuilder.withFileSize((int) artifact.size);
+                    outputBuilder.withNpmInfoAndType(ref);
                     break;
                 }
                 default: {
@@ -238,6 +251,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
 
             if (artifact.getClass().equals(MavenBuiltArtifact.class)) {
                 outputBuilder.withMavenInfoAndType(mavenArtifactToGAV((MavenBuiltArtifact) artifact));
+            } else if (artifact.getClass().equals(NpmBuiltArtifact.class)) {
+                outputBuilder.withNpmInfoAndType(npmArtifactToNV((NpmBuiltArtifact) artifact));
             } else {
                 throw new IllegalArgumentException("Unknown artifact type.");
             }
@@ -248,8 +263,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
         return new BuildContainer(buildRoot.getContainer(), buildRoot.getContainerArchitecture());
     }
 
-    private BuildContainer getContainer(BuildRecordRest buildRecord) {
-        switch (buildRecord.getBuildConfigurationAudited().getEnvironment().getSystemImageType()) {
+    private BuildContainer getContainer(org.jboss.pnc.dto.Build buildRecord) {
+        switch (buildRecord.getEnvironment().getSystemImageType()) {
             case DOCKER_IMAGE:
                 return new BuildContainer("docker", "noarch");
             default:
@@ -305,18 +320,34 @@ public class BuildTranslatorImpl implements BuildTranslator {
         return url;
     }
 
-    private ProjectVersionRef buildRootToGAV(BuildRecordRest build, BuildArtifacts artifacts) throws CausewayException {
-        String[] splittedName = build.getExecutionRootName().split(":");
+
+    private ProjectVersionRef buildRootToGAV(org.jboss.pnc.dto.Build build, BuildArtifacts artifacts) throws CausewayException{
+        if (!build.getAttributes().containsKey(BUILD_BREW_NAME)) {
+            throw new CausewayException("Build attribute " + BUILD_BREW_NAME + " can't be missing");
+        }
+        String[] splittedName = build.getAttributes().get(BUILD_BREW_NAME).split(":");
         if(splittedName.length != 2)
-            throw new IllegalArgumentException("Execution root '"+build.getExecutionRootName()+"' doesnt seem to be maven G:A.");
-        String version = build.getExecutionRootVersion();
+            throw new IllegalArgumentException(BUILD_BREW_NAME + " attribute '" + build.getAttributes().get(BUILD_BREW_NAME) + "' doesn't seem to be maven G:A.");
+        String version = build.getAttributes().get(BUILD_BREW_VERSION);
         if(version == null){
             version = BuildTranslator.guessVersion(build, artifacts);
         }
-
         return new SimpleProjectVersionRef(
                         splittedName[0],
-                        splittedName.length < 2 ? null : splittedName[1], version);
+                        splittedName.length < 2 ? null : splittedName[1],
+                        version);
+    }
+
+    private NpmPackageRef buildRootToNV(org.jboss.pnc.dto.Build build, BuildArtifacts artifacts) throws CausewayException {
+        if (!build.getAttributes().containsKey(BUILD_BREW_NAME)) {
+            throw new CausewayException("Build attribute " + BUILD_BREW_NAME + " can't be missing");
+        }
+        String name = build.getAttributes().get(BUILD_BREW_NAME);
+        String version = build.getAttributes().get(BUILD_BREW_VERSION);
+        if (version == null) {
+            version = BuildTranslator.guessVersion(build, artifacts);
+        }
+        return new NpmPackageRef(name, Version.valueOf(version));
     }
 
     private void addTools(BuildRoot.Builder buildRootBuilder, Map<String, String> tools) {
@@ -328,8 +359,42 @@ public class BuildTranslatorImpl implements BuildTranslator {
     private void setBuildType(BuildDescription.Builder buildDescription, Build build) throws CausewayException {
         if (build.getClass().equals(MavenBuild.class)) {
             buildDescription.withMavenInfoAndType(mavenBuildToGAV((MavenBuild) build));
+        } else if (build.getClass().equals(NpmBuild.class)) {
+            buildDescription.withNpmInfoAndType(npmBuildToNV((NpmBuild) build));
         } else {
             throw new IllegalArgumentException("Unsupported build type.");
+        }
+    }
+
+    private void setBuildType(BuildDescription.Builder buildDescription, org.jboss.pnc.dto.Build build, BuildArtifacts artifacts) throws CausewayException {
+        BuildType buildType = build.getBuildConfigRevision().getBuildType();
+        switch (buildType) {
+            case MVN:
+            case GRADLE:
+                buildDescription.withMavenInfoAndType(buildRootToGAV(build, artifacts));
+                break;
+            case NPM:
+                buildDescription.withNpmInfoAndType(buildRootToNV(build, artifacts));
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported build type.");
+        }
+    }
+
+    private void addTool(BuildRoot.Builder buildRootBuilder, org.jboss.pnc.dto.Build build) throws CausewayException {
+        BuildType buildType = build.getBuildConfigRevision().getBuildType();
+        switch (buildType) {
+            case MVN:
+                buildRootBuilder.withTool("JDK", build.getEnvironment().getAttributes().get("JDK"));
+                break;
+            case GRADLE:
+                buildRootBuilder.withTool("GRADLE", build.getEnvironment().getAttributes().get("GRADLE"));
+                break;
+            case NPM:
+                buildRootBuilder.withTool("NPM", build.getEnvironment().getAttributes().get("NPM"));
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported build type.");
         }
     }
 
@@ -341,8 +406,19 @@ public class BuildTranslatorImpl implements BuildTranslator {
         return new SimpleProjectVersionRef(mb.getGroupId(), mb.getArtifactId(), version);
     }
 
+    private NpmPackageRef npmBuildToNV(NpmBuild npmBuild) throws CausewayException{
+        String version = npmBuild.getVersion();
+        if(version == null){
+            version = BuildTranslator.guessVersion(npmBuild);
+        }
+        return new NpmPackageRef(npmBuild.getName(), NpmVersionUtils.valueOf(version));
+    }
+
     private ProjectVersionRef mavenArtifactToGAV(MavenBuiltArtifact mba) {
         return new SimpleProjectVersionRef(mba.getGroupId(), mba.getArtifactId(), mba.getVersion());
     }
-    
+
+    private NpmPackageRef npmArtifactToNV(NpmBuiltArtifact npmBuiltArtifact) {
+        return new NpmPackageRef(npmBuiltArtifact.getName(), NpmVersionUtils.valueOf(npmBuiltArtifact.getVersion()));
+    }
 }

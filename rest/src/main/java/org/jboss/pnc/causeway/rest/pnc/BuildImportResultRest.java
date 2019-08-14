@@ -17,7 +17,7 @@
  */
 package org.jboss.pnc.causeway.rest.pnc;
 
-import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
+import org.jboss.pnc.dto.ArtifactImportError;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

@@ -15,8 +15,10 @@
  */
 package org.jboss.pnc.causeway.ctl;
 
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.redhat.red.build.koji.model.json.KojiImport;
-
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.bpmclient.BPMClient;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
@@ -26,53 +28,73 @@ import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.PncClient;
-import org.jboss.pnc.causeway.pncclient.model.BuildConfigurationAuditedRest;
-import org.jboss.pnc.causeway.pncclient.model.BuildCoordinationStatus;
-import org.jboss.pnc.causeway.pncclient.model.BuildEnvironmentRest;
-import org.jboss.pnc.causeway.pncclient.model.BuildRecordRest;
-import org.jboss.pnc.causeway.pncclient.model.IdRev;
-import org.jboss.pnc.causeway.pncclient.model.RepositoryConfigurationRest;
-import org.jboss.pnc.causeway.pncclient.model.SystemImageType;
-import org.jboss.pnc.causeway.pncclient.model.UserRest;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.CallbackMethod;
 import org.jboss.pnc.causeway.rest.CallbackTarget;
-import org.jboss.pnc.causeway.rest.model.response.ArtifactImportError;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportResultRest;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportStatus;
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
 import org.jboss.pnc.causeway.rest.pnc.ReleaseStatus;
-import org.junit.*;
+import org.jboss.pnc.dto.ArtifactImportError;
+import org.jboss.pnc.dto.Build;
+import org.jboss.pnc.dto.BuildConfigurationRevision;
+import org.jboss.pnc.dto.Environment;
+import org.jboss.pnc.dto.SCMRepository;
+import org.jboss.pnc.dto.User;
+import org.jboss.pnc.enums.ArtifactQuality;
+import org.jboss.pnc.enums.BuildStatus;
+import org.jboss.pnc.enums.BuildType;
+import org.jboss.pnc.enums.SystemImageType;
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.*;
-
-import org.jboss.pnc.causeway.pncclient.model.ArtifactRest;
-
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
-import org.mockito.InjectMocks;
-
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
+import static org.jboss.pnc.constants.Attributes.BUILD_BREW_NAME;
+import static org.jboss.pnc.constants.Attributes.BUILD_BREW_VERSION;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class PncImportControllerTest {
 
     private static final String USERNAME = "joe";
     private static final String TAG_PREFIX = "pnc-foo-0.1";
-    private static final String EXEC_ROOT_VERSION = "1.1.1";
-    private static final String EXEC_ROOT_NAME = "test:artifact";
+    private static final String BREW_BUILD_VERSION = "1.1.1";
+    private static final String BREW_BUILD_NAME = "test:artifact";
     private static final String CALLBACK_ID = "callbackId";
     private static final String CALLBACK_URL = "http://dummy.org";
     private static final CallbackTarget CALLBACK_TARGET = new CallbackTarget(CALLBACK_URL, CallbackMethod.PUT);
 
-    private static final BrewNVR NVR = new BrewNVR(EXEC_ROOT_NAME, EXEC_ROOT_VERSION, "1");
+    private static final BrewNVR NVR = new BrewNVR(BREW_BUILD_NAME, BREW_BUILD_VERSION, "1");
 
     private static final StringLogImportFileGenerator IMPORT_FILE_GENERATOR = mock(StringLogImportFileGenerator.class);
     private static final KojiImport KOJI_IMPORT = mock(KojiImport.class);
@@ -110,23 +132,23 @@ public class PncImportControllerTest {
         //importController = new PncImportControllerImpl(pncClient, brewClient, bpmClient, translator, causewayConfig);
     }
 
-    private void mockPNC(Integer milestoneId) throws CausewayException{
-        mockPNC(milestoneId, generator.nextInt());
+    private void mockPNC(Integer milestoneId, BuildType buildType) throws CausewayException{
+        mockPNC(milestoneId, generator.nextInt(), buildType);
     }
     
-    private void mockPNC(Integer milestoneId, Integer buildId) throws CausewayException{
+    private void mockPNC(Integer milestoneId, Integer buildId, BuildType buildType) throws CausewayException{
         Integer id = generator.nextInt();
 
-        BuildEnvironmentRest env = createEnvironment();
+        Environment env = createEnvironment(buildType);
 
         // Mock BuildConfigurationAudited
-        BuildConfigurationAuditedRest bcar = createBuildConfiguration(id, env);
+        BuildConfigurationRevision bcar = createBuildConfiguration(id, env, buildType);
 
         // Mock BuildRecord
-        BuildRecordRest buildRecordRest = createBuildRecord(buildId, bcar);
+        Build buildRecord = createBuildRecord(buildId, bcar, BREW_BUILD_NAME, BREW_BUILD_VERSION);
 
-        Collection<BuildRecordRest> buildRecords = new HashSet<>();
-        buildRecords.add(buildRecordRest);
+        Collection<Build> buildRecords = new HashSet<>();
+        buildRecords.add(buildRecord);
 
         // Mock BuildArtifacts
         BuildArtifacts buildArtifacts = new BuildArtifacts();
@@ -138,30 +160,40 @@ public class PncImportControllerTest {
         doAnswer(i -> "Log of build " + i.getArguments()[0]).when(pncClient).getBuildLog(anyInt());
     }
 
-    private BuildEnvironmentRest createEnvironment() {
+    private Environment createEnvironment(BuildType buildType) {
         // Mock BuildEnvironment
         Map<String, String> attrs = new HashMap();
         attrs.put("OS", "Fedora25");
-        attrs.put("JDK", "1.8");
-        BuildEnvironmentRest env = new BuildEnvironmentRest();
-        env.setAttributes(attrs);
-        env.setSystemImageType(SystemImageType.DOCKER_IMAGE);
-        return env;
+        switch (buildType){
+            case MVN:
+            case GRADLE:
+                attrs.put("JDK", "1.8");
+                break;
+            case NPM:
+                attrs.put("NPM", "5");
+        }
+
+        return Environment.builder()
+                .attributes(attrs)
+                .systemImageType(SystemImageType.DOCKER_IMAGE)
+                .build();
     }
 
-    private BuildConfigurationAuditedRest createBuildConfiguration(Integer id, BuildEnvironmentRest env) {
+    private BuildConfigurationRevision createBuildConfiguration(Integer id, Environment env, BuildType buildType) {
 
-        RepositoryConfigurationRest rc = RepositoryConfigurationRest.builder()
+        SCMRepository scm = SCMRepository.builder()
                 .id(1)
                 .internalUrl("http://repo.url")
                 .build();
 
-        BuildConfigurationAuditedRest bcar = new BuildConfigurationAuditedRest();
-        bcar.setIdRev(new IdRev(id, 1));
-        bcar.setRepositoryConfiguration(rc);
-        bcar.setScmRevision("r21345");
-        bcar.setEnvironment(env);
-        return bcar;
+        return BuildConfigurationRevision.builder()
+                .id(id)
+                .rev(1)
+                .scmRepository(scm)
+                .buildType(buildType)
+                .scmRevision("r21345")
+                .environment(env)
+                .build();
     }
 
     private void mockBrew() throws CausewayException {
@@ -179,7 +211,7 @@ public class PncImportControllerTest {
         Integer milestoneId = generator.nextInt();
 
         // Test setup
-        mockPNC(milestoneId);
+        mockPNC(milestoneId, BuildType.MVN);
         mockBrew();
         
         // Mock existing Brew build
@@ -198,7 +230,7 @@ public class PncImportControllerTest {
         Integer buildId = generator.nextInt();
 
         // Test setup
-        mockPNC(milestoneId, buildId);
+        mockPNC(milestoneId, buildId, BuildType.MVN);
         mockBrew();
         mockTranslator();
 
@@ -218,7 +250,7 @@ public class PncImportControllerTest {
         Integer milestoneId = generator.nextInt();
 
         // Test setup
-        mockPNC(milestoneId);
+        mockPNC(milestoneId, BuildType.MVN);
         mockBrew();
 
         // Mock exception from PNC client
@@ -240,11 +272,11 @@ public class PncImportControllerTest {
         Integer milestoneId = generator.nextInt();
 
         // Test setup
-        mockPNC(milestoneId);
+        mockPNC(milestoneId, BuildType.MVN);
         mockBrew();
 
         // Mock no builds in milestone
-        Collection<BuildRecordRest> buildRecords = new HashSet<>();
+        Collection<Build> buildRecords = new HashSet<>();
 
         doReturn(buildRecords).when(pncClient).findBuildsOfProductMilestone(eq(milestoneId));
 
@@ -263,7 +295,7 @@ public class PncImportControllerTest {
         String exceptionMessage = "Import build failed";
 
         // Test setup
-        mockPNC(milestoneId, buildId);
+        mockPNC(milestoneId, buildId, BuildType.MVN);
         mockBrew();
 
         // Mock exception from Brew Client
@@ -292,7 +324,7 @@ public class PncImportControllerTest {
         String errorMessage = "Artifact import error";
 
         // Test setup
-        mockPNC(milestoneId, buildId);
+        mockPNC(milestoneId, buildId, BuildType.MVN);
         mockBrew();
         mockTranslator();
 
@@ -331,7 +363,7 @@ public class PncImportControllerTest {
         Integer milestoneId = generator.nextInt();
 
         // Test setup
-        mockPNC(milestoneId);
+        mockPNC(milestoneId, BuildType.MVN);
         mockBrew();
         doReturn(false).when(brewClient).tagsExists(TAG_PREFIX);
 
@@ -346,22 +378,22 @@ public class PncImportControllerTest {
 
     @Test
     public void testGetNVR() throws IOException, CausewayException, ReflectiveOperationException{
-        BuildEnvironmentRest env = createEnvironment();
-        BuildConfigurationAuditedRest bcar = createBuildConfiguration(1, env);
-        BuildRecordRest buildRecordRest = createBuildRecord(1, bcar);
+        Environment env = createEnvironment(BuildType.MVN);
+        BuildConfigurationRevision bcar = createBuildConfiguration(1, env, BuildType.MVN);
+        Build buildRecordRest = createBuildRecord(1, bcar, BREW_BUILD_NAME, BREW_BUILD_VERSION);
         BuildArtifacts buildArtifacts = new BuildArtifacts();
         buildArtifacts.buildArtifacts.add(createArtifact(1));
 
         BrewNVR nvr = importController.getNVR(buildRecordRest, buildArtifacts);
-        assertEquals(EXEC_ROOT_NAME, nvr.getName());
-        assertEquals(EXEC_ROOT_VERSION, nvr.getVersion());
+        assertEquals(BREW_BUILD_NAME, nvr.getName());
+        assertEquals(BREW_BUILD_VERSION, nvr.getVersion());
 
-        buildRecordRest.setExecutionRootVersion(null);
+        buildRecordRest = createBuildRecord(1, bcar, BREW_BUILD_NAME, null);
         nvr = importController.getNVR(buildRecordRest, buildArtifacts);
-        assertEquals(EXEC_ROOT_NAME, nvr.getName());
+        assertEquals(BREW_BUILD_NAME, nvr.getName());
         assertEquals("1.1.1.redhat_1", nvr.getVersion());
 
-        buildRecordRest.setExecutionRootName(null);
+        buildRecordRest = createBuildRecord(1, bcar, null, null);
         try{
             importController.getNVR(buildRecordRest, buildArtifacts);
             fail("Expected CausewayException to be thrown.");
@@ -370,6 +402,19 @@ public class PncImportControllerTest {
         }
     }
 
+    @Test
+    public void testAutomaticVersionNPM() throws CausewayException{
+        Environment env = createEnvironment(BuildType.NPM);
+        BuildConfigurationRevision bcar = createBuildConfiguration(1, env, BuildType.NPM);
+        Build build = createBuildRecord(1, bcar, BREW_BUILD_NAME, null);
+        BuildArtifacts buildArtifacts = new BuildArtifacts();
+        buildArtifacts.buildArtifacts.add(createNpmArtifact(1));
+
+        BrewNVR nvr = importController.getNVR(build, buildArtifacts);
+
+        assertEquals(BREW_BUILD_NAME, nvr.getName());
+        assertEquals("0.1.18.redhat_1", nvr.getVersion());
+    }
     private void verifySuccess() {
         ArgumentCaptor<MilestoneReleaseResultRest> resultArgument = ArgumentCaptor.forClass(MilestoneReleaseResultRest.class);
         verify(bpmClient).success(eq(CALLBACK_URL), eq(CALLBACK_ID), resultArgument.capture());
@@ -395,28 +440,57 @@ public class PncImportControllerTest {
     private static BuildArtifacts.PncArtifact createArtifact(Integer buildId) {
         return new BuildArtifacts.PncArtifact(
                 buildId,
-                "maven",
                 "org.apache.geronimo.specs:geronimo-annotation_1.0_spec:pom:1.1.1.redhat-1",
                 "geronimo-annotation_1.0_spec-1.1.1.redhat-1.pom",
                 "bedf8af1b107b36c72f52009e6fcc768",
-                "http://pnc-indy-branch-nightly.cloud.pnc.devel.engineering.redhat.com/api/hosted/"
+                "http://ulozto.cz/api/hosted/"
                         + "build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/org/apache/geronimo/specs/geronimo-annotation_1.0_spec/1.1.1.redhat-1/geronimo-annotation_1.0_spec-1.1.1.redhat-1.pom",
                 13245,
-                ArtifactRest.Quality.NEW
+                ArtifactQuality.NEW
         );
     }
 
-    private BuildRecordRest createBuildRecord(Integer buildId, BuildConfigurationAuditedRest bcar) {
-        UserRest user = new UserRest();
-        user.setId(1);
+    private static BuildArtifacts.PncArtifact createNpmArtifact(Integer buildId) {
+        return new BuildArtifacts.PncArtifact(
+                buildId,
+                "async:0.1.18.redhat-1",
+                "async-0.1.18.redhat-1-wow-much-good.tar-gz",
+                "dsdfs1dfs6ads588few98ncv98465ew2",
+                "http://ulozto.cz/path/to/deploy/"
+                + "async/async-0.1.18.redhat-1-wow-much-good.tar-gz",
+                1337,
+                ArtifactQuality.NEW
+        );
+    }
+    private Build createBuildRecord(Integer buildId,
+            BuildConfigurationRevision bcar,
+            String brewBuildName,
+            String brewBuildVersion) {
+        User user = User.builder()
+                .id(1)
+                .build();
 
         Date submit = new Date();
         Date start = new Date(submit.getTime() + 1000L);
         Date end = new Date(start.getTime() + 100000L);
-        BuildRecordRest buildRecordRest = new BuildRecordRest(buildId, BuildCoordinationStatus.BUILD_COMPLETED, submit, start, end, user, bcar);
-        buildRecordRest.setExecutionRootName(EXEC_ROOT_NAME);
-        buildRecordRest.setExecutionRootVersion(EXEC_ROOT_VERSION);
-        return buildRecordRest;
+        Map<String,String> attributes = new HashMap<>();
+        if (brewBuildName != null) {
+            attributes.put(BUILD_BREW_NAME, brewBuildName);
+        }
+        if (brewBuildVersion != null) {
+            attributes.put(BUILD_BREW_VERSION, brewBuildVersion);
+        }
+        Build buildRecord = Build.builder()
+                .id(buildId)
+                .status(BuildStatus.SUCCESS)
+                .submitTime(submit.toInstant())
+                .startTime(start.toInstant())
+                .endTime(end.toInstant())
+                .user(user)
+                .attributes(attributes)
+                .buildConfigRevision(bcar)
+                .build();
+        return buildRecord;
     }
 
     public static String createRandomString() {
