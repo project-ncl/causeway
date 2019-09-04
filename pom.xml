@@ -55,7 +55,7 @@
     <jhttpcVersion>1.6</jhttpcVersion>
     <configVersion>0.8</configVersion>
     <mockitoVersion>1.10.19</mockitoVersion>
-    <kojijiVersion>2.10</kojijiVersion>
+    <kojijiVersion>2.12</kojijiVersion>
   </properties>
 
   <modules>
