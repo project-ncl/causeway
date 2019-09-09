@@ -1,30 +1,12 @@
 package org.jboss.pnc.causeway.ctl;
 
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-
-import org.jboss.pnc.causeway.CausewayException;
-import org.jboss.pnc.causeway.CausewayFailure;
-import org.jboss.pnc.causeway.brewclient.BrewClient;
-import org.jboss.pnc.causeway.brewclient.BuildTranslator;
-import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
-import org.jboss.pnc.causeway.config.CausewayConfig;
 import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageMissingTag;
 
-import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
-import org.jboss.pnc.causeway.rest.BrewBuild;
-import org.jboss.pnc.causeway.rest.BrewNVR;
-import org.jboss.pnc.causeway.rest.CallbackTarget;
-import org.jboss.pnc.causeway.rest.model.Build;
-import org.jboss.pnc.causeway.rest.model.BuiltArtifact;
-import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
-import org.jboss.pnc.causeway.rest.model.TaggedBuild;
-import org.jboss.pnc.causeway.rest.model.response.BuildRecordPushResultRest;
-import org.jboss.pnc.causeway.rest.model.response.BuildRecordPushResultRest.BuildRecordPushResultRestBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
@@ -36,18 +18,37 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import com.redhat.red.build.koji.model.json.KojiImport;
-
-import lombok.Data;
-
+import org.jboss.pnc.causeway.CausewayException;
+import org.jboss.pnc.causeway.CausewayFailure;
+import org.jboss.pnc.causeway.brewclient.BrewClient;
+import org.jboss.pnc.causeway.brewclient.BuildTranslator;
+import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
+import org.jboss.pnc.causeway.config.CausewayConfig;
+import org.jboss.pnc.causeway.rest.BrewBuild;
+import org.jboss.pnc.causeway.rest.BrewNVR;
+import org.jboss.pnc.causeway.rest.CallbackTarget;
+import org.jboss.pnc.causeway.rest.model.Build;
+import org.jboss.pnc.causeway.rest.model.BuiltArtifact;
+import org.jboss.pnc.causeway.rest.model.Logfile;
+import org.jboss.pnc.causeway.rest.model.TaggedBuild;
+import org.jboss.pnc.causeway.rest.model.response.BuildRecordPushResultRest;
+import org.jboss.pnc.causeway.rest.model.response.BuildRecordPushResultRest.BuildRecordPushResultRestBuilder;
 import org.jboss.pnc.causeway.rest.model.response.OperationStatus;
 import org.jboss.pnc.causeway.rest.model.response.UntagResultRest;
 import org.jboss.pnc.causeway.rest.model.response.UntagResultRest.UntagResultRestBuilder;
+import org.jboss.pnc.pncmetrics.MetricsConfiguration;
+import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+
+import com.codahale.metrics.Histogram;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.codahale.metrics.UniformReservoir;
+import com.redhat.red.build.koji.model.json.KojiImport;
+
+import lombok.Data;
 
 /**
  *
@@ -65,6 +66,12 @@ public class ImportControllerImpl implements ImportController {
     private static final String METRICS_METER = ".meter";
     private static final String METRICS_ERRORS = ".errors";
 
+    private static final String METRICS_PUSHED_FILE_TO_BREW_KEY = "pushed-file-to-brew";
+    public static final String METRICS_LOGS_NUMBER_KEY = METRICS_PUSHED_FILE_TO_BREW_KEY + ".logs.number";
+    public static final String METRICS_LOGS_SIZE_KEY = METRICS_PUSHED_FILE_TO_BREW_KEY + ".logs.size";
+    public static final String METRICS_ARTIFACTS_NUMBER_KEY = METRICS_PUSHED_FILE_TO_BREW_KEY + ".artifacts.number";
+    public static final String METRICS_ARTIFACTS_SIZE_KEY = METRICS_PUSHED_FILE_TO_BREW_KEY + ".artifacts.size";
+
     private static final String BUILD_NOT_TAGGED = " but not previously tagged. Tagged now.";
     private static final String BUILD_ALREADY_IMPORTED = "Build was already imported with id ";
 
@@ -78,7 +85,7 @@ public class ImportControllerImpl implements ImportController {
 
     @Inject
     private MetricsConfiguration metricsConfiguration;
-
+    
     @Inject
     public ImportControllerImpl() {
         restClient = new ResteasyClientBuilder().connectionPoolSize(4).build();
@@ -97,7 +104,7 @@ public class ImportControllerImpl implements ImportController {
         Timer.Context context = timer.time();
 
         Meter errors = registry.meter(METRICS_IMPORT_BASE + METRICS_ERRORS);
-
+        
         BuildRecordPushResultRestBuilder response = BuildRecordPushResultRest.builder();
         response.buildRecordId(build.getExternalBuildID());
         try {
@@ -170,11 +177,13 @@ public class ImportControllerImpl implements ImportController {
         }
 
         BrewNVR nvr = getNVR(build);
+        boolean buildImported = false;
 
         BrewBuild brewBuild = brewClient.findBrewBuildOfNVR(nvr);
         String message;
         if (brewBuild == null) {
             brewBuild = translateAndImport(nvr, build, username);
+            buildImported = true;
             message = "Build imported with id " + brewBuild.getId() + ".";
         } else {
             if(reimport){
@@ -185,6 +194,7 @@ public class ImportControllerImpl implements ImportController {
                 }
                 if (brewBuild == null) {
                     brewBuild = translateAndImport(nvr, build, username);
+                    buildImported = true;
                     message = "Build was previously imported. Reimported again with revision " + revision
                             + " and with id " + brewBuild.getId() + ".";
                 } else {
@@ -197,10 +207,38 @@ public class ImportControllerImpl implements ImportController {
                 }
             }
         }
+
+        if (buildImported) {
+            long artifactSize = build.getBuiltArtifacts().stream().map(BuiltArtifact::getSize).collect(Collectors.summingInt(i->i));
+            int artifactNumber = build.getBuiltArtifacts().size();
+            long logSize = build.getLogs().stream().map(Logfile::getSize).collect(Collectors.summingInt(i->i));
+            int logNumber = build.getLogs().size();
+
+            updateHistogram(metricsConfiguration, METRICS_ARTIFACTS_SIZE_KEY, artifactSize);
+            updateHistogram(metricsConfiguration, METRICS_ARTIFACTS_NUMBER_KEY, artifactNumber);
+            updateHistogram(metricsConfiguration, METRICS_LOGS_SIZE_KEY, logSize);
+            updateHistogram(metricsConfiguration, METRICS_LOGS_NUMBER_KEY, logNumber);
+        }
+
         brewClient.tagBuild(tagPrefix, brewBuild);
 
         return new BuildResult(brewBuild.getId(), brewClient.getBuildUrl(brewBuild.getId()),
                 message);
+    }
+
+    private void updateHistogram(MetricsConfiguration metricsConfiguration, String name, long value) {
+        Histogram histogram = null;
+        if (metricsConfiguration != null) {
+            MetricRegistry registry = metricsConfiguration.getMetricRegistry();
+            try {
+                histogram = registry.register(name, new Histogram(new UniformReservoir()));
+            } catch (IllegalArgumentException e) {
+                histogram = registry.histogram(name);
+            }
+        }
+        if (histogram != null) {
+            histogram.update(value);
+        }
     }
 
     private BrewBuild translateAndImport(BrewNVR nvr, Build build, String username) throws CausewayException {
