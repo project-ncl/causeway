@@ -15,7 +15,34 @@
  */
 package org.jboss.pnc.causeway.ctl;
 
-import com.redhat.red.build.koji.model.json.KojiImport;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.bpmclient.BPMClient;
@@ -23,9 +50,9 @@ import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.brewclient.BuildTranslatorImpl;
 import org.jboss.pnc.causeway.brewclient.StringLogImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
-import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.PncClient;
+import org.jboss.pnc.causeway.pncclient.model.ArtifactRest;
 import org.jboss.pnc.causeway.pncclient.model.BuildConfigurationAuditedRest;
 import org.jboss.pnc.causeway.pncclient.model.BuildCoordinationStatus;
 import org.jboss.pnc.causeway.pncclient.model.BuildEnvironmentRest;
@@ -43,24 +70,19 @@ import org.jboss.pnc.causeway.rest.pnc.BuildImportResultRest;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportStatus;
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
 import org.jboss.pnc.causeway.rest.pnc.ReleaseStatus;
-import org.junit.*;
+import org.jboss.pnc.pncmetrics.MetricsConfiguration;
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.*;
-
-import org.jboss.pnc.causeway.pncclient.model.ArtifactRest;
-
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
-import org.mockito.InjectMocks;
-
-import java.io.IOException;
-
+import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.redhat.red.build.koji.model.json.KojiImport;
 
 public class PncImportControllerTest {
 
@@ -107,6 +129,10 @@ public class PncImportControllerTest {
         Timer timer = mock(Timer.class);
         when(metricRegistry.timer(anyString())).thenReturn(timer);
         when(timer.time()).thenReturn(mock(Timer.Context.class));
+
+        Histogram histogram = mock(Histogram.class);
+        when(metricRegistry.register(anyString(), any(Histogram.class))).thenReturn(histogram);
+        when(metricRegistry.histogram(anyString())).thenReturn(histogram);
         //importController = new PncImportControllerImpl(pncClient, brewClient, bpmClient, translator, causewayConfig);
     }
 
