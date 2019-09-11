@@ -85,7 +85,7 @@ public class ImportControllerImpl implements ImportController {
 
     @Inject
     private MetricsConfiguration metricsConfiguration;
-    
+
     @Inject
     public ImportControllerImpl() {
         restClient = new ResteasyClientBuilder().connectionPoolSize(4).build();
@@ -104,7 +104,7 @@ public class ImportControllerImpl implements ImportController {
         Timer.Context context = timer.time();
 
         Meter errors = registry.meter(METRICS_IMPORT_BASE + METRICS_ERRORS);
-        
+
         BuildRecordPushResultRestBuilder response = BuildRecordPushResultRest.builder();
         response.buildRecordId(build.getExternalBuildID());
         try {
@@ -209,9 +209,9 @@ public class ImportControllerImpl implements ImportController {
         }
 
         if (buildImported) {
-            long artifactSize = build.getBuiltArtifacts().stream().map(BuiltArtifact::getSize).collect(Collectors.summingInt(i->i));
+            long artifactSize = build.getBuiltArtifacts().stream().mapToLong(BuiltArtifact::getSize).sum();
             int artifactNumber = build.getBuiltArtifacts().size();
-            long logSize = build.getLogs().stream().map(Logfile::getSize).collect(Collectors.summingInt(i->i));
+            long logSize = build.getLogs().stream().mapToLong(Logfile::getSize).sum();
             int logNumber = build.getLogs().size();
 
             updateHistogram(metricsConfiguration, METRICS_ARTIFACTS_SIZE_KEY, artifactSize);

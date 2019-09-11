@@ -20,6 +20,7 @@ import static org.jboss.pnc.causeway.ctl.ImportControllerImpl.METRICS_ARTIFACTS_
 import static org.jboss.pnc.causeway.ctl.ImportControllerImpl.METRICS_LOGS_NUMBER_KEY;
 import static org.jboss.pnc.causeway.ctl.ImportControllerImpl.METRICS_LOGS_SIZE_KEY;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -219,12 +220,17 @@ public class PncImportControllerImpl implements PncImportController {
             ImportFileGenerator importFiles = translator.getImportFiles(artifacts, log);
             buildResult = brewClient.importBuild(nvr, build.getId(), kojiImport, importFiles);
 
-            long artifactSize = artifacts.buildArtifacts.stream().map(pncArtifact -> pncArtifact.size).collect(Collectors.summingLong(i->i));
+            long artifactSize = artifacts.buildArtifacts.stream().mapToLong(pncArtifact -> pncArtifact.size).sum();
             int artifactNumber = artifacts.buildArtifacts.size();
+            int logLenght = log.length();
+            try {
+                logLenght= log.getBytes("UTF-8").length;
+            } catch (UnsupportedEncodingException e) {
+            }
 
             updateHistogram(metricsConfiguration, METRICS_ARTIFACTS_SIZE_KEY, artifactSize);
             updateHistogram(metricsConfiguration, METRICS_ARTIFACTS_NUMBER_KEY, artifactNumber);
-            updateHistogram(metricsConfiguration, METRICS_LOGS_SIZE_KEY, log.length());
+            updateHistogram(metricsConfiguration, METRICS_LOGS_SIZE_KEY, logLenght);
             updateHistogram(metricsConfiguration, METRICS_LOGS_NUMBER_KEY, 1);
         }
 
