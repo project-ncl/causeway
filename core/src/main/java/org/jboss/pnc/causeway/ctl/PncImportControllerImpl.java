@@ -15,9 +15,16 @@
  */
 package org.jboss.pnc.causeway.ctl;
 
+import static org.jboss.pnc.causeway.ctl.ImportControllerImpl.METRICS_ARTIFACTS_NUMBER_KEY;
+import static org.jboss.pnc.causeway.ctl.ImportControllerImpl.METRICS_ARTIFACTS_SIZE_KEY;
+import static org.jboss.pnc.causeway.ctl.ImportControllerImpl.METRICS_LOGS_NUMBER_KEY;
+import static org.jboss.pnc.causeway.ctl.ImportControllerImpl.METRICS_LOGS_SIZE_KEY;
+
+import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.codahale.metrics.UniformReservoir;
 import com.redhat.red.build.koji.model.json.KojiImport;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.bpmclient.BPMClient;
@@ -26,7 +33,7 @@ import org.jboss.pnc.causeway.brewclient.BrewClientImpl;
 import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
-import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
+import org.jboss.pnc.pncmetrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.PncClient;
 import org.jboss.pnc.causeway.rest.BrewBuild;
@@ -211,6 +218,19 @@ public class PncImportControllerImpl implements PncImportController {
             KojiImport kojiImport = translator.translate(nvr, build, artifacts, log, username);
             ImportFileGenerator importFiles = translator.getImportFiles(artifacts, log);
             buildResult = brewClient.importBuild(nvr, build.getId(), kojiImport, importFiles);
+
+            long artifactSize = artifacts.buildArtifacts.stream().mapToLong(pncArtifact -> pncArtifact.size).sum();
+            int artifactNumber = artifacts.buildArtifacts.size();
+            int logLenght = log.length();
+            try {
+                logLenght= log.getBytes("UTF-8").length;
+            } catch (UnsupportedEncodingException e) {
+            }
+
+            updateHistogram(metricsConfiguration, METRICS_ARTIFACTS_SIZE_KEY, artifactSize);
+            updateHistogram(metricsConfiguration, METRICS_ARTIFACTS_NUMBER_KEY, artifactNumber);
+            updateHistogram(metricsConfiguration, METRICS_LOGS_SIZE_KEY, logLenght);
+            updateHistogram(metricsConfiguration, METRICS_LOGS_NUMBER_KEY, 1);
         }
 
         for (BuildArtifacts.PncArtifact artifact : blackArtifacts) {
@@ -223,6 +243,20 @@ public class PncImportControllerImpl implements PncImportController {
         return buildResult;
     }
 
+    private void updateHistogram(MetricsConfiguration metricsConfiguration, String name, long value) {
+        Histogram histogram = null;
+        if (metricsConfiguration != null) {
+            MetricRegistry registry = metricsConfiguration.getMetricRegistry();
+            try {
+                histogram = registry.register(name, new Histogram(new UniformReservoir()));
+            } catch (IllegalArgumentException e) {
+                histogram = registry.histogram(name);
+            }
+        }
+        if (histogram != null) {
+            histogram.update(value);
+        }
+    }
     static String messagePncReleaseNotFound(long releaseId, Exception e) {
         return "Can not find PNC release " + releaseId + " - " + e.getMessage();
     }

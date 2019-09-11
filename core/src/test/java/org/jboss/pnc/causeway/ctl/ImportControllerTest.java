@@ -15,6 +15,7 @@
  */
 package org.jboss.pnc.causeway.ctl;
 
+import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
@@ -31,7 +32,7 @@ import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.brewclient.BuildTranslatorImpl;
 import org.jboss.pnc.causeway.brewclient.ExternalLogImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
-import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
+import org.jboss.pnc.pncmetrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.CallbackMethod;
@@ -128,6 +129,10 @@ public class ImportControllerTest {
         Timer timer = mock(Timer.class);
         when(metricRegistry.timer(anyString())).thenReturn(timer);
         when(timer.time()).thenReturn(mock(Timer.Context.class));
+
+        Histogram histogram = mock(Histogram.class);
+        when(metricRegistry.register(anyString(), any(Histogram.class))).thenReturn(histogram);
+        when(metricRegistry.histogram(anyString())).thenReturn(histogram);
 
         mapper.registerSubtypes(MavenBuild.class, NpmBuild.class, MavenBuiltArtifact.class, NpmBuiltArtifact.class);
 
