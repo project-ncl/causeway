@@ -303,7 +303,7 @@ public class ImportControllerTest {
 
         String result = "{"
                 + "\"id\":null,"
-                + "\"buildId\":61,"
+                + "\"buildId\":\"61\","
                 + "\"status\":\"SUCCESS\","
                 + "\"log\":\"" + log + "\","
                 + "\"artifactImportErrors\":null,"
@@ -332,7 +332,7 @@ public class ImportControllerTest {
 
         String result = "{"
                 + "\"id\":null,"
-                + "\"buildId\":61,"
+                + "\"buildId\":\"61\","
                 + "\"status\":\"FAILED\","
                 + "\"log\":\"" + log + "\","
                 + "\"artifactImportErrors\":" + artifacts + ","
@@ -347,7 +347,7 @@ public class ImportControllerTest {
     private void verifyError(String log) {
         String result = "{"
                 + "\"id\":null,"
-                + "\"buildId\":61,"
+                + "\"buildId\":\"61\","
                 + "\"status\":\"SYSTEM_ERROR\","
                 + "\"log\":\"" + log + "\","
                 + "\"artifactImportErrors\":null,"
