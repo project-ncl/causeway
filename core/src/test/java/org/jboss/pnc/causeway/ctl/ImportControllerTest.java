@@ -241,7 +241,7 @@ public class ImportControllerTest {
 
         List<ArtifactImportError> artifactImportErrors = new ArrayList<>();
         ArtifactImportError importError = ArtifactImportError.builder()
-                .artifactId(123)
+                .artifactId(String.valueOf(123))
                 .errorMessage(errorMessage)
                 .build();
         artifactImportErrors.add(importError);

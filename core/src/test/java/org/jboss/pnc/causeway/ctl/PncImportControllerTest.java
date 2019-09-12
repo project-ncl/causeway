@@ -186,12 +186,12 @@ public class PncImportControllerTest {
     private BuildConfigurationRevision createBuildConfiguration(Integer id, Environment env, BuildType buildType) {
 
         SCMRepository scm = SCMRepository.builder()
-                .id(1)
+                .id(String.valueOf(1))
                 .internalUrl("http://repo.url")
                 .build();
 
         return BuildConfigurationRevision.builder()
-                .id(id)
+                .id(String.valueOf(id))
                 .rev(1)
                 .scmRepository(scm)
                 .buildType(buildType)
@@ -334,7 +334,7 @@ public class PncImportControllerTest {
 
         List<ArtifactImportError> artifactImportErrors = new ArrayList<>();
         ArtifactImportError importError = ArtifactImportError.builder()
-                .artifactId(123)
+                .artifactId(String.valueOf(123))
                 .errorMessage(errorMessage)
                 .build();
         artifactImportErrors.add(importError);
@@ -471,7 +471,7 @@ public class PncImportControllerTest {
             String brewBuildName,
             String brewBuildVersion) {
         User user = User.builder()
-                .id(1)
+                .id(String.valueOf(1))
                 .build();
 
         Date submit = new Date();
@@ -485,7 +485,7 @@ public class PncImportControllerTest {
             attributes.put(BUILD_BREW_VERSION, brewBuildVersion);
         }
         Build buildRecord = Build.builder()
-                .id(buildId)
+                .id(String.valueOf(buildId))
                 .status(BuildStatus.SUCCESS)
                 .submitTime(submit.toInstant())
                 .startTime(start.toInstant())

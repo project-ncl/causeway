@@ -218,7 +218,7 @@ public class BrewClientImpl implements BrewClient {
                     artifactId = -1;
                 }
                 ArtifactImportError importError = ArtifactImportError.builder()
-                        .artifactId(artifactId)
+                        .artifactId(String.valueOf(artifactId))
                         .errorMessage(e.getValue().getError().getMessage())
                         .build();
                 importErrors.add(importError);
@@ -229,7 +229,7 @@ public class BrewClientImpl implements BrewClient {
         if (!importerErrors.isEmpty()) {
             for (Map.Entry<Integer, String> e : importerErrors.entrySet()) {
                 ArtifactImportError importError = ArtifactImportError.builder()
-                        .artifactId(e.getKey())
+                        .artifactId(String.valueOf(e.getKey()))
                         .errorMessage(e.getValue())
                         .build();
                 importErrors.add(importError);

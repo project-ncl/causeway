@@ -155,7 +155,7 @@ public class PncImportControllerImpl implements PncImportController {
         for (Build build : builds) {
             BuildImportResultRest importResult;
             try{
-                BuildArtifacts artifacts = pncClient.findBuildArtifacts(build.getId());
+                BuildArtifacts artifacts = pncClient.findBuildArtifacts(Integer.valueOf(build.getId()));
                 importResult = importBuild(build, username, artifacts);
                 if(importResult.getStatus() == BuildImportStatus.SUCCESSFUL && importResult.getBrewBuildId() != null){
                     brewClient.tagBuild(tagPrefix, getNVR(build, artifacts));
@@ -163,7 +163,7 @@ public class PncImportControllerImpl implements PncImportController {
             }catch(CausewayException ex){
                 Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import build.", ex);
                 importResult = new BuildImportResultRest();
-                importResult.setBuildRecordId(build.getId());
+                importResult.setBuildRecordId(Integer.valueOf(build.getId()));
                 importResult.setErrorMessage(ex.getMessage());
                 importResult.setStatus(BuildImportStatus.ERROR);
             }
@@ -194,7 +194,7 @@ public class PncImportControllerImpl implements PncImportController {
             BuildImportResultRest ret = new BuildImportResultRest();
             ret.setBrewBuildId(brewBuild.getId());
             ret.setBrewBuildUrl(brewClient.getBuildUrl(brewBuild.getId()));
-            ret.setBuildRecordId(build.getId());
+            ret.setBuildRecordId(Integer.valueOf(build.getId()));
             ret.setStatus(BuildImportStatus.SUCCESSFUL); // TODO: replace with EXISTING?
 
             return ret;
@@ -212,14 +212,14 @@ public class PncImportControllerImpl implements PncImportController {
         final BuildImportResultRest buildResult;
         if (artifacts.buildArtifacts.isEmpty()) {
             buildResult = new BuildImportResultRest();
-            buildResult.setBuildRecordId(build.getId());
+            buildResult.setBuildRecordId(Integer.valueOf(build.getId()));
             buildResult.setStatus(BuildImportStatus.SUCCESSFUL);
             buildResult.setErrorMessage("Build doesn't contain any artifacts to import, skipping.");
         } else {
-            String log = pncClient.getBuildLog(build.getId());
+            String log = pncClient.getBuildLog(Integer.valueOf(build.getId()));
             KojiImport kojiImport = translator.translate(nvr, build, artifacts, log, username);
             ImportFileGenerator importFiles = translator.getImportFiles(artifacts, log);
-            buildResult = brewClient.importBuild(nvr, build.getId(), kojiImport, importFiles);
+            buildResult = brewClient.importBuild(nvr, Integer.valueOf(build.getId()), kojiImport, importFiles);
 
             long artifactSize = artifacts.buildArtifacts.stream().mapToLong(pncArtifact -> pncArtifact.size).sum();
             int artifactNumber = artifacts.buildArtifacts.size();
@@ -237,7 +237,7 @@ public class PncImportControllerImpl implements PncImportController {
 
         for (BuildArtifacts.PncArtifact artifact : blackArtifacts) {
             ArtifactImportError error = ArtifactImportError.builder()
-                    .artifactId(artifact.id)
+                    .artifactId(String.valueOf(artifact.id))
                     .errorMessage("This artifact is blacklisted, so it was not imported.")
                     .build();
             buildResult.getErrors().add(error);

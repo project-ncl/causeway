@@ -98,7 +98,7 @@ public class ImportControllerImpl implements ImportController {
 
         Meter errors = registry.meter(METRICS_IMPORT_BASE + METRICS_ERRORS);
         BuildPushResult.Builder response = BuildPushResult.builder();
-        response.buildId(build.getExternalBuildID());
+        response.buildId(String.valueOf(build.getExternalBuildID()));
         try {
             BuildResult result = importBuild(build, build.getTagPrefix(), username);
             response.brewBuildId(result.getBrewID());
