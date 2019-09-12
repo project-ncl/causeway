@@ -324,7 +324,7 @@ public class ImportControllerTest {
         if (!artifactImportErrors.isEmpty()) {
             artifacts = artifactImportErrors.stream()
                     .map(a -> "{"
-                            + "\"artifactId\":" + a.getArtifactId() + ","
+                            + "\"artifactId\":\"" + a.getArtifactId() + "\","
                             + "\"errorMessage\":\"" + a.getErrorMessage() + "\""
                             + "}")
                     .collect(Collectors.joining(",", "[", "]"));
