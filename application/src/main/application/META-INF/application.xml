@@ -31,7 +31,7 @@
         <ejb>causeway-rest.jar</ejb>
     </module>
     <module>
-        <ejb>causeway-metrics.jar</ejb>
+        <ejb>pncmetrics.jar</ejb>
     </module>
     <module>
         <web>

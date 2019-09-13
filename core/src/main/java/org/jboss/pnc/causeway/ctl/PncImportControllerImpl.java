@@ -15,9 +15,16 @@
  */
 package org.jboss.pnc.causeway.ctl;
 
+import static org.jboss.pnc.causeway.ctl.ImportControllerImpl.METRICS_ARTIFACTS_NUMBER_KEY;
+import static org.jboss.pnc.causeway.ctl.ImportControllerImpl.METRICS_ARTIFACTS_SIZE_KEY;
+import static org.jboss.pnc.causeway.ctl.ImportControllerImpl.METRICS_LOGS_NUMBER_KEY;
+import static org.jboss.pnc.causeway.ctl.ImportControllerImpl.METRICS_LOGS_SIZE_KEY;
+
+import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.codahale.metrics.UniformReservoir;
 import com.redhat.red.build.koji.model.json.KojiImport;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.bpmclient.BPMClient;
@@ -26,7 +33,7 @@ import org.jboss.pnc.causeway.brewclient.BrewClientImpl;
 import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
-import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
+import org.jboss.pnc.pncmetrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.PncClient;
 import org.jboss.pnc.causeway.rest.BrewBuild;
@@ -45,6 +52,8 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
+
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -146,7 +155,7 @@ public class PncImportControllerImpl implements PncImportController {
         for (Build build : builds) {
             BuildImportResultRest importResult;
             try{
-                BuildArtifacts artifacts = pncClient.findBuildArtifacts(build.getId());
+                BuildArtifacts artifacts = pncClient.findBuildArtifacts(Integer.valueOf(build.getId()));
                 importResult = importBuild(build, username, artifacts);
                 if(importResult.getStatus() == BuildImportStatus.SUCCESSFUL && importResult.getBrewBuildId() != null){
                     brewClient.tagBuild(tagPrefix, getNVR(build, artifacts));
@@ -154,7 +163,7 @@ public class PncImportControllerImpl implements PncImportController {
             }catch(CausewayException ex){
                 Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import build.", ex);
                 importResult = new BuildImportResultRest();
-                importResult.setBuildRecordId(build.getId());
+                importResult.setBuildRecordId(Integer.valueOf(build.getId()));
                 importResult.setErrorMessage(ex.getMessage());
                 importResult.setStatus(BuildImportStatus.ERROR);
             }
@@ -185,7 +194,7 @@ public class PncImportControllerImpl implements PncImportController {
             BuildImportResultRest ret = new BuildImportResultRest();
             ret.setBrewBuildId(brewBuild.getId());
             ret.setBrewBuildUrl(brewClient.getBuildUrl(brewBuild.getId()));
-            ret.setBuildRecordId(build.getId());
+            ret.setBuildRecordId(Integer.valueOf(build.getId()));
             ret.setStatus(BuildImportStatus.SUCCESSFUL); // TODO: replace with EXISTING?
 
             return ret;
@@ -203,19 +212,32 @@ public class PncImportControllerImpl implements PncImportController {
         final BuildImportResultRest buildResult;
         if (artifacts.buildArtifacts.isEmpty()) {
             buildResult = new BuildImportResultRest();
-            buildResult.setBuildRecordId(build.getId());
+            buildResult.setBuildRecordId(Integer.valueOf(build.getId()));
             buildResult.setStatus(BuildImportStatus.SUCCESSFUL);
             buildResult.setErrorMessage("Build doesn't contain any artifacts to import, skipping.");
         } else {
-            String log = pncClient.getBuildLog(build.getId());
+            String log = pncClient.getBuildLog(Integer.valueOf(build.getId()));
             KojiImport kojiImport = translator.translate(nvr, build, artifacts, log, username);
             ImportFileGenerator importFiles = translator.getImportFiles(artifacts, log);
-            buildResult = brewClient.importBuild(nvr, build.getId(), kojiImport, importFiles);
+            buildResult = brewClient.importBuild(nvr, Integer.valueOf(build.getId()), kojiImport, importFiles);
+
+            long artifactSize = artifacts.buildArtifacts.stream().mapToLong(pncArtifact -> pncArtifact.size).sum();
+            int artifactNumber = artifacts.buildArtifacts.size();
+            int logLenght = log.length();
+            try {
+                logLenght= log.getBytes("UTF-8").length;
+            } catch (UnsupportedEncodingException e) {
+            }
+
+            updateHistogram(metricsConfiguration, METRICS_ARTIFACTS_SIZE_KEY, artifactSize);
+            updateHistogram(metricsConfiguration, METRICS_ARTIFACTS_NUMBER_KEY, artifactNumber);
+            updateHistogram(metricsConfiguration, METRICS_LOGS_SIZE_KEY, logLenght);
+            updateHistogram(metricsConfiguration, METRICS_LOGS_NUMBER_KEY, 1);
         }
 
         for (BuildArtifacts.PncArtifact artifact : blackArtifacts) {
             ArtifactImportError error = ArtifactImportError.builder()
-                    .artifactId(artifact.id)
+                    .artifactId(String.valueOf(artifact.id))
                     .errorMessage("This artifact is blacklisted, so it was not imported.")
                     .build();
             buildResult.getErrors().add(error);
@@ -223,6 +245,20 @@ public class PncImportControllerImpl implements PncImportController {
         return buildResult;
     }
 
+    private void updateHistogram(MetricsConfiguration metricsConfiguration, String name, long value) {
+        Histogram histogram = null;
+        if (metricsConfiguration != null) {
+            MetricRegistry registry = metricsConfiguration.getMetricRegistry();
+            try {
+                histogram = registry.register(name, new Histogram(new UniformReservoir()));
+            } catch (IllegalArgumentException e) {
+                histogram = registry.histogram(name);
+            }
+        }
+        if (histogram != null) {
+            histogram.update(value);
+        }
+    }
     static String messagePncReleaseNotFound(long releaseId, Exception e) {
         return "Can not find PNC release " + releaseId + " - " + e.getMessage();
     }

@@ -15,6 +15,7 @@
  */
 package org.jboss.pnc.causeway.ctl;
 
+import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
@@ -31,7 +32,7 @@ import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.brewclient.BuildTranslatorImpl;
 import org.jboss.pnc.causeway.brewclient.ExternalLogImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
-import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
+import org.jboss.pnc.pncmetrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.CallbackMethod;
@@ -128,6 +129,10 @@ public class ImportControllerTest {
         Timer timer = mock(Timer.class);
         when(metricRegistry.timer(anyString())).thenReturn(timer);
         when(timer.time()).thenReturn(mock(Timer.Context.class));
+
+        Histogram histogram = mock(Histogram.class);
+        when(metricRegistry.register(anyString(), any(Histogram.class))).thenReturn(histogram);
+        when(metricRegistry.histogram(anyString())).thenReturn(histogram);
 
         mapper.registerSubtypes(MavenBuild.class, NpmBuild.class, MavenBuiltArtifact.class, NpmBuiltArtifact.class);
 
@@ -236,7 +241,7 @@ public class ImportControllerTest {
 
         List<ArtifactImportError> artifactImportErrors = new ArrayList<>();
         ArtifactImportError importError = ArtifactImportError.builder()
-                .artifactId(123)
+                .artifactId(String.valueOf(123))
                 .errorMessage(errorMessage)
                 .build();
         artifactImportErrors.add(importError);
@@ -298,7 +303,7 @@ public class ImportControllerTest {
 
         String result = "{"
                 + "\"id\":null,"
-                + "\"buildId\":61,"
+                + "\"buildId\":\"61\","
                 + "\"status\":\"SUCCESS\","
                 + "\"log\":\"" + log + "\","
                 + "\"artifactImportErrors\":null,"
@@ -319,7 +324,7 @@ public class ImportControllerTest {
         if (!artifactImportErrors.isEmpty()) {
             artifacts = artifactImportErrors.stream()
                     .map(a -> "{"
-                            + "\"artifactId\":" + a.getArtifactId() + ","
+                            + "\"artifactId\":\"" + a.getArtifactId() + "\","
                             + "\"errorMessage\":\"" + a.getErrorMessage() + "\""
                             + "}")
                     .collect(Collectors.joining(",", "[", "]"));
@@ -327,7 +332,7 @@ public class ImportControllerTest {
 
         String result = "{"
                 + "\"id\":null,"
-                + "\"buildId\":61,"
+                + "\"buildId\":\"61\","
                 + "\"status\":\"FAILED\","
                 + "\"log\":\"" + log + "\","
                 + "\"artifactImportErrors\":" + artifacts + ","
@@ -342,7 +347,7 @@ public class ImportControllerTest {
     private void verifyError(String log) {
         String result = "{"
                 + "\"id\":null,"
-                + "\"buildId\":61,"
+                + "\"buildId\":\"61\","
                 + "\"status\":\"SYSTEM_ERROR\","
                 + "\"log\":\"" + log + "\","
                 + "\"artifactImportErrors\":null,"

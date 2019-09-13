@@ -1,8 +1,10 @@
 package org.jboss.pnc.causeway.ctl;
 
+import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.codahale.metrics.UniformReservoir;
 import com.redhat.red.build.koji.model.json.KojiImport;
 import lombok.Data;
 import org.jboss.pnc.causeway.CausewayException;
@@ -11,12 +13,14 @@ import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
-import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
+import org.jboss.pnc.pncmetrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.CallbackTarget;
 import org.jboss.pnc.causeway.rest.model.Build;
+import org.jboss.pnc.causeway.rest.model.BuiltArtifact;
 import org.jboss.pnc.causeway.rest.model.TaggedBuild;
+import org.jboss.pnc.causeway.rest.model.Logfile; 
 import org.jboss.pnc.causeway.rest.model.response.OperationStatus;
 import org.jboss.pnc.causeway.rest.model.response.UntagResultRest;
 import org.jboss.pnc.causeway.rest.model.response.UntagResultRest.UntagResultRestBuilder;
@@ -58,6 +62,12 @@ public class ImportControllerImpl implements ImportController {
     private static final String METRICS_METER = ".meter";
     private static final String METRICS_ERRORS = ".errors";
 
+    private static final String METRICS_PUSHED_FILE_TO_BREW_KEY = "pushed-file-to-brew";
+    public static final String METRICS_LOGS_NUMBER_KEY = METRICS_PUSHED_FILE_TO_BREW_KEY + ".logs.number";
+    public static final String METRICS_LOGS_SIZE_KEY = METRICS_PUSHED_FILE_TO_BREW_KEY + ".logs.size";
+    public static final String METRICS_ARTIFACTS_NUMBER_KEY = METRICS_PUSHED_FILE_TO_BREW_KEY + ".artifacts.number";
+    public static final String METRICS_ARTIFACTS_SIZE_KEY = METRICS_PUSHED_FILE_TO_BREW_KEY + ".artifacts.size";
+
     @Inject
     private BrewClient brewClient;
     @Inject
@@ -88,7 +98,7 @@ public class ImportControllerImpl implements ImportController {
 
         Meter errors = registry.meter(METRICS_IMPORT_BASE + METRICS_ERRORS);
         BuildPushResult.Builder response = BuildPushResult.builder();
-        response.buildId(build.getExternalBuildID());
+        response.buildId(String.valueOf(build.getExternalBuildID()));
         try {
             BuildResult result = importBuild(build, build.getTagPrefix(), username);
             response.brewBuildId(result.getBrewID());
@@ -159,6 +169,7 @@ public class ImportControllerImpl implements ImportController {
         }
 
         BrewNVR nvr = getNVR(build);
+        boolean buildImported = false;
 
         BrewBuild brewBuild = brewClient.findBrewBuildOfNVR(nvr);
         String message;
@@ -167,15 +178,43 @@ public class ImportControllerImpl implements ImportController {
             ImportFileGenerator importFiles = translator.getImportFiles(build);
 
             brewBuild = brewClient.importBuild(nvr, kojiImport, importFiles);
+            buildImported = true;
             message = "Build imported with id ";
         } else {
             message = "Build was already imported with id ";
+        }
+
+        if (buildImported) {
+            long artifactSize = build.getBuiltArtifacts().stream().mapToLong(BuiltArtifact::getSize).sum();
+            int artifactNumber = build.getBuiltArtifacts().size();
+            long logSize = build.getLogs().stream().mapToLong(Logfile::getSize).sum();
+            int logNumber = build.getLogs().size();
+
+            updateHistogram(metricsConfiguration, METRICS_ARTIFACTS_SIZE_KEY, artifactSize);
+            updateHistogram(metricsConfiguration, METRICS_ARTIFACTS_NUMBER_KEY, artifactNumber);
+            updateHistogram(metricsConfiguration, METRICS_LOGS_SIZE_KEY, logSize);
+            updateHistogram(metricsConfiguration, METRICS_LOGS_NUMBER_KEY, logNumber);
         }
 
         brewClient.tagBuild(tagPrefix, getNVR(build));
 
         return new BuildResult(brewBuild.getId(), brewClient.getBuildUrl(brewBuild.getId()),
                 message + brewBuild.getId());
+    }
+
+    private void updateHistogram(MetricsConfiguration metricsConfiguration, String name, long value) {
+        Histogram histogram = null;
+        if (metricsConfiguration != null) {
+            MetricRegistry registry = metricsConfiguration.getMetricRegistry();
+            try {
+                histogram = registry.register(name, new Histogram(new UniformReservoir()));
+            } catch (IllegalArgumentException e) {
+                histogram = registry.histogram(name);
+            }
+        }
+        if (histogram != null) {
+            histogram.update(value);
+        }
     }
 
     BrewNVR getNVR(Build build) throws CausewayException{

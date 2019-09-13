@@ -15,6 +15,7 @@
  */
 package org.jboss.pnc.causeway.ctl;
 
+import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
@@ -25,7 +26,7 @@ import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.brewclient.BuildTranslatorImpl;
 import org.jboss.pnc.causeway.brewclient.StringLogImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
-import org.jboss.pnc.causeway.metrics.MetricsConfiguration;
+import org.jboss.pnc.pncmetrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.PncClient;
 import org.jboss.pnc.causeway.rest.BrewBuild;
@@ -129,6 +130,9 @@ public class PncImportControllerTest {
         Timer timer = mock(Timer.class);
         when(metricRegistry.timer(anyString())).thenReturn(timer);
         when(timer.time()).thenReturn(mock(Timer.Context.class));
+        Histogram histogram = mock(Histogram.class);
+        when(metricRegistry.register(anyString(), any(Histogram.class))).thenReturn(histogram);
+        when(metricRegistry.histogram(anyString())).thenReturn(histogram);
         //importController = new PncImportControllerImpl(pncClient, brewClient, bpmClient, translator, causewayConfig);
     }
 
@@ -182,12 +186,12 @@ public class PncImportControllerTest {
     private BuildConfigurationRevision createBuildConfiguration(Integer id, Environment env, BuildType buildType) {
 
         SCMRepository scm = SCMRepository.builder()
-                .id(1)
+                .id(String.valueOf(1))
                 .internalUrl("http://repo.url")
                 .build();
 
         return BuildConfigurationRevision.builder()
-                .id(id)
+                .id(String.valueOf(id))
                 .rev(1)
                 .scmRepository(scm)
                 .buildType(buildType)
@@ -330,7 +334,7 @@ public class PncImportControllerTest {
 
         List<ArtifactImportError> artifactImportErrors = new ArrayList<>();
         ArtifactImportError importError = ArtifactImportError.builder()
-                .artifactId(123)
+                .artifactId(String.valueOf(123))
                 .errorMessage(errorMessage)
                 .build();
         artifactImportErrors.add(importError);
@@ -467,7 +471,7 @@ public class PncImportControllerTest {
             String brewBuildName,
             String brewBuildVersion) {
         User user = User.builder()
-                .id(1)
+                .id(String.valueOf(1))
                 .build();
 
         Date submit = new Date();
@@ -481,7 +485,7 @@ public class PncImportControllerTest {
             attributes.put(BUILD_BREW_VERSION, brewBuildVersion);
         }
         Build buildRecord = Build.builder()
-                .id(buildId)
+                .id(String.valueOf(buildId))
                 .status(BuildStatus.SUCCESS)
                 .submitTime(submit.toInstant())
                 .startTime(start.toInstant())
