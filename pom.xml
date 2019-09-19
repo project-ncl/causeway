@@ -51,7 +51,7 @@
   <properties>
     <projectOwner>Red Hat, Inc.</projectOwner>
     <projectEmail>jbrazdil@redhat.com</projectEmail>
-    <javaVersion>11</javaVersion>
+    <javaVersion>1.8</javaVersion>
     <jhttpcVersion>1.6</jhttpcVersion>
     <configVersion>0.8</configVersion>
     <mockitoVersion>1.10.19</mockitoVersion>
