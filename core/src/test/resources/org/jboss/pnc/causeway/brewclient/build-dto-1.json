@@ -6,7 +6,9 @@
   "status": "SUCCESS",
   "buildContentId": null,
   "temporaryBuild": false,
-  "scmRepositoryURL": "http://github.com/project-ncl/pnc.git",
+  "scmUrl": "http://github.com/project-ncl/pnc.git",
+  "scmRevision": "57ebfa20374d708e232fc8b45f37def055300260",
+  "scmTag": "repour-57ebfa20374d708e232fc8b45f37def055300260",
   "project": {
     "id": 100,
     "name": "Project Newcastle Demo Project 1",
