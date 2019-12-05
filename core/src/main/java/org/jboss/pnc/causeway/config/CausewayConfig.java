@@ -76,7 +76,7 @@ public class CausewayConfig
     private static final String SSL_SUBDIR = "ssl";
 
     private static final Integer DEFAULT_HTTP_TIMEOUT_SECS = Integer.valueOf( 10 );
-    
+
     private static final Integer DEFAULT_CONNECTIONS = 10;
 
     private static final Integer DEFAULT_PAGE_SIZE = 50;
@@ -112,7 +112,7 @@ public class CausewayConfig
     private Integer kojiTimeout;
 
     private Integer kojiConnectionPoolTimeout;
-    
+
     private Integer kojiConnections;
 
     private Integer pnclTimeout;
@@ -327,6 +327,7 @@ public class CausewayConfig
                 builder.host(url.getHost())
                         .protocol(url.getProtocol())
                         .pageSize(DEFAULT_PAGE_SIZE)
+                        .addDefaultMdcToHeadersMappings()
                         .port((url.getPort() != -1) ? url.getPort() : url.getDefaultPort());
             } catch (MalformedURLException e) {
                 throw new IllegalStateException("Value of the '" + PNCL_URL_OPTION + "' field in Causeway configuration is not parsable URL", e);

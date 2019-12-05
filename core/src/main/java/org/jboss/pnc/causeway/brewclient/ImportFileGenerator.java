@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jboss.pnc.causeway.util.MDCUtils;
 
 /**
  *
@@ -86,6 +87,7 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
             Artifact artifact = it.next();
             try {
                 HttpURLConnection connection = (HttpURLConnection) artifact.getUrl().openConnection();
+                MDCUtils.headersFromContext().forEach(connection::addRequestProperty);
                 connection.setRequestMethod("HEAD");
                 if (connection.getResponseCode() != 200) {
                     fail(artifact, "Failed to obtain artifact (status " + connection.getResponseCode() + " " + connection.getResponseMessage() + ")");
