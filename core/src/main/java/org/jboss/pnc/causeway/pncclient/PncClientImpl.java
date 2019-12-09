@@ -33,9 +33,11 @@ import org.jboss.pnc.rest.api.parameters.BuildsFilterParameters;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Scanner;
 
 import static org.jboss.pnc.rest.configuration.SwaggerConstants.NOT_FOUND_CODE;
 
@@ -90,10 +92,12 @@ public class PncClientImpl implements PncClient
 
     @Override
     public String getBuildLog(int buildId) throws CausewayException {
-        Optional<String> log;
+        Optional<InputStream> log;
         try {
             log = buildClient.getBuildLogs(String.valueOf(buildId));
-            return log.orElseThrow(() -> new CausewayException("Build log for Build " + buildId + " is empty - response " + NOT_FOUND_CODE));
+            InputStream logInput =  log.orElseThrow(() -> new CausewayException("Build log for Build " + buildId + " is empty - response " + NOT_FOUND_CODE));
+            Scanner s = new Scanner(logInput).useDelimiter("\\A");
+            return s.hasNext() ? s.next() : "";
         } catch (RemoteResourceException e) {
             throw new CausewayException("Can not read build log of build " + buildId + " because PNC responded with an error - response " + e.getStatus(), e);
         }
