@@ -21,6 +21,7 @@ import javax.ws.rs.core.Application;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.jboss.pnc.causeway.rest.filter.MDCLoggingFilter;
 
 
 /**
@@ -47,5 +48,6 @@ public class ReportsRestActivator extends Application {
         resources.add(PncImportResourceEndpoint.class);
         resources.add(ImportEndpoint.class);
         resources.add(UntagEndpoint.class);
+        resources.add(MDCLoggingFilter.class);
     }
 }
