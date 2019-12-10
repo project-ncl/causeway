@@ -111,9 +111,8 @@
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc</groupId>
-        <artifactId>rest-api</artifactId>
+        <artifactId>rest-client</artifactId>
         <version>${pncVersion}</version>
-        <classifier>java-client</classifier>
       </dependency>
       <dependency>
         <groupId>org.jboss.bom</groupId>
