@@ -29,14 +29,14 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.jboss.pnc.causeway.util.MDCUtils;
 
 /**
  *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
+@Slf4j
 public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFile>> {
     protected final Set<Artifact> artifacts = new HashSet<>();
     protected final Map<String, Integer> paths = new HashMap<>();
@@ -101,7 +101,7 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
                 long size = Long.parseLong(contentLength);
                 connection.disconnect();
 
-                Logger.getLogger(ImportFileGenerator.class.getName()).log(Level.FINE, "Next is '" + artifact.getFilePath() + "' from '" + artifact + "'");
+                log.info("Reading file {} from {}", artifact.getFilePath(), artifact.getUrl());
                 return new ImportFileSupplier(artifact, size);
             } catch (IOException | NumberFormatException ex) {
                 fail(artifact, "Failed to obtain file size of artifact", ex);
@@ -110,13 +110,13 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
         }
 
         private void fail(Artifact artifact, String message) {
-            Logger.getLogger(ImportFileGenerator.class.getName()).log(Level.WARNING, message + " '" + artifact.getUrl() + "'");
+            log.warn("{} '{}'", message, artifact.getUrl());
             Integer id = artifact.getId();
             errors.put(id, message + " '" + artifact.getUrl() + "'.");
         }
 
         private void fail(Artifact artifact, String message, Exception ex) {
-            Logger.getLogger(ImportFileGenerator.class.getName()).log(Level.WARNING, message + " '" + artifact.getUrl() + "'", ex);
+            log.warn(message + " '" + artifact.getUrl() + "'", ex);
             Integer id = artifact.getId();
             errors.put(id, message + " '" + artifact.getUrl() + "': " + ex.getMessage());
         }

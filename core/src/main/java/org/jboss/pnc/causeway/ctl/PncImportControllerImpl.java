@@ -58,8 +58,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import static org.jboss.pnc.constants.Attributes.BUILD_BREW_NAME;
 import static org.jboss.pnc.constants.Attributes.BUILD_BREW_VERSION;
@@ -67,6 +66,7 @@ import static org.jboss.pnc.constants.Attributes.BUILD_BREW_VERSION;
 @Deprecated
 @Stateless
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+@Slf4j
 public class PncImportControllerImpl implements PncImportController {
 
     private static final String METRICS_BASE = "causeway.import.milestone";
@@ -95,7 +95,7 @@ public class PncImportControllerImpl implements PncImportController {
     @Override
     @Asynchronous
     public void importMilestone(int milestoneId, CallbackTarget callback, String callbackId, String username) {
-        Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.INFO, "Entering importMilestone.");
+        log.info("Importing PNC milestone {}.", milestoneId);
 
         MetricRegistry registry = metricsConfiguration.getMetricRegistry();
         Meter meter = registry.meter(METRICS_BASE + METRICS_METER);
@@ -126,13 +126,13 @@ public class PncImportControllerImpl implements PncImportController {
             }
 
         } catch (CausewayException ex) {
-            Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import milestone.", ex);
+            log.error("Failed to import milestone.", ex);
             result.setErrorMessage(ex.getMessage());
             result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
             bpmClient.failure(callback.getUrl(), callbackId, result);
             errors.mark();
         } catch (RuntimeException ex) {
-            Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import milestone.", ex);
+            log.error("Failed to import milestone.", ex);
             result.setErrorMessage(ex.getMessage());
             result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
             bpmClient.error(callback.getUrl(), callbackId, result);
@@ -161,7 +161,7 @@ public class PncImportControllerImpl implements PncImportController {
                     brewClient.tagBuild(tagPrefix, getNVR(build, artifacts));
                 }
             }catch(CausewayException ex){
-                Logger.getLogger(PncImportControllerImpl.class.getName()).log(Level.SEVERE, "Failed to import build.", ex);
+                log.error("Failed to import build " + build.getId() + ".", ex);
                 importResult = new BuildImportResultRest();
                 importResult.setBuildRecordId(Integer.valueOf(build.getId()));
                 importResult.setErrorMessage(ex.getMessage());
@@ -185,9 +185,10 @@ public class PncImportControllerImpl implements PncImportController {
         }
         return builds;
     }
-    
+
     private BuildImportResultRest importBuild(Build build, String username, BuildArtifacts artifacts) throws CausewayException {
         BrewNVR nvr = getNVR(build, artifacts);
+        log.info("Processing PNC build {} as {}.", build.getId(), nvr.getNVR());
         BrewBuild brewBuild = brewClient.findBrewBuildOfNVR(nvr);
         if (brewBuild != null) {
             // FIXME clarify behavior - if the build already exists in brew log as successful import ?
@@ -197,6 +198,7 @@ public class PncImportControllerImpl implements PncImportController {
             ret.setBuildRecordId(Integer.valueOf(build.getId()));
             ret.setStatus(BuildImportStatus.SUCCESSFUL); // TODO: replace with EXISTING?
 
+            log.info("Build {} was already imported with id {}.", nvr.getNVR(), brewBuild.getId());
             return ret;
         }
 
@@ -215,6 +217,7 @@ public class PncImportControllerImpl implements PncImportController {
             buildResult.setBuildRecordId(Integer.valueOf(build.getId()));
             buildResult.setStatus(BuildImportStatus.SUCCESSFUL);
             buildResult.setErrorMessage("Build doesn't contain any artifacts to import, skipping.");
+            log.info("PNC build {} doesn't contain any artifacts to import, skipping.", build.getId());
         } else {
             String log = pncClient.getBuildLog(Integer.valueOf(build.getId()));
             KojiImport kojiImport = translator.translate(nvr, build, artifacts, log, username);

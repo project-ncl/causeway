@@ -29,7 +29,6 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
 import java.io.Closeable;
-import java.util.logging.Logger;
 
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
@@ -43,8 +42,6 @@ import com.redhat.red.build.koji.config.SimpleKojiConfigBuilder;
 public class CausewayProducer
         implements Closeable
 {
-
-    private final Logger logger = Logger.getLogger(CausewayProducer.class.getName());
 
     private final CausewayConfig config;
 
