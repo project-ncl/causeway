@@ -20,7 +20,7 @@ import org.jboss.pnc.causeway.rest.CallbackTarget;
 import org.jboss.pnc.causeway.rest.model.Build;
 import org.jboss.pnc.causeway.rest.model.BuiltArtifact;
 import org.jboss.pnc.causeway.rest.model.TaggedBuild;
-import org.jboss.pnc.causeway.rest.model.Logfile; 
+import org.jboss.pnc.causeway.rest.model.Logfile;
 import org.jboss.pnc.causeway.rest.model.response.OperationStatus;
 import org.jboss.pnc.causeway.rest.model.response.UntagResultRest;
 import org.jboss.pnc.causeway.rest.model.response.UntagResultRest.UntagResultRestBuilder;
@@ -41,8 +41,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageMissingTag;
 
@@ -52,9 +51,8 @@ import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageMissingT
  */
 @Stateless
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+@Slf4j
 public class ImportControllerImpl implements ImportController {
-
-    private final Logger logger = Logger.getLogger(ImportControllerImpl.class.getName());
 
     private static final String METRICS_IMPORT_BASE = "causeway.import.build";
     private static final String METRICS_UNTAG_BASE = "causeway.untag.build";
@@ -87,7 +85,7 @@ public class ImportControllerImpl implements ImportController {
     @Override
     @Asynchronous
     public void importBuild(Build build, CallbackTarget callback, String username) {
-        logger.log(Level.INFO, "Importing external build {0} to tag {1}", new Object[]{build.getExternalBuildID(), build.getTagPrefix()});
+        log.info("Importing external build {} to tag {}.", build.getExternalBuildID(), build.getTagPrefix());
 
         MetricRegistry registry = metricsConfiguration.getMetricRegistry();
         Meter meter = registry.meter(METRICS_IMPORT_BASE + METRICS_METER);
@@ -106,13 +104,13 @@ public class ImportControllerImpl implements ImportController {
             response.status(BuildPushStatus.SUCCESS);
             response.log(result.getMessage());
         } catch (CausewayFailure ex) {
-            logger.log(Level.SEVERE, "Failed to import build.", ex);
+            log.error("Failed to import build.", ex);
             response.status(BuildPushStatus.FAILED);
             response.artifactImportErrors(ex.getArtifactErrors());
             response.log(getMessageOrStacktrace(ex));
             errors.mark();
         } catch (CausewayException | RuntimeException ex) {
-            logger.log(Level.SEVERE, "Error while importing build.", ex);
+            log.error("Error while importing build.", ex);
             response.status(BuildPushStatus.SYSTEM_ERROR);
             response.log(getMessageOrStacktrace(ex));
             errors.mark();
@@ -126,7 +124,7 @@ public class ImportControllerImpl implements ImportController {
     @Override
     @Asynchronous
     public void untagBuild(TaggedBuild build, CallbackTarget callback) {
-        logger.log(Level.INFO, "Untaging build {0} from tag {1}", new Object[]{build.getBrewBuildId(), build.getTagPrefix()});
+        log.info("Untaging build {} from tag {}.", build.getBrewBuildId(), build.getTagPrefix());
 
         MetricRegistry registry = metricsConfiguration.getMetricRegistry();
         Meter meter = registry.meter(METRICS_UNTAG_BASE + METRICS_METER);
@@ -144,12 +142,12 @@ public class ImportControllerImpl implements ImportController {
             response.log("Brew build " + build.getBrewBuildId() + " untaged from tag " + build.getTagPrefix());
             response.status(OperationStatus.SUCCESS);
         } catch (CausewayFailure ex) {
-            logger.log(Level.SEVERE, "Failed to untag build.", ex);
+            log.error("Failed to untag build.", ex);
             response.status(OperationStatus.FAILED);
             response.log(getMessageOrStacktrace(ex));
             errors.mark();
         } catch (CausewayException | RuntimeException ex) {
-            logger.log(Level.SEVERE, "Error while untaging build.", ex);
+            log.error("Error while untaging build.", ex);
             response.status(OperationStatus.SYSTEM_ERROR);
             response.log(getMessageOrStacktrace(ex));
             errors.mark();
@@ -181,6 +179,7 @@ public class ImportControllerImpl implements ImportController {
             buildImported = true;
             message = "Build imported with id ";
         } else {
+            log.info("Build {} was already imported with id {}.", nvr.getNVR(), brewBuild.getId());
             message = "Build was already imported with id ";
         }
 
@@ -228,15 +227,15 @@ public class ImportControllerImpl implements ImportController {
 
     private <T> void respond(CallbackTarget callback, T responseEntity) {
         if (callback == null) {
-            logger.log(Level.INFO, "Not sending callback.");
+            log.info("Not sending callback.");
             return;
         }
-        logger.log(Level.INFO, "Will send callback to {0}.", callback.getUrl());
+        log.info("Sending callback to {}.", callback.getUrl());
         ResteasyWebTarget target = restClient.target(callback.getUrl());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
         callback.getHeaders().forEach(request::header);
         Response response = request.post(Entity.entity(responseEntity, MediaType.APPLICATION_JSON_TYPE));
-        logger.log(Level.INFO, "Callback response: {0} - {1}", new Object[]{response.getStatusInfo(), response.readEntity(String.class)});
+        log.debug("Callback response: {} - {}.", response.getStatusInfo(), response.readEntity(String.class));
     }
 
     private void untagBuild(int brewBuildId, String tagPrefix) throws CausewayException {

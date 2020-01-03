@@ -26,8 +26,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
@@ -35,6 +34,7 @@ import java.util.logging.Logger;
  */
 @ApplicationScoped
 @Deprecated
+@Slf4j
 public class BPMClientImpl implements BPMClient {
     private final ResteasyClient client;
 
@@ -43,28 +43,28 @@ public class BPMClientImpl implements BPMClient {
     }
 
     private synchronized void send(String url, BrewPushMilestoneResult result){
-        Logger.getLogger(BPMClientImpl.class.getName()).log(Level.INFO, "Will send callback to {0}.", url);
+        log.info("Will send callback to {}.", url);
         ResteasyWebTarget target = client.target(url);
         target.request(MediaType.APPLICATION_JSON).post(Entity.entity(result, MediaType.APPLICATION_JSON_TYPE));
     }
 
     @Override
     public void success(String url, String callbackId, MilestoneReleaseResultRest result) {
-        Logger.getLogger(BPMClientImpl.class.getName()).log(Level.INFO, "Import of milestone {0} ended with success.", result.getMilestoneId());
+        log.info("Import of milestone {} ended with success.", result.getMilestoneId());
         Callback callback = new Callback(callbackId, 200);
         send(url, new BrewPushMilestoneResult(result, callback));
     }
-    
+
     @Override
     public void error(String url, String callbackId, MilestoneReleaseResultRest result) {
-        Logger.getLogger(BPMClientImpl.class.getName()).log(Level.INFO, "Import of milestone {0} ended with error.", result.getMilestoneId());
+        log.info("Import of milestone {} ended with error.", result.getMilestoneId());
         Callback callback = new Callback(callbackId, 418);
         send(url, new BrewPushMilestoneResult(result, callback));
     }
 
     @Override
     public void failure(String url, String callbackId, MilestoneReleaseResultRest result) {
-        Logger.getLogger(BPMClientImpl.class.getName()).log(Level.INFO, "Import of milestone {0} ended with failure.", result.getMilestoneId());
+        log.info("Import of milestone {} ended with failure.", result.getMilestoneId());
         Callback callback = new Callback(callbackId, 500);
         send(url, new BrewPushMilestoneResult(result, callback));
     }

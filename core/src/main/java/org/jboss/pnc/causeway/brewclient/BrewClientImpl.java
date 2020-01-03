@@ -38,13 +38,12 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
+@Slf4j
 public class BrewClientImpl implements BrewClient {
 
-    private final Logger logger = Logger.getLogger(BrewClientImpl.class.getName());
     private static final String KOJI_COMMUNICATION_FAILURE = "Failure while communicating with Koji: ";
 
     public static final String BUILD_TAG_SUFIX = "-candidate";
@@ -121,6 +120,7 @@ public class BrewClientImpl implements BrewClient {
 
     @Override
     public void tagBuild(String tag, BrewNVR nvr) throws CausewayException {
+        log.info("Applying tag {} on build {}.", tag, nvr.getNVR());
         KojiSessionInfo session = login();
         try {
             koji.addPackageToTag(tag, nvr.getKojiName(), session);
@@ -140,6 +140,7 @@ public class BrewClientImpl implements BrewClient {
 
     @Override
     public void untagBuild(String tag, BrewNVR nvr) throws CausewayException {
+        log.info("Removing tag {} from build {}.", tag, nvr.getNVR());
         KojiSessionInfo session = login();
         try {
             koji.untagBuild(tag + BUILD_TAG_SUFIX, nvr.getNVR(), session);
@@ -151,6 +152,7 @@ public class BrewClientImpl implements BrewClient {
 
     @Override
     public BuildImportResultRest importBuild(BrewNVR nvr, int buildRecordId, KojiImport kojiImport, ImportFileGenerator importFiles) throws CausewayException {
+        log.info("Importing build {}.", nvr.getNVR());
         BuildImportResultRest ret = new BuildImportResultRest();
         ret.setBuildRecordId(buildRecordId);
         ret.setStatus(BuildImportStatus.SUCCESSFUL);
@@ -176,6 +178,7 @@ public class BrewClientImpl implements BrewClient {
                 ret.setBrewBuildUrl(getBuildUrl(bi.getId()));
             }
 
+            log.info("Build {} import status: {}.", nvr.getNVR(), ret.getStatus());
             return ret;
         } catch (KojiClientException ex) {
             throw new CausewayException(KOJI_COMMUNICATION_FAILURE + ex.getMessage(), ex);
@@ -214,7 +217,7 @@ public class BrewClientImpl implements BrewClient {
             for (Map.Entry<String, KojijiErrorInfo> e : kojiErrors.entrySet()) {
                 Integer artifactId = importFiles.getId(e.getKey());
                 if(artifactId == null) {
-                    logger.log(Level.SEVERE, "Artifact id is null for path {0}. This shouldn't happen.", e.getKey());
+                    log.error("Artifact id is null for path {}. This shouldn't happen.", e.getKey());
                     artifactId = -1;
                 }
                 ArtifactImportError importError = ArtifactImportError.builder()
@@ -222,7 +225,7 @@ public class BrewClientImpl implements BrewClient {
                         .errorMessage(e.getValue().getError().getMessage())
                         .build();
                 importErrors.add(importError);
-                logger.log(Level.WARNING, "Failed to import.", e.getValue());
+                log.warn("Failed to import: {}", e.getValue());
             }
         }
         Map<Integer, String> importerErrors = importFiles.getErrors();
@@ -233,7 +236,7 @@ public class BrewClientImpl implements BrewClient {
                         .errorMessage(e.getValue())
                         .build();
                 importErrors.add(importError);
-                logger.log(Level.WARNING, "Failed to import: {0}", e.getValue());
+                log.warn("Failed to import: {}", e.getValue());
             }
         }
         return importErrors;

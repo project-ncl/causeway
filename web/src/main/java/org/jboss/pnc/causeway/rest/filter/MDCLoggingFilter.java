@@ -17,8 +17,6 @@
  */
 package org.jboss.pnc.causeway.rest.filter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import javax.ws.rs.container.ContainerRequestContext;
@@ -30,8 +28,6 @@ import org.jboss.pnc.causeway.util.MDCUtils;
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
 public class MDCLoggingFilter implements ContainerRequestFilter {
-
-    private Logger logger = LoggerFactory.getLogger(MDCLoggingFilter.class);
 
     @Override
     public void filter(ContainerRequestContext containerRequestContext) throws IOException {
