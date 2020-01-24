@@ -46,17 +46,15 @@ import static org.jboss.pnc.rest.configuration.SwaggerConstants.NOT_FOUND_CODE;
  */
 @ApplicationScoped
 @Deprecated
-public class PncClientImpl implements PncClient
-{
+public class PncClientImpl implements PncClient {
 
     private final ProductMilestoneClient milestoneClient;
     private final BuildClient buildClient;
 
     @Inject
-    public PncClientImpl(CausewayConfig config)
-    {
+    public PncClientImpl(CausewayConfig config) {
         this.milestoneClient = new ProductMilestoneClient(config.getPncClientConfig());
-        this.buildClient= new BuildClient(config.getPncClientConfig());
+        this.buildClient = new BuildClient(config.getPncClientConfig());
     }
 
     @Override
@@ -65,27 +63,31 @@ public class PncClientImpl implements PncClient
         try {
             milestone = milestoneClient.getSpecific(String.valueOf(milestoneId));
         } catch (RemoteResourceNotFoundException e) {
-            throw new CausewayException("Can not read tag because PNC haven't managed to find product milestone with id " + milestoneId + " - response " + e.getStatus(), e);
+            throw new CausewayException("Can not read tag because PNC haven't managed to find product milestone with id "
+                    + milestoneId + " - response " + e.getStatus(), e);
         } catch (RemoteResourceException e) {
-            throw new CausewayException("Can not read tag because PNC responded with an error when getting product milestone " + milestoneId + " - response " + e.getStatus(), e);
+            throw new CausewayException("Can not read tag because PNC responded with an error when getting product milestone "
+                    + milestoneId + " - response " + e.getStatus(), e);
         } catch (ClientException e) {
             throw new CausewayException("Unknown error - message = " + e.getMessage(), e);
         }
         return milestone.getProductVersion().getAttributes().get(Attributes.BREW_TAG_PREFIX);
     }
 
-
     @Override
     public Collection<Build> findBuildsOfProductMilestone(int milestoneId) throws CausewayException {
         Collection<Build> builds = new HashSet<>();
         try {
-            RemoteCollection<Build> buildPages = milestoneClient.getBuilds(String.valueOf(milestoneId), new BuildsFilterParameters(), Optional.empty(), Optional.of("status==SUCCESS"));
+            RemoteCollection<Build> buildPages = milestoneClient.getBuilds(String.valueOf(milestoneId),
+                    new BuildsFilterParameters(), Optional.empty(), Optional.of("status==SUCCESS"));
             for (Build build : buildPages) {
-                if (build.getStatus().equals(BuildStatus.SUCCESS));
-                    builds.add(build);
+                if (build.getStatus().equals(BuildStatus.SUCCESS))
+                    ;
+                builds.add(build);
             }
         } catch (RemoteResourceException e) {
-            throw new CausewayException("Can not read builds for product milestone " + milestoneId + " - response " + e.getStatus(), e);
+            throw new CausewayException(
+                    "Can not read builds for product milestone " + milestoneId + " - response " + e.getStatus(), e);
         }
         return builds;
     }
@@ -95,11 +97,13 @@ public class PncClientImpl implements PncClient
         Optional<InputStream> log;
         try {
             log = buildClient.getBuildLogs(String.valueOf(buildId));
-            InputStream logInput =  log.orElseThrow(() -> new CausewayException("Build log for Build " + buildId + " is empty - response " + NOT_FOUND_CODE));
+            InputStream logInput = log.orElseThrow(
+                    () -> new CausewayException("Build log for Build " + buildId + " is empty - response " + NOT_FOUND_CODE));
             Scanner s = new Scanner(logInput).useDelimiter("\\A");
             return s.hasNext() ? s.next() : "";
         } catch (RemoteResourceException e) {
-            throw new CausewayException("Can not read build log of build " + buildId + " because PNC responded with an error - response " + e.getStatus(), e);
+            throw new CausewayException("Can not read build log of build " + buildId
+                    + " because PNC responded with an error - response " + e.getStatus(), e);
         }
     }
 
@@ -117,20 +121,16 @@ public class PncClientImpl implements PncClient
     }
 
     private PncArtifact toPncArtifact(Artifact artifact) {
-        
+
         String deployPath = artifact.getDeployPath();
-        if(deployPath.startsWith("/"))
+        if (deployPath.startsWith("/"))
             deployPath = deployPath.substring(1);
-        return new PncArtifact(Integer.valueOf(artifact.getId()),
-                artifact.getIdentifier(),
-                deployPath,
-                artifact.getMd5(),
-                artifact.getDeployUrl(),
-                artifact.getSize() == null ? 1 : artifact.getSize(),
-                artifact.getArtifactQuality());
+        return new PncArtifact(Integer.valueOf(artifact.getId()), artifact.getIdentifier(), deployPath, artifact.getMd5(),
+                artifact.getDeployUrl(), artifact.getSize() == null ? 1 : artifact.getSize(), artifact.getArtifactQuality());
     }
 
-    private Collection<PncArtifact> getArtifacts(Integer buildId, IntFunctionWithRemoteException<RemoteCollection<Artifact>> query) throws CausewayException {
+    private Collection<PncArtifact> getArtifacts(Integer buildId,
+            IntFunctionWithRemoteException<RemoteCollection<Artifact>> query) throws CausewayException {
         Collection<PncArtifact> pncArtifacts = new HashSet<>();
         try {
             RemoteCollection<Artifact> artifacts = query.get(String.valueOf(buildId));
@@ -146,8 +146,8 @@ public class PncClientImpl implements PncClient
     /**
      * Special IntFunction that throws {@code org.jboss.pnc.client.RemoteResourceException}
      *
-     * It was created so that method {@code getArtifacts} could catch and handle the exception, otherwise it would have
-     * to be handled in higher level method.
+     * It was created so that method {@code getArtifacts} could catch and handle the exception, otherwise it would have to be
+     * handled in higher level method.
      *
      * @param <T> Return type of the Function
      */

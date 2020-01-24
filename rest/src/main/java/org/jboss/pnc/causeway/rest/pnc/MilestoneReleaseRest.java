@@ -23,9 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
- * Author: Michal Szynkiewicz, michal.l.szynkiewicz@gmail.com
- * Date: 8/24/16
- * Time: 3:42 PM
+ * Author: Michal Szynkiewicz, michal.l.szynkiewicz@gmail.com Date: 8/24/16 Time: 3:42 PM
  */
 @Data
 @Deprecated

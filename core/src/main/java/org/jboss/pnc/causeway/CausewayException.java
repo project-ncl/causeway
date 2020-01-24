@@ -22,9 +22,7 @@ import java.text.MessageFormat;
 /**
  * Created by jdcasey on 11/10/15.
  */
-public class CausewayException
-    extends Exception
-{
+public class CausewayException extends Exception {
     private static final long serialVersionUID = 1L;
 
     private Object[] params;
@@ -50,14 +48,13 @@ public class CausewayException
             } else {
                 final String original = super.getMessage();
                 try {
-                    formattedMessage = String.format(
-                            format.replaceAll("\\{\\}", "%s"), params);
+                    formattedMessage = String.format(format.replaceAll("\\{\\}", "%s"), params);
                 } catch (final Error | Exception e) {
                 }
 
                 if (formattedMessage == null || original == formattedMessage) {
                     try {
-                        formattedMessage = MessageFormat.format( format, params );
+                        formattedMessage = MessageFormat.format(format, params);
                     } catch (final Error | Exception e) {
                         formattedMessage = format;
                         throw e;
@@ -70,11 +67,9 @@ public class CausewayException
     }
 
     /**
-     * Stringify all parameters pre-emptively on serialization, to prevent
-     * {@link NotSerializableException}. Since all parameters are used in
-     * {@link String#format} or {@link MessageFormat#format}, flattening them to
-     * strings is an acceptable way to provide this functionality without making
-     * the use of {@link Serializable} viral.
+     * Stringify all parameters pre-emptively on serialization, to prevent {@link NotSerializableException}. Since all
+     * parameters are used in {@link String#format} or {@link MessageFormat#format}, flattening them to strings is an acceptable
+     * way to provide this functionality without making the use of {@link Serializable} viral.
      */
     private Object writeReplace() {
         final Object[] newParams = new Object[params.length];

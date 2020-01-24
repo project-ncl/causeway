@@ -42,7 +42,7 @@ public class BPMClientImpl implements BPMClient {
         client = new ResteasyClientBuilder().connectionPoolSize(4).build();
     }
 
-    private synchronized void send(String url, BrewPushMilestoneResult result){
+    private synchronized void send(String url, BrewPushMilestoneResult result) {
         log.info("Will send callback to {}.", url);
         ResteasyWebTarget target = client.target(url);
         target.request(MediaType.APPLICATION_JSON).post(Entity.entity(result, MediaType.APPLICATION_JSON_TYPE));

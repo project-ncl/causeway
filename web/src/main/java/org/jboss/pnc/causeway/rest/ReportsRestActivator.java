@@ -15,14 +15,12 @@
  */
 package org.jboss.pnc.causeway.rest;
 
-
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
 import java.util.HashSet;
 import java.util.Set;
 import org.jboss.pnc.causeway.rest.filter.MDCLoggingFilter;
-
 
 /**
  *
@@ -41,6 +39,7 @@ public class ReportsRestActivator extends Application {
 
     /**
      * Add all JAX-RS classes here to get activated!
+     * 
      * @param resources
      */
     public void addProjectResources(Set<Class<?>> resources) {

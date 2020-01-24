@@ -30,12 +30,9 @@ import java.util.Set;
  * @author Honza Brázdil &lt;janinko.g@gmail.com&gt;
  */
 @Data
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY,
-        property = "@buildType")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "@buildType")
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonSubTypes(
-        {@JsonSubTypes.Type(MavenBuild.class),
-        @JsonSubTypes.Type(NpmBuild.class)})
+@JsonSubTypes({ @JsonSubTypes.Type(MavenBuild.class), @JsonSubTypes.Type(NpmBuild.class) })
 public abstract class Build {
 
     @NonNull
@@ -67,10 +64,9 @@ public abstract class Build {
 
     // We use IDE generated constructor instead of lombok.AllArgsConstrucotr because of nicer
     // parametr names.
-    protected Build(String buildName, String buildVersion, String externalBuildSystem,
-            int externalBuildID, String externalBuildURL, Date startTime, Date endTime,
-            String scmURL, String scmRevision, BuildRoot buildRoot, Set<Logfile> logs,
-            Set<Dependency> dependencies, Set<BuiltArtifact> builtArtifacts, String tagPrefix) {
+    protected Build(String buildName, String buildVersion, String externalBuildSystem, int externalBuildID,
+            String externalBuildURL, Date startTime, Date endTime, String scmURL, String scmRevision, BuildRoot buildRoot,
+            Set<Logfile> logs, Set<Dependency> dependencies, Set<BuiltArtifact> builtArtifacts, String tagPrefix) {
         this.buildName = Objects.requireNonNull(buildName);
         this.buildVersion = Objects.requireNonNull(buildVersion);
         this.externalBuildSystem = Objects.requireNonNull(externalBuildSystem);

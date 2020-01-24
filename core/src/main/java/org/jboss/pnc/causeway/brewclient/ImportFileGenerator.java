@@ -44,6 +44,7 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
 
     /**
      * Adds artifact URL to the generator.
+     * 
      * @param id External ID of the artifact.
      * @param url URL of the artifact.
      * @param filePath Deploy path for the artifact.
@@ -60,6 +61,7 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
 
     /**
      * Returns external ID of artifact given it's deploy path.
+     * 
      * @param path Deploy path of the artifact.
      * @return External ID of the artifact or null if aritfact not present.
      */
@@ -90,7 +92,8 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
                 MDCUtils.headersFromContext().forEach(connection::addRequestProperty);
                 connection.setRequestMethod("HEAD");
                 if (connection.getResponseCode() != 200) {
-                    fail(artifact, "Failed to obtain artifact (status " + connection.getResponseCode() + " " + connection.getResponseMessage() + ")");
+                    fail(artifact, "Failed to obtain artifact (status " + connection.getResponseCode() + " "
+                            + connection.getResponseMessage() + ")");
                     return null;
                 }
                 String contentLength = connection.getHeaderField("Content-Length");

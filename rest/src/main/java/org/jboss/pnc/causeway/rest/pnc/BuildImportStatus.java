@@ -18,9 +18,7 @@
 package org.jboss.pnc.causeway.rest.pnc;
 
 /**
- * Author: Michal Szynkiewicz, michal.l.szynkiewicz@gmail.com
- * Date: 8/25/16
- * Time: 2:22 PM
+ * Author: Michal Szynkiewicz, michal.l.szynkiewicz@gmail.com Date: 8/25/16 Time: 2:22 PM
  */
 @Deprecated
 public enum BuildImportStatus {
@@ -32,6 +30,5 @@ public enum BuildImportStatus {
     /**
      * some of the artifacts failed to import
      */
-    FAILED,
-    SUCCESSFUL
+    FAILED, SUCCESSFUL
 }

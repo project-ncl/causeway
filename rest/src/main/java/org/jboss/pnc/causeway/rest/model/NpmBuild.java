@@ -29,14 +29,12 @@ public class NpmBuild extends Build {
     private final String version;
 
     @Builder
-    private NpmBuild(String name, String version, String buildName,
-            String buildVersion, String externalBuildSystem, int externalBuildID,
-            String externalBuildURL, Date startTime, Date endTime, String scmURL,
-            String scmRevision, BuildRoot buildRoot, Set<Logfile> logs,
-            Set<Dependency> dependencies, Set<BuiltArtifact> builtArtifacts, String tagPrefix) {
-        super(buildName, buildVersion, externalBuildSystem, externalBuildID, externalBuildURL,
-                startTime, endTime, scmURL, scmRevision, buildRoot, logs, dependencies,
-                builtArtifacts, tagPrefix);
+    private NpmBuild(String name, String version, String buildName, String buildVersion, String externalBuildSystem,
+            int externalBuildID, String externalBuildURL, Date startTime, Date endTime, String scmURL, String scmRevision,
+            BuildRoot buildRoot, Set<Logfile> logs, Set<Dependency> dependencies, Set<BuiltArtifact> builtArtifacts,
+            String tagPrefix) {
+        super(buildName, buildVersion, externalBuildSystem, externalBuildID, externalBuildURL, startTime, endTime, scmURL,
+                scmRevision, buildRoot, logs, dependencies, builtArtifacts, tagPrefix);
         this.name = Objects.requireNonNull(name);
         this.version = version;
     }

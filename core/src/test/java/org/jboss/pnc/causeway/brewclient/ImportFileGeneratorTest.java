@@ -49,33 +49,16 @@ public class ImportFileGeneratorTest {
 
     @Before
     public void stubArtifacts() {
-        stubFor(get(urlEqualTo(FIRST_LOCATION))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "text/plain")
-                        .withHeader("Content-Length", "14")
-                        .withBody(FIRST_ARTIFACT)));
-        stubFor(head(urlEqualTo(FIRST_LOCATION))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "text/plain")
-                        .withHeader("Content-Length", "14")));
-        stubFor(get(urlEqualTo(SECOND_LOCATION))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "text/plain")
-                        .withHeader("Content-Length", "23")
-                        .withBody(SECOND_ARTIFACT)));
-        stubFor(head(urlEqualTo(SECOND_LOCATION))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "text/plain")
-                        .withHeader("Content-Length", "23")));
+        stubFor(get(urlEqualTo(FIRST_LOCATION)).willReturn(aResponse().withStatus(200).withHeader("Content-Type", "text/plain")
+                .withHeader("Content-Length", "14").withBody(FIRST_ARTIFACT)));
+        stubFor(head(urlEqualTo(FIRST_LOCATION)).willReturn(
+                aResponse().withStatus(200).withHeader("Content-Type", "text/plain").withHeader("Content-Length", "14")));
+        stubFor(get(urlEqualTo(SECOND_LOCATION)).willReturn(aResponse().withStatus(200).withHeader("Content-Type", "text/plain")
+                .withHeader("Content-Length", "23").withBody(SECOND_ARTIFACT)));
+        stubFor(head(urlEqualTo(SECOND_LOCATION)).willReturn(
+                aResponse().withStatus(200).withHeader("Content-Type", "text/plain").withHeader("Content-Length", "23")));
         stubFor(get(urlEqualTo(LOG_LOCATION))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "text/plain")
-                        .withBody(BUILD_LOG)));
+                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "text/plain").withBody(BUILD_LOG)));
     }
 
     @Test

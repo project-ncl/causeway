@@ -40,8 +40,7 @@ public class BuildImportRequest {
     private final Build build;
 
     @JsonCreator
-    public BuildImportRequest(@JsonProperty("callback") CallbackTarget callback,
-            @JsonProperty("build") Build build) {
+    public BuildImportRequest(@JsonProperty("callback") CallbackTarget callback, @JsonProperty("build") Build build) {
         this.callback = Objects.requireNonNull(callback, "Callback must be specified.");
         this.build = Objects.requireNonNull(build, "Build information must be specified.");
     }
