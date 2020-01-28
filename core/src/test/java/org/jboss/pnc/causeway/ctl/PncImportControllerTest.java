@@ -118,7 +118,7 @@ public class PncImportControllerTest {
 
     @Mock
     public BuildTranslatorImpl translator;
-    
+
     @InjectMocks
     private PncImportControllerImpl importController;
 
@@ -133,14 +133,14 @@ public class PncImportControllerTest {
         Histogram histogram = mock(Histogram.class);
         when(metricRegistry.register(anyString(), any(Histogram.class))).thenReturn(histogram);
         when(metricRegistry.histogram(anyString())).thenReturn(histogram);
-        //importController = new PncImportControllerImpl(pncClient, brewClient, bpmClient, translator, causewayConfig);
+        // importController = new PncImportControllerImpl(pncClient, brewClient, bpmClient, translator, causewayConfig);
     }
 
-    private void mockPNC(Integer milestoneId, BuildType buildType) throws CausewayException{
+    private void mockPNC(Integer milestoneId, BuildType buildType) throws CausewayException {
         mockPNC(milestoneId, generator.nextInt(), buildType);
     }
-    
-    private void mockPNC(Integer milestoneId, Integer buildId, BuildType buildType) throws CausewayException{
+
+    private void mockPNC(Integer milestoneId, Integer buildId, BuildType buildType) throws CausewayException {
         Integer id = generator.nextInt();
 
         Environment env = createEnvironment(buildType);
@@ -168,7 +168,7 @@ public class PncImportControllerTest {
         // Mock BuildEnvironment
         Map<String, String> attrs = new HashMap();
         attrs.put("OS", "Fedora25");
-        switch (buildType){
+        switch (buildType) {
             case MVN:
             case GRADLE:
                 attrs.put("JDK", "1.8");
@@ -177,27 +177,15 @@ public class PncImportControllerTest {
                 attrs.put("NPM", "5");
         }
 
-        return Environment.builder()
-                .attributes(attrs)
-                .systemImageType(SystemImageType.DOCKER_IMAGE)
-                .build();
+        return Environment.builder().attributes(attrs).systemImageType(SystemImageType.DOCKER_IMAGE).build();
     }
 
     private BuildConfigurationRevision createBuildConfiguration(Integer id, Environment env, BuildType buildType) {
 
-        SCMRepository scm = SCMRepository.builder()
-                .id(String.valueOf(1))
-                .internalUrl("http://repo.url")
-                .build();
+        SCMRepository scm = SCMRepository.builder().id(String.valueOf(1)).internalUrl("http://repo.url").build();
 
-        return BuildConfigurationRevision.builder()
-                .id(String.valueOf(id))
-                .rev(1)
-                .scmRepository(scm)
-                .buildType(buildType)
-                .scmRevision("r21345")
-                .environment(env)
-                .build();
+        return BuildConfigurationRevision.builder().id(String.valueOf(id)).rev(1).scmRepository(scm).buildType(buildType)
+                .scmRevision("r21345").environment(env).build();
     }
 
     private void mockBrew() throws CausewayException {
@@ -217,7 +205,7 @@ public class PncImportControllerTest {
         // Test setup
         mockPNC(milestoneId, BuildType.MVN);
         mockBrew();
-        
+
         // Mock existing Brew build
         doReturn(new BrewBuild(11, NVR)).when(brewClient).findBrewBuildOfNVR(eq(NVR));
 
@@ -239,8 +227,10 @@ public class PncImportControllerTest {
         mockTranslator();
 
         // Mock Brew import
-        BuildImportResultRest buildImportResultRest = new BuildImportResultRest(buildId, 11, "https://koji.myco.com/brew/buildinfo?buildID=11", BuildImportStatus.SUCCESSFUL, null, null);
-        doReturn(buildImportResultRest).when(brewClient).importBuild(eq(NVR), eq(buildId), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
+        BuildImportResultRest buildImportResultRest = new BuildImportResultRest(buildId, 11,
+                "https://koji.myco.com/brew/buildinfo?buildID=11", BuildImportStatus.SUCCESSFUL, null, null);
+        doReturn(buildImportResultRest).when(brewClient).importBuild(eq(NVR), eq(buildId), same(KOJI_IMPORT),
+                same(IMPORT_FILE_GENERATOR));
 
         // Run import
         importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
@@ -266,7 +256,7 @@ public class PncImportControllerTest {
 
         // Verify
         MilestoneReleaseResultRest result = verifyFailure();
-        //        that user gets the exception message
+        // that user gets the exception message
         assertNotNull(result.getErrorMessage());
         assertTrue("Error message doesn't contain expected data", result.getErrorMessage().contains(exceptionMessage));
     }
@@ -310,15 +300,16 @@ public class PncImportControllerTest {
 
         // Verify
         MilestoneReleaseResultRest result = verifyFailure();
-        //        that the build is in the result with error
+        // that the build is in the result with error
         assertNotNull(result.getBuilds());
         assertEquals(1, result.getBuilds().size());
         BuildImportResultRest buildImportResultRest = result.getBuilds().get(0);
         assertEquals(buildId, buildImportResultRest.getBuildRecordId());
         assertEquals(BuildImportStatus.ERROR, buildImportResultRest.getStatus());
-        //        that user gets the exception message
+        // that user gets the exception message
         assertNotNull(buildImportResultRest.getErrorMessage());
-        assertTrue("Build error message doesn't contain expected data", buildImportResultRest.getErrorMessage().contains(exceptionMessage));
+        assertTrue("Build error message doesn't contain expected data",
+                buildImportResultRest.getErrorMessage().contains(exceptionMessage));
     }
 
     @Test
@@ -333,33 +324,34 @@ public class PncImportControllerTest {
         mockTranslator();
 
         List<ArtifactImportError> artifactImportErrors = new ArrayList<>();
-        ArtifactImportError importError = ArtifactImportError.builder()
-                .artifactId(String.valueOf(123))
-                .errorMessage(errorMessage)
-                .build();
+        ArtifactImportError importError = ArtifactImportError.builder().artifactId(String.valueOf(123))
+                .errorMessage(errorMessage).build();
         artifactImportErrors.add(importError);
-        BuildImportResultRest buildImportResultRest = new BuildImportResultRest(buildId, 11, "https://koji.myco.com/brew/buildinfo?buildID=11", BuildImportStatus.FAILED, null, artifactImportErrors);
-        
-        doReturn(buildImportResultRest).when(brewClient).importBuild(eq(NVR), eq(buildId), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
+        BuildImportResultRest buildImportResultRest = new BuildImportResultRest(buildId, 11,
+                "https://koji.myco.com/brew/buildinfo?buildID=11", BuildImportStatus.FAILED, null, artifactImportErrors);
+
+        doReturn(buildImportResultRest).when(brewClient).importBuild(eq(NVR), eq(buildId), same(KOJI_IMPORT),
+                same(IMPORT_FILE_GENERATOR));
 
         // Run import
         importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
         MilestoneReleaseResultRest result = verifyFailure(ReleaseStatus.IMPORT_ERROR);
-        //        that the build is in the result with error
+        // that the build is in the result with error
         assertNotNull(result.getBuilds());
         assertEquals(1, result.getBuilds().size());
         BuildImportResultRest buildResult = result.getBuilds().get(0);
         assertEquals(buildId, buildResult.getBuildRecordId());
         assertEquals(BuildImportStatus.FAILED, buildResult.getStatus());
-        //        that the aritfact import error is present
+        // that the aritfact import error is present
         assertNotNull(buildImportResultRest.getErrors());
         assertEquals(1, buildImportResultRest.getErrors().size());
         ArtifactImportError resultImportError = buildImportResultRest.getErrors().get(0);
-        //        that user gets the exception message
+        // that user gets the exception message
         assertNotNull(resultImportError.getErrorMessage());
-        assertTrue("Build error message doesn't contain expected data", resultImportError.getErrorMessage().contains(errorMessage));
+        assertTrue("Build error message doesn't contain expected data",
+                resultImportError.getErrorMessage().contains(errorMessage));
     }
 
     @Test
@@ -381,7 +373,7 @@ public class PncImportControllerTest {
     }
 
     @Test
-    public void testGetNVR() throws IOException, CausewayException, ReflectiveOperationException{
+    public void testGetNVR() throws IOException, CausewayException, ReflectiveOperationException {
         Environment env = createEnvironment(BuildType.MVN);
         BuildConfigurationRevision bcar = createBuildConfiguration(1, env, BuildType.MVN);
         Build buildRecordRest = createBuildRecord(1, bcar, BREW_BUILD_NAME, BREW_BUILD_VERSION);
@@ -398,16 +390,16 @@ public class PncImportControllerTest {
         assertEquals("1.1.1.redhat_1", nvr.getVersion());
 
         buildRecordRest = createBuildRecord(1, bcar, null, null);
-        try{
+        try {
             importController.getNVR(buildRecordRest, buildArtifacts);
             fail("Expected CausewayException to be thrown.");
-        }catch(CausewayException ex){
+        } catch (CausewayException ex) {
             // ok
         }
     }
 
     @Test
-    public void testAutomaticVersionNPM() throws CausewayException{
+    public void testAutomaticVersionNPM() throws CausewayException {
         Environment env = createEnvironment(BuildType.NPM);
         BuildConfigurationRevision bcar = createBuildConfiguration(1, env, BuildType.NPM);
         Build build = createBuildRecord(1, bcar, BREW_BUILD_NAME, null);
@@ -419,6 +411,7 @@ public class PncImportControllerTest {
         assertEquals(BREW_BUILD_NAME, nvr.getName());
         assertEquals("0.1.18.redhat_1", nvr.getVersion());
     }
+
     private void verifySuccess() {
         ArgumentCaptor<MilestoneReleaseResultRest> resultArgument = ArgumentCaptor.forClass(MilestoneReleaseResultRest.class);
         verify(bpmClient).success(eq(CALLBACK_URL), eq(CALLBACK_ID), resultArgument.capture());
@@ -431,7 +424,7 @@ public class PncImportControllerTest {
     private MilestoneReleaseResultRest verifyFailure() {
         return verifyFailure(ReleaseStatus.SET_UP_ERROR);
     }
-    
+
     private MilestoneReleaseResultRest verifyFailure(ReleaseStatus expectedStatus) {
         ArgumentCaptor<MilestoneReleaseResultRest> resultArgument = ArgumentCaptor.forClass(MilestoneReleaseResultRest.class);
         verify(bpmClient).failure(eq(CALLBACK_URL), eq(CALLBACK_ID), resultArgument.capture());
@@ -442,58 +435,38 @@ public class PncImportControllerTest {
     }
 
     private static BuildArtifacts.PncArtifact createArtifact(Integer buildId) {
-        return new BuildArtifacts.PncArtifact(
-                buildId,
+        return new BuildArtifacts.PncArtifact(buildId,
                 "org.apache.geronimo.specs:geronimo-annotation_1.0_spec:pom:1.1.1.redhat-1",
-                "geronimo-annotation_1.0_spec-1.1.1.redhat-1.pom",
-                "bedf8af1b107b36c72f52009e6fcc768",
+                "geronimo-annotation_1.0_spec-1.1.1.redhat-1.pom", "bedf8af1b107b36c72f52009e6fcc768",
                 "http://ulozto.cz/api/hosted/"
                         + "build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/org/apache/geronimo/specs/geronimo-annotation_1.0_spec/1.1.1.redhat-1/geronimo-annotation_1.0_spec-1.1.1.redhat-1.pom",
-                13245,
-                ArtifactQuality.NEW
-        );
+                13245, ArtifactQuality.NEW);
     }
 
     private static BuildArtifacts.PncArtifact createNpmArtifact(Integer buildId) {
-        return new BuildArtifacts.PncArtifact(
-                buildId,
-                "async:0.1.18.redhat-1",
-                "async-0.1.18.redhat-1-wow-much-good.tar-gz",
+        return new BuildArtifacts.PncArtifact(buildId, "async:0.1.18.redhat-1", "async-0.1.18.redhat-1-wow-much-good.tar-gz",
                 "dsdfs1dfs6ads588few98ncv98465ew2",
-                "http://ulozto.cz/path/to/deploy/"
-                + "async/async-0.1.18.redhat-1-wow-much-good.tar-gz",
-                1337,
-                ArtifactQuality.NEW
-        );
+                "http://ulozto.cz/path/to/deploy/" + "async/async-0.1.18.redhat-1-wow-much-good.tar-gz", 1337,
+                ArtifactQuality.NEW);
     }
-    private Build createBuildRecord(Integer buildId,
-            BuildConfigurationRevision bcar,
-            String brewBuildName,
+
+    private Build createBuildRecord(Integer buildId, BuildConfigurationRevision bcar, String brewBuildName,
             String brewBuildVersion) {
-        User user = User.builder()
-                .id(String.valueOf(1))
-                .build();
+        User user = User.builder().id(String.valueOf(1)).build();
 
         Date submit = new Date();
         Date start = new Date(submit.getTime() + 1000L);
         Date end = new Date(start.getTime() + 100000L);
-        Map<String,String> attributes = new HashMap<>();
+        Map<String, String> attributes = new HashMap<>();
         if (brewBuildName != null) {
             attributes.put(BUILD_BREW_NAME, brewBuildName);
         }
         if (brewBuildVersion != null) {
             attributes.put(BUILD_BREW_VERSION, brewBuildVersion);
         }
-        Build buildRecord = Build.builder()
-                .id(String.valueOf(buildId))
-                .status(BuildStatus.SUCCESS)
-                .submitTime(submit.toInstant())
-                .startTime(start.toInstant())
-                .endTime(end.toInstant())
-                .user(user)
-                .attributes(attributes)
-                .buildConfigRevision(bcar)
-                .build();
+        Build buildRecord = Build.builder().id(String.valueOf(buildId)).status(BuildStatus.SUCCESS)
+                .submitTime(submit.toInstant()).startTime(start.toInstant()).endTime(end.toInstant()).user(user)
+                .attributes(attributes).buildConfigRevision(bcar).build();
         return buildRecord;
     }
 

@@ -21,7 +21,7 @@ import org.jboss.pnc.causeway.CausewayException;
  *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
-public class ConfiguratorException extends CausewayException{
+public class ConfiguratorException extends CausewayException {
 
     public ConfiguratorException(String format, Throwable cause, Object... params) {
         super(format, cause, params);

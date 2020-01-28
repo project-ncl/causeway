@@ -26,7 +26,7 @@ import javax.ws.rs.core.MediaType;
 public interface PncImportResource {
 
     @POST
-    @Path( "/milestone" )
+    @Path("/milestone")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Deprecated

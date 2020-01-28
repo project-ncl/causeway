@@ -20,6 +20,5 @@ package org.jboss.pnc.causeway.rest;
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
 public enum CallbackMethod {
-    POST,
-    PUT;
+    POST, PUT;
 }

@@ -36,9 +36,10 @@ public class ExternalLogImportFileGenerator extends ImportFileGenerator {
 
     /**
      * Add log url to the generator.
-     @param url Url of the log.
-     @param filePath Deploy path for the log.
-     @param size Size of the log file.
+     * 
+     * @param url Url of the log.
+     * @param filePath Deploy path for the log.
+     * @param size Size of the log file.
      */
     public void addLog(String url, String filePath, long size) throws MalformedURLException {
         URL artifactUrl = new URL(url);
@@ -51,7 +52,7 @@ public class ExternalLogImportFileGenerator extends ImportFileGenerator {
     }
 
     @Data
-    private static class Log{
+    private static class Log {
         private final URL url;
         private final String filePath;
         private final long size;

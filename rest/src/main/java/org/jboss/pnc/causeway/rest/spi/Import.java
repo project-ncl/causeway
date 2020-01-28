@@ -30,11 +30,11 @@ import javax.ws.rs.core.Response;
  * @author Honza Brázdil &lt;janinko.g@gmail.com&gt;
  */
 
-@Path( "/import" )
+@Path("/import")
 public interface Import {
-    
+
     @POST
-    @Path( "/build" )
+    @Path("/build")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response importBuild(BuildImportRequest request);
 

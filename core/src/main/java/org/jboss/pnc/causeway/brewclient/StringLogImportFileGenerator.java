@@ -56,7 +56,7 @@ public class StringLogImportFileGenerator extends ImportFileGenerator {
 
         @Override
         public Supplier<ImportFile> next() {
-            if (log != null &&!logGiven) {
+            if (log != null && !logGiven) {
                 logGiven = true;
                 byte[] bytes = log.getBytes();
                 return () -> new ImportFile("build.log", new ByteArrayInputStream(bytes), bytes.length);

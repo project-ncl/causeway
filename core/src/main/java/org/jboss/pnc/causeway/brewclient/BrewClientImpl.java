@@ -98,15 +98,15 @@ public class BrewClientImpl implements BrewClient {
 
     /**
      * Checks if the brew build is imported by PNC. If not, throws an exception.
+     * 
      * @throws CausewayException when the brew build is not imporeted by PNC.
      */
     private void checkPNCImportedBuild(KojiBuildInfo bi) throws CausewayException {
         final Map<String, Object> extra = bi.getExtra();
         Object buildSystem = extra == null ? null : extra.get(KojiJsonConstants.BUILD_SYSTEM);
         if (buildSystem == null || !BuildTranslatorImpl.PNC.equals(buildSystem)) {
-            throw new CausewayFailure("Found conflicting brew build " + bi.getId()
-                    + " (build doesn't have " + KojiJsonConstants.BUILD_SYSTEM + " set to "
-                    + BuildTranslatorImpl.PNC + ")");
+            throw new CausewayFailure("Found conflicting brew build " + bi.getId() + " (build doesn't have "
+                    + KojiJsonConstants.BUILD_SYSTEM + " set to " + BuildTranslatorImpl.PNC + ")");
         }
     }
 
@@ -127,11 +127,11 @@ public class BrewClientImpl implements BrewClient {
             koji.tagBuild(tag + BUILD_TAG_SUFIX, nvr.getNVR(), session);
         } catch (KojiClientException ex) {
             String msg = KOJI_COMMUNICATION_FAILURE;
-            if (ex.getMessage().contains("policy violation")){
+            if (ex.getMessage().contains("policy violation")) {
                 String userName = session.getUserInfo().getUserName();
-                msg += "This is most probably because of missing permisions. Ask RCM to add "
-                        + "permisions for user '" + userName + "' to add packages to tag '" + tag
-                        + "' and to tag builds into tag '" + tag + BUILD_TAG_SUFIX + "'. Cause: ";
+                msg += "This is most probably because of missing permisions. Ask RCM to add " + "permisions for user '"
+                        + userName + "' to add packages to tag '" + tag + "' and to tag builds into tag '" + tag
+                        + BUILD_TAG_SUFIX + "'. Cause: ";
             }
             throw new CausewayFailure(msg + ex.getMessage(), ex);
         }
@@ -151,7 +151,8 @@ public class BrewClientImpl implements BrewClient {
     }
 
     @Override
-    public BuildImportResultRest importBuild(BrewNVR nvr, int buildRecordId, KojiImport kojiImport, ImportFileGenerator importFiles) throws CausewayException {
+    public BuildImportResultRest importBuild(BrewNVR nvr, int buildRecordId, KojiImport kojiImport,
+            ImportFileGenerator importFiles) throws CausewayException {
         log.info("Importing build {}.", nvr.getNVR());
         BuildImportResultRest ret = new BuildImportResultRest();
         ret.setBuildRecordId(buildRecordId);
@@ -163,17 +164,17 @@ public class BrewClientImpl implements BrewClient {
             koji.logout(session);
 
             List<ArtifactImportError> importErrors = getImportErrors(result, importFiles);
-            if(!importErrors.isEmpty()){
+            if (!importErrors.isEmpty()) {
                 ret.setErrors(importErrors);
                 ret.setStatus(BuildImportStatus.FAILED);
             }
 
             KojiBuildInfo bi = result.getBuildInfo();
 
-            if(bi == null){
+            if (bi == null) {
                 ret.setErrorMessage("Import to koji failed");
                 ret.setStatus(BuildImportStatus.ERROR);
-            }else{
+            } else {
                 ret.setBrewBuildId(bi.getId());
                 ret.setBrewBuildUrl(getBuildUrl(bi.getId()));
             }
@@ -216,14 +217,12 @@ public class BrewClientImpl implements BrewClient {
         if (kojiErrors != null) {
             for (Map.Entry<String, KojijiErrorInfo> e : kojiErrors.entrySet()) {
                 Integer artifactId = importFiles.getId(e.getKey());
-                if(artifactId == null) {
+                if (artifactId == null) {
                     log.error("Artifact id is null for path {}. This shouldn't happen.", e.getKey());
                     artifactId = -1;
                 }
-                ArtifactImportError importError = ArtifactImportError.builder()
-                        .artifactId(String.valueOf(artifactId))
-                        .errorMessage(e.getValue().getError().getMessage())
-                        .build();
+                ArtifactImportError importError = ArtifactImportError.builder().artifactId(String.valueOf(artifactId))
+                        .errorMessage(e.getValue().getError().getMessage()).build();
                 importErrors.add(importError);
                 log.warn("Failed to import: {}", e.getValue());
             }
@@ -231,10 +230,8 @@ public class BrewClientImpl implements BrewClient {
         Map<Integer, String> importerErrors = importFiles.getErrors();
         if (!importerErrors.isEmpty()) {
             for (Map.Entry<Integer, String> e : importerErrors.entrySet()) {
-                ArtifactImportError importError = ArtifactImportError.builder()
-                        .artifactId(String.valueOf(e.getKey()))
-                        .errorMessage(e.getValue())
-                        .build();
+                ArtifactImportError importError = ArtifactImportError.builder().artifactId(String.valueOf(e.getKey()))
+                        .errorMessage(e.getValue()).build();
                 importErrors.add(importError);
                 log.warn("Failed to import: {}", e.getValue());
             }

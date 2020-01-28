@@ -41,8 +41,7 @@ public class UntagRequest {
     private final TaggedBuild build;
 
     @JsonCreator
-    public UntagRequest(@JsonProperty("callback") CallbackTarget callback,
-            @JsonProperty("build") TaggedBuild build) {
+    public UntagRequest(@JsonProperty("callback") CallbackTarget callback, @JsonProperty("build") TaggedBuild build) {
         this.callback = callback;
         this.build = Objects.requireNonNull(build, "Build information must be specified.");
     }

@@ -83,7 +83,8 @@ public class PncImportControllerImpl implements PncImportController {
     private final MetricsConfiguration metricsConfiguration;
 
     @Inject
-    public PncImportControllerImpl(PncClient pnclClient, BrewClient brewClient, BPMClient bpmClient, BuildTranslator translator, CausewayConfig config, MetricsConfiguration metricConfiguration) {
+    public PncImportControllerImpl(PncClient pnclClient, BrewClient brewClient, BPMClient bpmClient, BuildTranslator translator,
+            CausewayConfig config, MetricsConfiguration metricConfiguration) {
         this.pncClient = pnclClient;
         this.brewClient = brewClient;
         this.bpmClient = bpmClient;
@@ -120,7 +121,7 @@ public class PncImportControllerImpl implements PncImportController {
                 result.setReleaseStatus(ReleaseStatus.IMPORT_ERROR);
                 bpmClient.failure(callback.getUrl(), callbackId, result);
                 errors.mark();
-            }else{
+            } else {
                 result.setReleaseStatus(ReleaseStatus.SUCCESS);
                 bpmClient.success(callback.getUrl(), callbackId, result);
             }
@@ -154,13 +155,13 @@ public class PncImportControllerImpl implements PncImportController {
         List<BuildImportResultRest> results = new ArrayList<>();
         for (Build build : builds) {
             BuildImportResultRest importResult;
-            try{
+            try {
                 BuildArtifacts artifacts = pncClient.findBuildArtifacts(Integer.valueOf(build.getId()));
                 importResult = importBuild(build, username, artifacts);
-                if(importResult.getStatus() == BuildImportStatus.SUCCESSFUL && importResult.getBrewBuildId() != null){
+                if (importResult.getStatus() == BuildImportStatus.SUCCESSFUL && importResult.getBrewBuildId() != null) {
                     brewClient.tagBuild(tagPrefix, getNVR(build, artifacts));
                 }
-            }catch(CausewayException ex){
+            } catch (CausewayException ex) {
                 log.error("Failed to import build " + build.getId() + ".", ex);
                 importResult = new BuildImportResultRest();
                 importResult.setBuildRecordId(Integer.valueOf(build.getId()));
@@ -205,7 +206,7 @@ public class PncImportControllerImpl implements PncImportController {
         List<BuildArtifacts.PncArtifact> blackArtifacts = new ArrayList<>();
         for (Iterator<BuildArtifacts.PncArtifact> it = artifacts.buildArtifacts.iterator(); it.hasNext();) {
             BuildArtifacts.PncArtifact artifact = it.next();
-            if(artifact.artifactQuality == ArtifactQuality.BLACKLISTED){
+            if (artifact.artifactQuality == ArtifactQuality.BLACKLISTED) {
                 blackArtifacts.add(artifact);
                 it.remove();
             }
@@ -228,7 +229,7 @@ public class PncImportControllerImpl implements PncImportController {
             int artifactNumber = artifacts.buildArtifacts.size();
             int logLenght = log.length();
             try {
-                logLenght= log.getBytes("UTF-8").length;
+                logLenght = log.getBytes("UTF-8").length;
             } catch (UnsupportedEncodingException e) {
             }
 
@@ -239,10 +240,8 @@ public class PncImportControllerImpl implements PncImportController {
         }
 
         for (BuildArtifacts.PncArtifact artifact : blackArtifacts) {
-            ArtifactImportError error = ArtifactImportError.builder()
-                    .artifactId(String.valueOf(artifact.id))
-                    .errorMessage("This artifact is blacklisted, so it was not imported.")
-                    .build();
+            ArtifactImportError error = ArtifactImportError.builder().artifactId(String.valueOf(artifact.id))
+                    .errorMessage("This artifact is blacklisted, so it was not imported.").build();
             buildResult.getErrors().add(error);
         }
         return buildResult;
@@ -262,6 +261,7 @@ public class PncImportControllerImpl implements PncImportController {
             histogram.update(value);
         }
     }
+
     static String messagePncReleaseNotFound(long releaseId, Exception e) {
         return "Can not find PNC release " + releaseId + " - " + e.getMessage();
     }
@@ -273,21 +273,17 @@ public class PncImportControllerImpl implements PncImportController {
     public static String messageMissingTag(String tagPrefix, String kojiURL) {
         final String parent = tagPrefix;
         final String child = tagPrefix + BrewClientImpl.BUILD_TAG_SUFIX;
-        return "Proper brew tags don't exist. Create them before importing builds.\n"
-              + "Tag prefix: " + tagPrefix+ "\n"
-              + "You should ask RCM to create at least following tags:\n"
-              + " * " + child + "\n"
-              + "   * " + parent + "\n"
-              + "in " + kojiURL + "\n"
-              + "(Note that tag " + child + " should inherit from tag " + parent + ")";
+        return "Proper brew tags don't exist. Create them before importing builds.\n" + "Tag prefix: " + tagPrefix + "\n"
+                + "You should ask RCM to create at least following tags:\n" + " * " + child + "\n" + "   * " + parent + "\n"
+                + "in " + kojiURL + "\n" + "(Note that tag " + child + " should inherit from tag " + parent + ")";
     }
 
     BrewNVR getNVR(Build build, BuildArtifacts artifacts) throws CausewayException {
-        if(!build.getAttributes().containsKey(BUILD_BREW_NAME)){
+        if (!build.getAttributes().containsKey(BUILD_BREW_NAME)) {
             throw new CausewayException("Build attribute " + BUILD_BREW_NAME + " can't be missing");
         }
         String version = build.getAttributes().get(BUILD_BREW_VERSION);
-        if(version == null){
+        if (version == null) {
             version = BuildTranslator.guessVersion(build, artifacts);
         }
         return new BrewNVR(build.getAttributes().get(BUILD_BREW_NAME), version, "1");

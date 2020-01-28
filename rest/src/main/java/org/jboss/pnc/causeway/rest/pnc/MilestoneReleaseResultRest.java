@@ -24,11 +24,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-
 /**
- * Author: Michal Szynkiewicz, michal.l.szynkiewicz@gmail.com
- * Date: 8/25/16
- * Time: 7:34 AM
+ * Author: Michal Szynkiewicz, michal.l.szynkiewicz@gmail.com Date: 8/25/16 Time: 7:34 AM
  */
 @Data
 @Deprecated
@@ -45,8 +42,7 @@ public class MilestoneReleaseResultRest {
 
     @JsonIgnore
     public boolean isSuccessful() {
-        return !builds.isEmpty()
-                && allBuildsSuccessful();
+        return !builds.isEmpty() && allBuildsSuccessful();
     }
 
     private boolean allBuildsSuccessful() {

@@ -197,8 +197,7 @@ public class ImportControllerImpl implements ImportController {
 
         brewClient.tagBuild(tagPrefix, getNVR(build));
 
-        return new BuildResult(brewBuild.getId(), brewClient.getBuildUrl(brewBuild.getId()),
-                message + brewBuild.getId());
+        return new BuildResult(brewBuild.getId(), brewClient.getBuildUrl(brewBuild.getId()), message + brewBuild.getId());
     }
 
     private void updateHistogram(MetricsConfiguration metricsConfiguration, String name, long value) {
@@ -216,9 +215,9 @@ public class ImportControllerImpl implements ImportController {
         }
     }
 
-    BrewNVR getNVR(Build build) throws CausewayException{
+    BrewNVR getNVR(Build build) throws CausewayException {
         String buildVersion = build.getBuildVersion();
-        if(buildVersion == null){
+        if (buildVersion == null) {
             buildVersion = BuildTranslator.guessVersion(build);
         }
 
@@ -247,8 +246,8 @@ public class ImportControllerImpl implements ImportController {
     }
 
     /**
-     * If the exception.getMessage() is null, return the stacktrace instead
-     * If exception.getMessage() is not-null, just return the message
+     * If the exception.getMessage() is null, return the stacktrace instead If exception.getMessage() is not-null, just return
+     * the message
      *
      * @param e exception
      * @return reason for exception

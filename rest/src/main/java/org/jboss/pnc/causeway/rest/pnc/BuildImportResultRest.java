@@ -28,9 +28,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * Author: Michal Szynkiewicz, michal.l.szynkiewicz@gmail.com
- * Date: 8/25/16
- * Time: 2:48 PM
+ * Author: Michal Szynkiewicz, michal.l.szynkiewicz@gmail.com Date: 8/25/16 Time: 2:48 PM
  */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)

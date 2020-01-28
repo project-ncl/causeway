@@ -28,8 +28,8 @@ public class BrewNVR {
 
     public BrewNVR(String name, String version, String release) {
         this.name = name;
-        this.version = version.replace( '-', '_' );
-        this.release = release.replace( '-', '_' );
+        this.version = version.replace('-', '_');
+        this.release = release.replace('-', '_');
     }
 
     public String getName() {
@@ -49,7 +49,7 @@ public class BrewNVR {
     }
 
     @JsonIgnore
-    public String getNVR(){
+    public String getNVR() {
         return getKojiName() + "-" + version + "-" + release;
     }
 }

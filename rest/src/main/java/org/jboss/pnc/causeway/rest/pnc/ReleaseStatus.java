@@ -18,16 +18,11 @@
 package org.jboss.pnc.causeway.rest.pnc;
 
 /**
- * Author: Michal Szynkiewicz, michal.l.szynkiewicz@gmail.com
- * Date: 8/26/16
- * Time: 2:39 PM
+ * Author: Michal Szynkiewicz, michal.l.szynkiewicz@gmail.com Date: 8/26/16 Time: 2:39 PM
  */
 @Deprecated
 public enum ReleaseStatus {
 
-    SUCCESS,
-    IMPORT_ERROR,
-    SET_UP_ERROR;
-
+    SUCCESS, IMPORT_ERROR, SET_UP_ERROR;
 
 }

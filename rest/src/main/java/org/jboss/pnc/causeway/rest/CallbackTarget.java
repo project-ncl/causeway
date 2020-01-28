@@ -35,35 +35,31 @@ import lombok.NonNull;
 public class CallbackTarget {
     @NonNull
     private final String url;
-    
+
     @NonNull
     private final CallbackMethod method;
 
-    private final Map<String,String> headers;
+    private final Map<String, String> headers;
 
     @JsonCreator
-    public CallbackTarget(@JsonProperty("url") String url,
-            @JsonProperty("method") CallbackMethod method,
-            @JsonProperty("headers") Map<String,String> headers) {
+    public CallbackTarget(@JsonProperty("url") String url, @JsonProperty("method") CallbackMethod method,
+            @JsonProperty("headers") Map<String, String> headers) {
         this.url = url;
         this.method = method == null ? POST : method;
-	this.headers = headers == null ? Collections.emptyMap() : headers;
+        this.headers = headers == null ? Collections.emptyMap() : headers;
     }
-    
+
     public CallbackTarget(String url, CallbackMethod method) {
         this(url, method, Collections.emptyMap());
     }
-    
-     @Override
+
+    @Override
     public String toString() {
-         StringBuilder headersString = new StringBuilder();
-         headers.entrySet().stream()
-                 .map(e -> '"' + e.getKey() + ':'
-                         + ("Authorization".equals(e.getKey()) ? "***" : e.getValue()) + '"')
-                 .collect(Collectors.joining(","));
+        StringBuilder headersString = new StringBuilder();
+        headers.entrySet().stream()
+                .map(e -> '"' + e.getKey() + ':' + ("Authorization".equals(e.getKey()) ? "***" : e.getValue()) + '"')
+                .collect(Collectors.joining(","));
 
-         return "CallbackTarget{" + "url=" + url + ", method=" + method + ", headers={"
-                 + headersString + "}}";
-     }
-
+        return "CallbackTarget{" + "url=" + url + ", method=" + method + ", headers={" + headersString + "}}";
+    }
 }

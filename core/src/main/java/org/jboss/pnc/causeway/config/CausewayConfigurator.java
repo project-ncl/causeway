@@ -41,7 +41,7 @@ public class CausewayConfigurator {
     private CausewayConfig causewayConfig;
 
     @PostConstruct
-    public void init(){
+    public void init() {
         try {
             load();
         } catch (ConfiguratorException ex) {
@@ -52,43 +52,36 @@ public class CausewayConfigurator {
     public void load() throws ConfiguratorException {
 
         String config = System.getProperty(CausewayConfig.CAUSEWAY_CONFIG_DIR_SYSPROP);
-        if( config == null ){
+        if (config == null) {
             config = CausewayConfig.DEFAULT_CAUSEWAY_CONFIG;
         }
 
-        File configFile = new File( config );
-        if ( configFile.isDirectory() )
-        {
-            configFile = new File( configFile, "main.conf" );
+        File configFile = new File(config);
+        if (configFile.isDirectory()) {
+            configFile = new File(configFile, "main.conf");
         }
 
-        System.setProperty( CausewayConfig.CAUSEWAY_CONFIG_DIR_SYSPROP, configFile.getParentFile().getAbsolutePath() );
+        System.setProperty(CausewayConfig.CAUSEWAY_CONFIG_DIR_SYSPROP, configFile.getParentFile().getAbsolutePath());
 
-        if ( !configFile.exists() )
-        {
+        if (!configFile.exists()) {
             // TODO: Make resilient enough to write default configs.
-            throw new ConfiguratorException( "Missing configuration: %s", configFile );
+            throw new ConfiguratorException("Missing configuration: %s", configFile);
         }
 
         File dir = configFile.getAbsoluteFile().getParentFile();
-        causewayConfig.setConfigDir( dir );
+        causewayConfig.setConfigDir(dir);
 
-        try (InputStream in = new FileInputStream( configFile ))
-        {
-            new DotConfConfigurationReader( causewayConfig ).loadConfiguration( in );
-        }
-        catch ( ConfigurationException | IOException e )
-        {
-            throw new ConfiguratorException( "Failed to read configuration: %s. Reason: %s", e, configFile,
-                                             e.getMessage() );
+        try (InputStream in = new FileInputStream(configFile)) {
+            new DotConfConfigurationReader(causewayConfig).loadConfiguration(in);
+        } catch (ConfigurationException | IOException e) {
+            throw new ConfiguratorException("Failed to read configuration: %s. Reason: %s", e, configFile, e.getMessage());
         }
 
         causewayConfig.configurationDone();
 
         String validationErrors = causewayConfig.getValidationErrors();
-        if ( isNotEmpty( validationErrors ) )
-        {
-            throw new ConfiguratorException( "Causeway configuration is not complete!\n\n%s", validationErrors );
+        if (isNotEmpty(validationErrors)) {
+            throw new ConfiguratorException("Causeway configuration is not complete!\n\n%s", validationErrors);
         }
     }
 }

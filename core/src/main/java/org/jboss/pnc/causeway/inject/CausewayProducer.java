@@ -39,9 +39,7 @@ import com.redhat.red.build.koji.config.SimpleKojiConfigBuilder;
  * Created by jdcasey on 11/10/15.
  */
 @ApplicationScoped
-public class CausewayProducer
-        implements Closeable
-{
+public class CausewayProducer implements Closeable {
 
     private final CausewayConfig config;
 
@@ -53,8 +51,7 @@ public class CausewayProducer
     private final PasswordManager passwords = new MemoryPasswordManager();
 
     @Inject
-    public CausewayProducer( CausewayConfig config )
-    {
+    public CausewayProducer(CausewayConfig config) {
         this.config = config;
         passwords.bind(config.getKojiClientCertificatePassword(), CausewayConfig.KOJI_SITE_ID, PasswordType.KEY);
     }
@@ -65,13 +62,11 @@ public class CausewayProducer
         }
 
         SimpleKojiConfigBuilder builder = new SimpleKojiConfigBuilder();
-        builder.withKojiSiteId("koji")
-                .withKojiURL(config.getKojiURL())
+        builder.withKojiSiteId("koji").withKojiURL(config.getKojiURL())
                 .withClientKeyCertificateFile(config.getKojiClientKeyCertificateFile())
                 .withKojiClientCertificatePassword(config.getKojiClientCertificatePassword())
                 .withServerCertificateFile(config.getKojiServerCertificateFile())
-                .withTrustSelfSigned(config.getKojiTrustSelfSigned())
-                .withTimeout(config.getKojiTimeout())
+                .withTrustSelfSigned(config.getKojiTrustSelfSigned()).withTimeout(config.getKojiTimeout())
                 .withConnectionPoolTimeout(config.getKojiConnectionPoolTimeout())
                 .withMaxConnections(config.getKojiConnections());
 
@@ -85,17 +80,15 @@ public class CausewayProducer
     }
 
     @PreDestroy
-    public void close()
-    {
-        if(koji != null){
+    public void close() {
+        if (koji != null) {
             koji.close();
         }
     }
 
     @Produces
     @Default
-    public KojiClient getKojiClient()
-    {
+    public KojiClient getKojiClient() {
         if (koji == null) {
             setupKoji(passwords);
         }

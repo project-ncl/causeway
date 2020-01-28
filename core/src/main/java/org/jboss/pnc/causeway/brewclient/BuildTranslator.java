@@ -41,7 +41,8 @@ public interface BuildTranslator {
     ImportFileGenerator getImportFiles(BuildArtifacts build, String log) throws CausewayException;
 
     @Deprecated
-    KojiImport translate(BrewNVR nvr, org.jboss.pnc.dto.Build build, BuildArtifacts artifacts, String log, String username) throws CausewayException;
+    KojiImport translate(BrewNVR nvr, org.jboss.pnc.dto.Build build, BuildArtifacts artifacts, String log, String username)
+            throws CausewayException;
 
     public ImportFileGenerator getImportFiles(Build build) throws CausewayException;
 
@@ -61,12 +62,9 @@ public interface BuildTranslator {
             getVersion = (artifact -> null);
         }
 
-        return build.getBuiltArtifacts().stream()
-                .filter(filter)
-                .map(getVersion)
-                .filter(Objects::nonNull)
-                .findAny()
-                .orElseThrow(() -> new CausewayException("Build version or BuildType (MVN,NPM...) not specified and couldn't determine any from artifacts."));
+        return build.getBuiltArtifacts().stream().filter(filter).map(getVersion).filter(Objects::nonNull).findAny()
+                .orElseThrow(() -> new CausewayException(
+                        "Build version or BuildType (MVN,NPM...) not specified and couldn't determine any from artifacts."));
     }
 
     @Deprecated
@@ -74,24 +72,25 @@ public interface BuildTranslator {
         String delim = ":";
         BuildType buildType = build.getBuildConfigRevision().getBuildType();
 
-        // Maven and Gradle artifacts identifiers have 4 parts (G:A:P:V = org.jboss.pnc.causeway:causeway-web:war:2.0.0) and Npm 2 (N:V = async:3.1.0)
+        // Maven and Gradle artifacts identifiers have 4 parts (G:A:P:V = org.jboss.pnc.causeway:causeway-web:war:2.0.0) and Npm
+        // 2 (N:V = async:3.1.0)
         // Last part for each is the version.
         final int parts;
         switch (buildType) {
             case MVN:
             case GRADLE:
-                parts = 4; break;
+                parts = 4;
+                break;
             case NPM:
-                parts = 2; break;
+                parts = 2;
+                break;
             default:
-                parts = 0; break;
+                parts = 0;
+                break;
         }
 
-        return artifacts.buildArtifacts.stream()
-                .map(artifact -> artifact.identifier.split(delim))
-                .filter(i -> i.length >= parts)
-                .map(i -> i[parts-1])
-                .findAny()
-                .orElseThrow(() -> new CausewayException("Build version or BuildType (MVN,NPM...) not specified and couldn't determine any from artifacts."));
+        return artifacts.buildArtifacts.stream().map(artifact -> artifact.identifier.split(delim))
+                .filter(i -> i.length >= parts).map(i -> i[parts - 1]).findAny().orElseThrow(() -> new CausewayException(
+                        "Build version or BuildType (MVN,NPM...) not specified and couldn't determine any from artifacts."));
     }
 }

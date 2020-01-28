@@ -23,7 +23,6 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 
-
 @RequestScoped
 public class ImportEndpoint implements Import {
 
@@ -34,9 +33,8 @@ public class ImportEndpoint implements Import {
     private UserService userSerivce;
 
     @Override
-    public Response testResponse( String var )
-    {
-        return Response.ok( var ).build();
+    public Response testResponse(String var) {
+        return Response.ok(var).build();
     }
 
     @Override

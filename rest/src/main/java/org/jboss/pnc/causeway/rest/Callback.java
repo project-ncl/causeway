@@ -30,7 +30,7 @@ import lombok.NonNull;
 public class Callback {
     @NonNull
     private final String id;
-    
+
     private final Integer status;
 
     public Callback(String id) {

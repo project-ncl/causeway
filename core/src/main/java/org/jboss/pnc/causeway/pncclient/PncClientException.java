@@ -21,9 +21,7 @@ import org.jboss.pnc.causeway.CausewayException;
  * Created by jdcasey on 11/10/15.
  */
 @Deprecated
-public class PncClientException
-        extends CausewayException
-{
+public class PncClientException extends CausewayException {
     private static final long serialVersionUID = 1L;
 
     public PncClientException(String format, Throwable cause, Object... params) {
