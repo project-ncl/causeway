@@ -151,8 +151,11 @@ public class BrewClientImpl implements BrewClient {
     }
 
     @Override
-    public BuildImportResultRest importBuild(BrewNVR nvr, int buildRecordId, KojiImport kojiImport,
-            ImportFileGenerator importFiles) throws CausewayException {
+    public BuildImportResultRest importBuild(BrewNVR nvr,
+                                             int buildRecordId,
+                                             KojiImport kojiImport,
+                                             ImportFileGenerator importFiles)
+            throws CausewayException {
         log.info("Importing build {}.", nvr.getNVR());
         BuildImportResultRest ret = new BuildImportResultRest();
         ret.setBuildRecordId(buildRecordId);
@@ -221,8 +224,10 @@ public class BrewClientImpl implements BrewClient {
                     log.error("Artifact id is null for path {}. This shouldn't happen.", e.getKey());
                     artifactId = -1;
                 }
-                ArtifactImportError importError = ArtifactImportError.builder().artifactId(String.valueOf(artifactId))
-                        .errorMessage(e.getValue().getError().getMessage()).build();
+                ArtifactImportError importError = ArtifactImportError.builder()
+                                                                     .artifactId(String.valueOf(artifactId))
+                                                                     .errorMessage(e.getValue().getError().getMessage())
+                                                                     .build();
                 importErrors.add(importError);
                 log.warn("Failed to import: {}", e.getValue());
             }
@@ -230,8 +235,10 @@ public class BrewClientImpl implements BrewClient {
         Map<Integer, String> importerErrors = importFiles.getErrors();
         if (!importerErrors.isEmpty()) {
             for (Map.Entry<Integer, String> e : importerErrors.entrySet()) {
-                ArtifactImportError importError = ArtifactImportError.builder().artifactId(String.valueOf(e.getKey()))
-                        .errorMessage(e.getValue()).build();
+                ArtifactImportError importError = ArtifactImportError.builder()
+                                                                     .artifactId(String.valueOf(e.getKey()))
+                                                                     .errorMessage(e.getValue())
+                                                                     .build();
                 importErrors.add(importError);
                 log.warn("Failed to import: {}", e.getValue());
             }

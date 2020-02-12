@@ -78,8 +78,12 @@ public class BuildTranslatorImpl implements BuildTranslator {
     }
 
     @Override
-    public KojiImport translate(BrewNVR nvr, org.jboss.pnc.dto.Build build, BuildArtifacts artifacts, String log,
-            String username) throws CausewayException {
+    public KojiImport translate(BrewNVR nvr,
+                                org.jboss.pnc.dto.Build build,
+                                BuildArtifacts artifacts,
+                                String log,
+                                String username)
+            throws CausewayException {
         String externalBuildId = String.valueOf(build.getId());
         String externalBuildUrl = null;
         String externalBuildsUrl = config.getPnclBuildsURL();
@@ -87,17 +91,24 @@ public class BuildTranslatorImpl implements BuildTranslator {
             externalBuildUrl = externalBuildsUrl + externalBuildId;
         }
         KojiImport.Builder builder = new KojiImport.Builder();
-        BuildDescription.Builder descriptionBuilder = builder
-                .withNewBuildDescription(nvr.getKojiName(), nvr.getVersion(), nvr.getRelease())
-                .withStartTime(Date.from(build.getStartTime())).withEndTime(Date.from(build.getEndTime()))
-                .withBuildSource(normalizeScmUrl(build.getScmUrl()), build.getScmRevision())
-                .withExternalBuildId(externalBuildId).withExternalBuildUrl(externalBuildUrl).withBuildSystem(PNC);
+        BuildDescription.Builder descriptionBuilder = builder.withNewBuildDescription(nvr.getKojiName(),
+                                                                                      nvr.getVersion(),
+                                                                                      nvr.getRelease())
+                                                             .withStartTime(Date.from(build.getStartTime()))
+                                                             .withEndTime(Date.from(build.getEndTime()))
+                                                             .withBuildSource(normalizeScmUrl(build.getScmUrl()),
+                                                                              build.getScmRevision())
+                                                             .withExternalBuildId(externalBuildId)
+                                                             .withExternalBuildUrl(externalBuildUrl)
+                                                             .withBuildSystem(PNC);
         setBuildType(descriptionBuilder, build, artifacts);
 
         int buildRootId = 42;
         BuildRoot.Builder buildRootBuilder = builder.withNewBuildRoot(buildRootId)
-                .withContentGenerator(CONTENT_GENERATOR_NAME, config.getPNCSystemVersion()).withContainer(getContainer(build))
-                .withHost(build.getEnvironment().getAttributes().get("OS"), StandardArchitecture.noarch);
+                                                    .withContentGenerator(CONTENT_GENERATOR_NAME, config.getPNCSystemVersion())
+                                                    .withContainer(getContainer(build))
+                                                    .withHost(build.getEnvironment().getAttributes().get("OS"),
+                                                              StandardArchitecture.noarch);
 
         addTool(buildRootBuilder, build);
         addDependencies(artifacts.dependencies, buildRootBuilder, build.getBuildConfigRevision().getBuildType());
@@ -113,19 +124,24 @@ public class BuildTranslatorImpl implements BuildTranslator {
     public KojiImport translate(BrewNVR nvr, Build build, String username) throws CausewayException {
         KojiImport.Builder builder = new KojiImport.Builder();
 
-        BuildDescription.Builder descriptionBuilder = builder
-                .withNewBuildDescription(nvr.getKojiName(), nvr.getVersion(), nvr.getRelease())
-                .withStartTime(build.getStartTime()).withEndTime(build.getEndTime())
-                .withBuildSource(normalizeScmUrl(build.getScmURL()), build.getScmRevision())
-                .withExternalBuildId(String.valueOf(build.getExternalBuildID()))
-                .withExternalBuildUrl(build.getExternalBuildURL()).withBuildSystem(PNC);
+        BuildDescription.Builder descriptionBuilder = builder.withNewBuildDescription(nvr.getKojiName(),
+                                                                                      nvr.getVersion(),
+                                                                                      nvr.getRelease())
+                                                             .withStartTime(build.getStartTime())
+                                                             .withEndTime(build.getEndTime())
+                                                             .withBuildSource(normalizeScmUrl(build.getScmURL()),
+                                                                              build.getScmRevision())
+                                                             .withExternalBuildId(String.valueOf(build.getExternalBuildID()))
+                                                             .withExternalBuildUrl(build.getExternalBuildURL())
+                                                             .withBuildSystem(PNC);
         setBuildType(descriptionBuilder, build);
 
         int buildRootId = 42;
         BuildRoot.Builder buildRootBuilder = builder.withNewBuildRoot(buildRootId)
-                .withContentGenerator(CONTENT_GENERATOR_NAME, config.getPNCSystemVersion())
-                .withContainer(getContainer(build.getBuildRoot()))
-                .withHost(build.getBuildRoot().getHost(), build.getBuildRoot().getHostArchitecture());
+                                                    .withContentGenerator(CONTENT_GENERATOR_NAME, config.getPNCSystemVersion())
+                                                    .withContainer(getContainer(build.getBuildRoot()))
+                                                    .withHost(build.getBuildRoot().getHost(),
+                                                              build.getBuildRoot().getHostArchitecture());
         addTools(buildRootBuilder, build.getBuildRoot().getTools());
 
         addDependencies(build.getDependencies(), buildRootBuilder);
@@ -150,8 +166,11 @@ public class BuildTranslatorImpl implements BuildTranslator {
             MessageDigest md = MessageDigest.getInstance("MD5");
             BigInteger bi = new BigInteger(1, md.digest(logBytes));
             String logHash = String.format("%032x", bi);
-            builder.withNewOutput(buildRootId, "build.log").withOutputType(StandardOutputType.log).withFileSize(logBytes.length)
-                    .withArch(StandardArchitecture.noarch).withChecksum(MD5, logHash);
+            builder.withNewOutput(buildRootId, "build.log")
+                   .withOutputType(StandardOutputType.log)
+                   .withFileSize(logBytes.length)
+                   .withArch(StandardArchitecture.noarch)
+                   .withChecksum(MD5, logHash);
         } catch (NoSuchAlgorithmException ex) {
             throw new CausewayException("Failed to compute md5 sum of build log: " + ex.getMessage(), ex);
         }
@@ -159,8 +178,11 @@ public class BuildTranslatorImpl implements BuildTranslator {
 
     private void addLogs(Build build, KojiImport.Builder builder, int buildRootId) {
         for (Logfile logfile : build.getLogs()) {
-            builder.withNewOutput(buildRootId, logfile.getFilename()).withOutputType(StandardOutputType.log)
-                    .withFileSize(logfile.getSize()).withArch(StandardArchitecture.noarch).withChecksum(MD5, logfile.getMd5());
+            builder.withNewOutput(buildRootId, logfile.getFilename())
+                   .withOutputType(StandardOutputType.log)
+                   .withFileSize(logfile.getSize())
+                   .withArch(StandardArchitecture.noarch)
+                   .withChecksum(MD5, logfile.getMd5());
         }
     }
 
@@ -186,16 +208,21 @@ public class BuildTranslatorImpl implements BuildTranslator {
 
     private void addDependencies(Set<Dependency> dependencies, BuildRoot.Builder buildRootBuilder) throws CausewayException {
         for (Dependency dependency : dependencies) {
-            buildRootBuilder.withFileComponent(dependency.getFilename()).withChecksum(MD5, dependency.getMd5())
-                    .withFileSize(dependency.getSize());
+            buildRootBuilder.withFileComponent(dependency.getFilename())
+                            .withChecksum(MD5, dependency.getMd5())
+                            .withFileSize(dependency.getSize());
         }
     }
 
-    private void addBuiltArtifacts(List<PncArtifact> buildArtifacts, KojiImport.Builder builder, int buildRootId,
-            BuildType buildType) throws CausewayException {
+    private void addBuiltArtifacts(List<PncArtifact> buildArtifacts,
+                                   KojiImport.Builder builder,
+                                   int buildRootId,
+                                   BuildType buildType)
+            throws CausewayException {
         for (BuildArtifacts.PncArtifact artifact : buildArtifacts) {
             BuildOutput.Builder outputBuilder = builder.withNewOutput(buildRootId, artifact.deployPath)
-                    .withArch(StandardArchitecture.noarch).withChecksum(MD5, artifact.checksum);
+                                                       .withArch(StandardArchitecture.noarch)
+                                                       .withChecksum(MD5, artifact.checksum);
 
             switch (buildType) {
                 case GRADLE:
@@ -222,8 +249,9 @@ public class BuildTranslatorImpl implements BuildTranslator {
             throws CausewayException {
         for (BuiltArtifact artifact : builtArtifacts) {
             BuildOutput.Builder outputBuilder = builder.withNewOutput(buildRootId, stripSlash(artifact.getArtifactPath()))
-                    .withArch(artifact.getArchitecture()).withChecksum(MD5, artifact.getMd5())
-                    .withFileSize((int) artifact.getSize());
+                                                       .withArch(artifact.getArchitecture())
+                                                       .withChecksum(MD5, artifact.getMd5())
+                                                       .withFileSize((int) artifact.getSize());
 
             if (artifact.getClass().equals(MavenBuiltArtifact.class)) {
                 outputBuilder.withMavenInfoAndType(mavenArtifactToGAV((MavenBuiltArtifact) artifact));
@@ -340,8 +368,10 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }
     }
 
-    private void setBuildType(BuildDescription.Builder buildDescription, org.jboss.pnc.dto.Build build,
-            BuildArtifacts artifacts) throws CausewayException {
+    private void setBuildType(BuildDescription.Builder buildDescription,
+                              org.jboss.pnc.dto.Build build,
+                              BuildArtifacts artifacts)
+            throws CausewayException {
         BuildType buildType = build.getBuildConfigRevision().getBuildType();
         switch (buildType) {
             case MVN:

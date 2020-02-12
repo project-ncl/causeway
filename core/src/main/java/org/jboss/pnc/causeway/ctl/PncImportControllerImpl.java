@@ -83,8 +83,12 @@ public class PncImportControllerImpl implements PncImportController {
     private final MetricsConfiguration metricsConfiguration;
 
     @Inject
-    public PncImportControllerImpl(PncClient pnclClient, BrewClient brewClient, BPMClient bpmClient, BuildTranslator translator,
-            CausewayConfig config, MetricsConfiguration metricConfiguration) {
+    public PncImportControllerImpl(PncClient pnclClient,
+                                   BrewClient brewClient,
+                                   BPMClient bpmClient,
+                                   BuildTranslator translator,
+                                   CausewayConfig config,
+                                   MetricsConfiguration metricConfiguration) {
         this.pncClient = pnclClient;
         this.brewClient = brewClient;
         this.bpmClient = bpmClient;
@@ -240,8 +244,10 @@ public class PncImportControllerImpl implements PncImportController {
         }
 
         for (BuildArtifacts.PncArtifact artifact : blackArtifacts) {
-            ArtifactImportError error = ArtifactImportError.builder().artifactId(String.valueOf(artifact.id))
-                    .errorMessage("This artifact is blacklisted, so it was not imported.").build();
+            ArtifactImportError error = ArtifactImportError.builder()
+                                                           .artifactId(String.valueOf(artifact.id))
+                                                           .errorMessage("This artifact is blacklisted, so it was not imported.")
+                                                           .build();
             buildResult.getErrors().add(error);
         }
         return buildResult;

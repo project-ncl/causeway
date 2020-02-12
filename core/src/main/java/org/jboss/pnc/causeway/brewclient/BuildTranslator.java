@@ -62,9 +62,14 @@ public interface BuildTranslator {
             getVersion = (artifact -> null);
         }
 
-        return build.getBuiltArtifacts().stream().filter(filter).map(getVersion).filter(Objects::nonNull).findAny()
-                .orElseThrow(() -> new CausewayException(
-                        "Build version or BuildType (MVN,NPM...) not specified and couldn't determine any from artifacts."));
+        return build.getBuiltArtifacts()
+                    .stream()
+                    .filter(filter)
+                    .map(getVersion)
+                    .filter(Objects::nonNull)
+                    .findAny()
+                    .orElseThrow(() -> new CausewayException(
+                            "Build version or BuildType (MVN,NPM...) not specified and couldn't determine any from artifacts."));
     }
 
     @Deprecated
@@ -89,8 +94,12 @@ public interface BuildTranslator {
                 break;
         }
 
-        return artifacts.buildArtifacts.stream().map(artifact -> artifact.identifier.split(delim))
-                .filter(i -> i.length >= parts).map(i -> i[parts - 1]).findAny().orElseThrow(() -> new CausewayException(
-                        "Build version or BuildType (MVN,NPM...) not specified and couldn't determine any from artifacts."));
+        return artifacts.buildArtifacts.stream()
+                                       .map(artifact -> artifact.identifier.split(delim))
+                                       .filter(i -> i.length >= parts)
+                                       .map(i -> i[parts - 1])
+                                       .findAny()
+                                       .orElseThrow(() -> new CausewayException(
+                                               "Build version or BuildType (MVN,NPM...) not specified and couldn't determine any from artifacts."));
     }
 }

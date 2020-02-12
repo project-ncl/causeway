@@ -79,7 +79,9 @@ public class PncClientImpl implements PncClient {
         Collection<Build> builds = new HashSet<>();
         try {
             RemoteCollection<Build> buildPages = milestoneClient.getBuilds(String.valueOf(milestoneId),
-                    new BuildsFilterParameters(), Optional.empty(), Optional.of("status==SUCCESS"));
+                                                                           new BuildsFilterParameters(),
+                                                                           Optional.empty(),
+                                                                           Optional.of("status==SUCCESS"));
             for (Build build : buildPages) {
                 if (build.getStatus().equals(BuildStatus.SUCCESS))
                     ;
@@ -97,8 +99,8 @@ public class PncClientImpl implements PncClient {
         Optional<InputStream> log;
         try {
             log = buildClient.getBuildLogs(String.valueOf(buildId));
-            InputStream logInput = log.orElseThrow(
-                    () -> new CausewayException("Build log for Build " + buildId + " is empty - response " + NOT_FOUND_CODE));
+            InputStream logInput = log.orElseThrow(() -> new CausewayException(
+                    "Build log for Build " + buildId + " is empty - response " + NOT_FOUND_CODE));
             Scanner s = new Scanner(logInput).useDelimiter("\\A");
             return s.hasNext() ? s.next() : "";
         } catch (RemoteResourceException e) {
@@ -130,7 +132,8 @@ public class PncClientImpl implements PncClient {
     }
 
     private Collection<PncArtifact> getArtifacts(Integer buildId,
-            IntFunctionWithRemoteException<RemoteCollection<Artifact>> query) throws CausewayException {
+                                                 IntFunctionWithRemoteException<RemoteCollection<Artifact>> query)
+            throws CausewayException {
         Collection<PncArtifact> pncArtifacts = new HashSet<>();
         try {
             RemoteCollection<Artifact> artifacts = query.get(String.valueOf(buildId));
