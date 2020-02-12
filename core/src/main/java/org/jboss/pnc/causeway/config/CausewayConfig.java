@@ -291,8 +291,11 @@ public class CausewayConfig {
             try {
                 URL url = new URL(getPnclURL());
 
-                builder.host(url.getHost()).protocol(url.getProtocol()).pageSize(DEFAULT_PAGE_SIZE)
-                        .addDefaultMdcToHeadersMappings().port((url.getPort() != -1) ? url.getPort() : url.getDefaultPort());
+                builder.host(url.getHost())
+                       .protocol(url.getProtocol())
+                       .pageSize(DEFAULT_PAGE_SIZE)
+                       .addDefaultMdcToHeadersMappings()
+                       .port((url.getPort() != -1) ? url.getPort() : url.getDefaultPort());
             } catch (MalformedURLException e) {
                 throw new IllegalStateException(
                         "Value of the '" + PNCL_URL_OPTION + "' field in Causeway configuration is not parsable URL", e);

@@ -42,8 +42,9 @@ public class CallbackTarget {
     private final Map<String, String> headers;
 
     @JsonCreator
-    public CallbackTarget(@JsonProperty("url") String url, @JsonProperty("method") CallbackMethod method,
-            @JsonProperty("headers") Map<String, String> headers) {
+    public CallbackTarget(@JsonProperty("url") String url,
+                          @JsonProperty("method") CallbackMethod method,
+                          @JsonProperty("headers") Map<String, String> headers) {
         this.url = url;
         this.method = method == null ? POST : method;
         this.headers = headers == null ? Collections.emptyMap() : headers;
@@ -56,9 +57,10 @@ public class CallbackTarget {
     @Override
     public String toString() {
         StringBuilder headersString = new StringBuilder();
-        headers.entrySet().stream()
-                .map(e -> '"' + e.getKey() + ':' + ("Authorization".equals(e.getKey()) ? "***" : e.getValue()) + '"')
-                .collect(Collectors.joining(","));
+        headers.entrySet()
+               .stream()
+               .map(e -> '"' + e.getKey() + ':' + ("Authorization".equals(e.getKey()) ? "***" : e.getValue()) + '"')
+               .collect(Collectors.joining(","));
 
         return "CallbackTarget{" + "url=" + url + ", method=" + method + ", headers={" + headersString + "}}";
     }

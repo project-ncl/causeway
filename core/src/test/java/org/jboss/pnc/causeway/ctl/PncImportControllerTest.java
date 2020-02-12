@@ -184,8 +184,14 @@ public class PncImportControllerTest {
 
         SCMRepository scm = SCMRepository.builder().id(String.valueOf(1)).internalUrl("http://repo.url").build();
 
-        return BuildConfigurationRevision.builder().id(String.valueOf(id)).rev(1).scmRepository(scm).buildType(buildType)
-                .scmRevision("r21345").environment(env).build();
+        return BuildConfigurationRevision.builder()
+                                         .id(String.valueOf(id))
+                                         .rev(1)
+                                         .scmRepository(scm)
+                                         .buildType(buildType)
+                                         .scmRevision("r21345")
+                                         .environment(env)
+                                         .build();
     }
 
     private void mockBrew() throws CausewayException {
@@ -229,8 +235,8 @@ public class PncImportControllerTest {
         // Mock Brew import
         BuildImportResultRest buildImportResultRest = new BuildImportResultRest(buildId, 11,
                 "https://koji.myco.com/brew/buildinfo?buildID=11", BuildImportStatus.SUCCESSFUL, null, null);
-        doReturn(buildImportResultRest).when(brewClient).importBuild(eq(NVR), eq(buildId), same(KOJI_IMPORT),
-                same(IMPORT_FILE_GENERATOR));
+        doReturn(buildImportResultRest).when(brewClient)
+                                       .importBuild(eq(NVR), eq(buildId), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
 
         // Run import
         importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
@@ -309,7 +315,7 @@ public class PncImportControllerTest {
         // that user gets the exception message
         assertNotNull(buildImportResultRest.getErrorMessage());
         assertTrue("Build error message doesn't contain expected data",
-                buildImportResultRest.getErrorMessage().contains(exceptionMessage));
+                   buildImportResultRest.getErrorMessage().contains(exceptionMessage));
     }
 
     @Test
@@ -324,14 +330,16 @@ public class PncImportControllerTest {
         mockTranslator();
 
         List<ArtifactImportError> artifactImportErrors = new ArrayList<>();
-        ArtifactImportError importError = ArtifactImportError.builder().artifactId(String.valueOf(123))
-                .errorMessage(errorMessage).build();
+        ArtifactImportError importError = ArtifactImportError.builder()
+                                                             .artifactId(String.valueOf(123))
+                                                             .errorMessage(errorMessage)
+                                                             .build();
         artifactImportErrors.add(importError);
         BuildImportResultRest buildImportResultRest = new BuildImportResultRest(buildId, 11,
                 "https://koji.myco.com/brew/buildinfo?buildID=11", BuildImportStatus.FAILED, null, artifactImportErrors);
 
-        doReturn(buildImportResultRest).when(brewClient).importBuild(eq(NVR), eq(buildId), same(KOJI_IMPORT),
-                same(IMPORT_FILE_GENERATOR));
+        doReturn(buildImportResultRest).when(brewClient)
+                                       .importBuild(eq(NVR), eq(buildId), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
 
         // Run import
         importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
@@ -351,7 +359,7 @@ public class PncImportControllerTest {
         // that user gets the exception message
         assertNotNull(resultImportError.getErrorMessage());
         assertTrue("Build error message doesn't contain expected data",
-                resultImportError.getErrorMessage().contains(errorMessage));
+                   resultImportError.getErrorMessage().contains(errorMessage));
     }
 
     @Test
@@ -450,8 +458,10 @@ public class PncImportControllerTest {
                 ArtifactQuality.NEW);
     }
 
-    private Build createBuildRecord(Integer buildId, BuildConfigurationRevision bcar, String brewBuildName,
-            String brewBuildVersion) {
+    private Build createBuildRecord(Integer buildId,
+                                    BuildConfigurationRevision bcar,
+                                    String brewBuildName,
+                                    String brewBuildVersion) {
         User user = User.builder().id(String.valueOf(1)).build();
 
         Date submit = new Date();
@@ -464,9 +474,16 @@ public class PncImportControllerTest {
         if (brewBuildVersion != null) {
             attributes.put(BUILD_BREW_VERSION, brewBuildVersion);
         }
-        Build buildRecord = Build.builder().id(String.valueOf(buildId)).status(BuildStatus.SUCCESS)
-                .submitTime(submit.toInstant()).startTime(start.toInstant()).endTime(end.toInstant()).user(user)
-                .attributes(attributes).buildConfigRevision(bcar).build();
+        Build buildRecord = Build.builder()
+                                 .id(String.valueOf(buildId))
+                                 .status(BuildStatus.SUCCESS)
+                                 .submitTime(submit.toInstant())
+                                 .startTime(start.toInstant())
+                                 .endTime(end.toInstant())
+                                 .user(user)
+                                 .attributes(attributes)
+                                 .buildConfigRevision(bcar)
+                                 .build();
         return buildRecord;
     }
 

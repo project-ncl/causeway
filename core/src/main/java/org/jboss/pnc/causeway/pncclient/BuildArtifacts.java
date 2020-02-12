@@ -40,8 +40,13 @@ public final class BuildArtifacts {
         public final ArtifactQuality artifactQuality;
         public final long size;
 
-        public PncArtifact(int id, String identifier, String deployPath, String checksum, String deployUrl, long size,
-                ArtifactQuality artifactQuality) {
+        public PncArtifact(int id,
+                           String identifier,
+                           String deployPath,
+                           String checksum,
+                           String deployUrl,
+                           long size,
+                           ArtifactQuality artifactQuality) {
             this.id = id;
             this.identifier = identifier;
             this.deployPath = deployPath;

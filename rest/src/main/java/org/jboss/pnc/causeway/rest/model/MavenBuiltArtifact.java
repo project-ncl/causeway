@@ -45,8 +45,16 @@ public class MavenBuiltArtifact extends BuiltArtifact {
     private final String version;
 
     @Builder
-    public MavenBuiltArtifact(String groupId, String artifactId, String version, int id, String filename, String architecture,
-            String md5, String artifactPath, String repositoryPath, int size) {
+    public MavenBuiltArtifact(String groupId,
+                              String artifactId,
+                              String version,
+                              int id,
+                              String filename,
+                              String architecture,
+                              String md5,
+                              String artifactPath,
+                              String repositoryPath,
+                              int size) {
         super(id, filename, architecture, md5, artifactPath, repositoryPath, size);
         this.groupId = Objects.requireNonNull(groupId, "GroupID must be set");
         this.artifactId = Objects.requireNonNull(artifactId, "ArtifactID must be set");

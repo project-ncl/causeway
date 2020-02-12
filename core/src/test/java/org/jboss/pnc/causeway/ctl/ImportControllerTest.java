@@ -238,11 +238,15 @@ public class ImportControllerTest {
         mockTranslator();
 
         List<ArtifactImportError> artifactImportErrors = new ArrayList<>();
-        ArtifactImportError importError = ArtifactImportError.builder().artifactId(String.valueOf(123))
-                .errorMessage(errorMessage).build();
+        ArtifactImportError importError = ArtifactImportError.builder()
+                                                             .artifactId(String.valueOf(123))
+                                                             .errorMessage(errorMessage)
+                                                             .build();
         artifactImportErrors.add(importError);
-        doThrow(new CausewayFailure(artifactImportErrors, exceptionMessage)).when(brewClient).importBuild(eq(NVR),
-                same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
+        doThrow(new CausewayFailure(artifactImportErrors, exceptionMessage)).when(brewClient)
+                                                                            .importBuild(eq(NVR),
+                                                                                         same(KOJI_IMPORT),
+                                                                                         same(IMPORT_FILE_GENERATOR));
 
         // Run import
         importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME);
@@ -313,8 +317,10 @@ public class ImportControllerTest {
     private void verifyFailure(String log, List<ArtifactImportError> artifactImportErrors) {
         String artifacts = "null";
         if (!artifactImportErrors.isEmpty()) {
-            artifacts = artifactImportErrors.stream().map(a -> "{" + "\"artifactId\":\"" + a.getArtifactId() + "\","
-                    + "\"errorMessage\":\"" + a.getErrorMessage() + "\"" + "}").collect(Collectors.joining(",", "[", "]"));
+            artifacts = artifactImportErrors.stream()
+                                            .map(a -> "{" + "\"artifactId\":\"" + a.getArtifactId() + "\","
+                                                    + "\"errorMessage\":\"" + a.getErrorMessage() + "\"" + "}")
+                                            .collect(Collectors.joining(",", "[", "]"));
         }
 
         String result = "{" + "\"id\":null," + "\"buildId\":\"61\"," + "\"status\":\"FAILED\"," + "\"log\":\"" + log + "\","
