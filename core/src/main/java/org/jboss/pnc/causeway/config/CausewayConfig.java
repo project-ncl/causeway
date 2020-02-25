@@ -240,8 +240,9 @@ public class CausewayConfig {
 
     private void checkConfigured() {
         if (!configured) {
-            throw new IllegalStateException("The causeway system has not been configured! "
-                    + "This is a sign that something is in the wrong order in the boot sequence!!");
+            throw new IllegalStateException(
+                    "The causeway system has not been configured! "
+                            + "This is a sign that something is in the wrong order in the boot sequence!!");
         }
     }
 
@@ -292,13 +293,14 @@ public class CausewayConfig {
                 URL url = new URL(getPnclURL());
 
                 builder.host(url.getHost())
-                       .protocol(url.getProtocol())
-                       .pageSize(DEFAULT_PAGE_SIZE)
-                       .addDefaultMdcToHeadersMappings()
-                       .port((url.getPort() != -1) ? url.getPort() : url.getDefaultPort());
+                        .protocol(url.getProtocol())
+                        .pageSize(DEFAULT_PAGE_SIZE)
+                        .addDefaultMdcToHeadersMappings()
+                        .port((url.getPort() != -1) ? url.getPort() : url.getDefaultPort());
             } catch (MalformedURLException e) {
                 throw new IllegalStateException(
-                        "Value of the '" + PNCL_URL_OPTION + "' field in Causeway configuration is not parsable URL", e);
+                        "Value of the '" + PNCL_URL_OPTION + "' field in Causeway configuration is not parsable URL",
+                        e);
             }
 
             configuration = builder.build();

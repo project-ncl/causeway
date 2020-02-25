@@ -83,12 +83,13 @@ public class PncImportControllerImpl implements PncImportController {
     private final MetricsConfiguration metricsConfiguration;
 
     @Inject
-    public PncImportControllerImpl(PncClient pnclClient,
-                                   BrewClient brewClient,
-                                   BPMClient bpmClient,
-                                   BuildTranslator translator,
-                                   CausewayConfig config,
-                                   MetricsConfiguration metricConfiguration) {
+    public PncImportControllerImpl(
+            PncClient pnclClient,
+            BrewClient brewClient,
+            BPMClient bpmClient,
+            BuildTranslator translator,
+            CausewayConfig config,
+            MetricsConfiguration metricConfiguration) {
         this.pncClient = pnclClient;
         this.brewClient = brewClient;
         this.bpmClient = bpmClient;
@@ -148,7 +149,8 @@ public class PncImportControllerImpl implements PncImportController {
         context.stop();
     }
 
-    private List<BuildImportResultRest> importProductMilestone(int milestoneId, String username) throws CausewayException {
+    private List<BuildImportResultRest> importProductMilestone(int milestoneId, String username)
+            throws CausewayException {
         String tagPrefix = pncClient.getTagForMilestone(milestoneId);
         if (!brewClient.tagsExists(tagPrefix)) {
             throw new CausewayException(messageMissingTag(tagPrefix, config.getKojiURL()));
@@ -191,7 +193,8 @@ public class PncImportControllerImpl implements PncImportController {
         return builds;
     }
 
-    private BuildImportResultRest importBuild(Build build, String username, BuildArtifacts artifacts) throws CausewayException {
+    private BuildImportResultRest importBuild(Build build, String username, BuildArtifacts artifacts)
+            throws CausewayException {
         BrewNVR nvr = getNVR(build, artifacts);
         log.info("Processing PNC build {} as {}.", build.getId(), nvr.getNVR());
         BrewBuild brewBuild = brewClient.findBrewBuildOfNVR(nvr);
@@ -245,9 +248,9 @@ public class PncImportControllerImpl implements PncImportController {
 
         for (BuildArtifacts.PncArtifact artifact : blackArtifacts) {
             ArtifactImportError error = ArtifactImportError.builder()
-                                                           .artifactId(String.valueOf(artifact.id))
-                                                           .errorMessage("This artifact is blacklisted, so it was not imported.")
-                                                           .build();
+                    .artifactId(String.valueOf(artifact.id))
+                    .errorMessage("This artifact is blacklisted, so it was not imported.")
+                    .build();
             buildResult.getErrors().add(error);
         }
         return buildResult;
@@ -279,9 +282,10 @@ public class PncImportControllerImpl implements PncImportController {
     public static String messageMissingTag(String tagPrefix, String kojiURL) {
         final String parent = tagPrefix;
         final String child = tagPrefix + BrewClientImpl.BUILD_TAG_SUFIX;
-        return "Proper brew tags don't exist. Create them before importing builds.\n" + "Tag prefix: " + tagPrefix + "\n"
-                + "You should ask RCM to create at least following tags:\n" + " * " + child + "\n" + "   * " + parent + "\n"
-                + "in " + kojiURL + "\n" + "(Note that tag " + child + " should inherit from tag " + parent + ")";
+        return "Proper brew tags don't exist. Create them before importing builds.\n" + "Tag prefix: " + tagPrefix
+                + "\n" + "You should ask RCM to create at least following tags:\n" + " * " + child + "\n" + "   * "
+                + parent + "\n" + "in " + kojiURL + "\n" + "(Note that tag " + child + " should inherit from tag "
+                + parent + ")";
     }
 
     BrewNVR getNVR(Build build, BuildArtifacts artifacts) throws CausewayException {

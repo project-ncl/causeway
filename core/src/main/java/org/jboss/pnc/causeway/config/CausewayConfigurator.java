@@ -74,7 +74,11 @@ public class CausewayConfigurator {
         try (InputStream in = new FileInputStream(configFile)) {
             new DotConfConfigurationReader(causewayConfig).loadConfiguration(in);
         } catch (ConfigurationException | IOException e) {
-            throw new ConfiguratorException("Failed to read configuration: %s. Reason: %s", e, configFile, e.getMessage());
+            throw new ConfiguratorException(
+                    "Failed to read configuration: %s. Reason: %s",
+                    e,
+                    configFile,
+                    e.getMessage());
         }
 
         causewayConfig.configurationDone();

@@ -63,14 +63,14 @@ public class CausewayProducer implements Closeable {
 
         SimpleKojiConfigBuilder builder = new SimpleKojiConfigBuilder();
         builder.withKojiSiteId("koji")
-               .withKojiURL(config.getKojiURL())
-               .withClientKeyCertificateFile(config.getKojiClientKeyCertificateFile())
-               .withKojiClientCertificatePassword(config.getKojiClientCertificatePassword())
-               .withServerCertificateFile(config.getKojiServerCertificateFile())
-               .withTrustSelfSigned(config.getKojiTrustSelfSigned())
-               .withTimeout(config.getKojiTimeout())
-               .withConnectionPoolTimeout(config.getKojiConnectionPoolTimeout())
-               .withMaxConnections(config.getKojiConnections());
+                .withKojiURL(config.getKojiURL())
+                .withClientKeyCertificateFile(config.getKojiClientKeyCertificateFile())
+                .withKojiClientCertificatePassword(config.getKojiClientCertificatePassword())
+                .withServerCertificateFile(config.getKojiServerCertificateFile())
+                .withTrustSelfSigned(config.getKojiTrustSelfSigned())
+                .withTimeout(config.getKojiTimeout())
+                .withConnectionPoolTimeout(config.getKojiConnectionPoolTimeout())
+                .withMaxConnections(config.getKojiConnections());
 
         KojiConfig kc = builder.build();
 
