@@ -67,9 +67,9 @@ public class CausewayException extends Exception {
     }
 
     /**
-     * Stringify all parameters pre-emptively on serialization, to prevent {@link NotSerializableException}. Since all parameters
-     * are used in {@link String#format} or {@link MessageFormat#format}, flattening them to strings is an acceptable way to provide
-     * this functionality without making the use of {@link Serializable} viral.
+     * Stringify all parameters pre-emptively on serialization, to prevent {@link NotSerializableException}. Since all
+     * parameters are used in {@link String#format} or {@link MessageFormat#format}, flattening them to strings is an
+     * acceptable way to provide this functionality without making the use of {@link Serializable} viral.
      */
     private Object writeReplace() {
         final Object[] newParams = new Object[params.length];
