@@ -83,7 +83,8 @@ public interface BuildTranslator {
         String delim = ":";
         BuildType buildType = build.getBuildConfigRevision().getBuildType();
 
-        // Maven and Gradle artifacts identifiers have 4 parts (G:A:P:V = org.jboss.pnc.causeway:causeway-web:war:2.0.0) and Npm
+        // Maven and Gradle artifacts identifiers have 4 parts (G:A:P:V = org.jboss.pnc.causeway:causeway-web:war:2.0.0)
+        // and Npm
         // 2 (N:V = async:3.1.0)
         // Last part for each is the version.
         final int parts;

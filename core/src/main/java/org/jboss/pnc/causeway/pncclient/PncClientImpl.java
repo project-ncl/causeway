@@ -166,8 +166,8 @@ public class PncClientImpl implements PncClient {
     /**
      * Special IntFunction that throws {@code org.jboss.pnc.client.RemoteResourceException}
      *
-     * It was created so that method {@code getArtifacts} could catch and handle the exception, otherwise it would have to be
-     * handled in higher level method.
+     * It was created so that method {@code getArtifacts} could catch and handle the exception, otherwise it would have
+     * to be handled in higher level method.
      *
      * @param <T> Return type of the Function
      */

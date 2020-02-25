@@ -249,8 +249,8 @@ public class ImportControllerImpl implements ImportController {
     }
 
     /**
-     * If the exception.getMessage() is null, return the stacktrace instead If exception.getMessage() is not-null, just return the
-     * message
+     * If the exception.getMessage() is null, return the stacktrace instead If exception.getMessage() is not-null, just
+     * return the message
      *
      * @param e exception
      * @return reason for exception
