@@ -41,8 +41,12 @@ public interface BuildTranslator {
     ImportFileGenerator getImportFiles(BuildArtifacts build, String log) throws CausewayException;
 
     @Deprecated
-    KojiImport translate(BrewNVR nvr, org.jboss.pnc.dto.Build build, BuildArtifacts artifacts, String log, String username)
-            throws CausewayException;
+    KojiImport translate(
+            BrewNVR nvr,
+            org.jboss.pnc.dto.Build build,
+            BuildArtifacts artifacts,
+            String log,
+            String username) throws CausewayException;
 
     public ImportFileGenerator getImportFiles(Build build) throws CausewayException;
 
@@ -63,17 +67,19 @@ public interface BuildTranslator {
         }
 
         return build.getBuiltArtifacts()
-                    .stream()
-                    .filter(filter)
-                    .map(getVersion)
-                    .filter(Objects::nonNull)
-                    .findAny()
-                    .orElseThrow(() -> new CausewayException(
-                            "Build version or BuildType (MVN,NPM...) not specified and couldn't determine any from artifacts."));
+                .stream()
+                .filter(filter)
+                .map(getVersion)
+                .filter(Objects::nonNull)
+                .findAny()
+                .orElseThrow(
+                        () -> new CausewayException(
+                                "Build version or BuildType (MVN,NPM...) not specified and couldn't determine any from artifacts."));
     }
 
     @Deprecated
-    public static String guessVersion(org.jboss.pnc.dto.Build build, BuildArtifacts artifacts) throws CausewayException {
+    public static String guessVersion(org.jboss.pnc.dto.Build build, BuildArtifacts artifacts)
+            throws CausewayException {
         String delim = ":";
         BuildType buildType = build.getBuildConfigRevision().getBuildType();
 
@@ -95,11 +101,12 @@ public interface BuildTranslator {
         }
 
         return artifacts.buildArtifacts.stream()
-                                       .map(artifact -> artifact.identifier.split(delim))
-                                       .filter(i -> i.length >= parts)
-                                       .map(i -> i[parts - 1])
-                                       .findAny()
-                                       .orElseThrow(() -> new CausewayException(
-                                               "Build version or BuildType (MVN,NPM...) not specified and couldn't determine any from artifacts."));
+                .map(artifact -> artifact.identifier.split(delim))
+                .filter(i -> i.length >= parts)
+                .map(i -> i[parts - 1])
+                .findAny()
+                .orElseThrow(
+                        () -> new CausewayException(
+                                "Build version or BuildType (MVN,NPM...) not specified and couldn't determine any from artifacts."));
     }
 }

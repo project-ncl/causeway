@@ -105,8 +105,9 @@ public class BrewClientImpl implements BrewClient {
         final Map<String, Object> extra = bi.getExtra();
         Object buildSystem = extra == null ? null : extra.get(KojiJsonConstants.BUILD_SYSTEM);
         if (buildSystem == null || !BuildTranslatorImpl.PNC.equals(buildSystem)) {
-            throw new CausewayFailure("Found conflicting brew build " + bi.getId() + " (build doesn't have "
-                    + KojiJsonConstants.BUILD_SYSTEM + " set to " + BuildTranslatorImpl.PNC + ")");
+            throw new CausewayFailure(
+                    "Found conflicting brew build " + bi.getId() + " (build doesn't have "
+                            + KojiJsonConstants.BUILD_SYSTEM + " set to " + BuildTranslatorImpl.PNC + ")");
         }
     }
 
@@ -151,11 +152,11 @@ public class BrewClientImpl implements BrewClient {
     }
 
     @Override
-    public BuildImportResultRest importBuild(BrewNVR nvr,
-                                             int buildRecordId,
-                                             KojiImport kojiImport,
-                                             ImportFileGenerator importFiles)
-            throws CausewayException {
+    public BuildImportResultRest importBuild(
+            BrewNVR nvr,
+            int buildRecordId,
+            KojiImport kojiImport,
+            ImportFileGenerator importFiles) throws CausewayException {
         log.info("Importing build {}.", nvr.getNVR());
         BuildImportResultRest ret = new BuildImportResultRest();
         ret.setBuildRecordId(buildRecordId);
@@ -190,14 +191,17 @@ public class BrewClientImpl implements BrewClient {
     }
 
     @Override
-    public BrewBuild importBuild(BrewNVR nvr, KojiImport kojiImport, ImportFileGenerator importFiles) throws CausewayException {
+    public BrewBuild importBuild(BrewNVR nvr, KojiImport kojiImport, ImportFileGenerator importFiles)
+            throws CausewayException {
         KojiSessionInfo session = login();
         KojiImportResult result;
         try {
             result = koji.importBuild(kojiImport, importFiles, session);
         } catch (KojiClientException ex) {
-            throw new CausewayFailure(getImportErrors(null, importFiles),
-                    "Failure while importing builds to Koji: " + ex.getMessage(), ex);
+            throw new CausewayFailure(
+                    getImportErrors(null, importFiles),
+                    "Failure while importing builds to Koji: " + ex.getMessage(),
+                    ex);
         }
         koji.logout(session);
 
@@ -225,9 +229,9 @@ public class BrewClientImpl implements BrewClient {
                     artifactId = -1;
                 }
                 ArtifactImportError importError = ArtifactImportError.builder()
-                                                                     .artifactId(String.valueOf(artifactId))
-                                                                     .errorMessage(e.getValue().getError().getMessage())
-                                                                     .build();
+                        .artifactId(String.valueOf(artifactId))
+                        .errorMessage(e.getValue().getError().getMessage())
+                        .build();
                 importErrors.add(importError);
                 log.warn("Failed to import: {}", e.getValue());
             }
@@ -236,9 +240,9 @@ public class BrewClientImpl implements BrewClient {
         if (!importerErrors.isEmpty()) {
             for (Map.Entry<Integer, String> e : importerErrors.entrySet()) {
                 ArtifactImportError importError = ArtifactImportError.builder()
-                                                                     .artifactId(String.valueOf(e.getKey()))
-                                                                     .errorMessage(e.getValue())
-                                                                     .build();
+                        .artifactId(String.valueOf(e.getKey()))
+                        .errorMessage(e.getValue())
+                        .build();
                 importErrors.add(importError);
                 log.warn("Failed to import: {}", e.getValue());
             }

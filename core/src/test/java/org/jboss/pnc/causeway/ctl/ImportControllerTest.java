@@ -97,7 +97,8 @@ public class ImportControllerTest {
 
     private static final BrewNVR NVR = new BrewNVR(BUILD_NAME, BUILD_VERSION, "1");
 
-    private static final ExternalLogImportFileGenerator IMPORT_FILE_GENERATOR = mock(ExternalLogImportFileGenerator.class);
+    private static final ExternalLogImportFileGenerator IMPORT_FILE_GENERATOR = mock(
+            ExternalLogImportFileGenerator.class);
     private static final KojiImport KOJI_IMPORT = mock(KojiImport.class);
 
     private static final ObjectMapper mapper = new KojiObjectMapper();
@@ -239,14 +240,12 @@ public class ImportControllerTest {
 
         List<ArtifactImportError> artifactImportErrors = new ArrayList<>();
         ArtifactImportError importError = ArtifactImportError.builder()
-                                                             .artifactId(String.valueOf(123))
-                                                             .errorMessage(errorMessage)
-                                                             .build();
+                .artifactId(String.valueOf(123))
+                .errorMessage(errorMessage)
+                .build();
         artifactImportErrors.add(importError);
         doThrow(new CausewayFailure(artifactImportErrors, exceptionMessage)).when(brewClient)
-                                                                            .importBuild(eq(NVR),
-                                                                                         same(KOJI_IMPORT),
-                                                                                         same(IMPORT_FILE_GENERATOR));
+                .importBuild(eq(NVR), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
 
         // Run import
         importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME);
@@ -303,9 +302,9 @@ public class ImportControllerTest {
 
     private void verifySuccess(String log) {
 
-        String result = "{" + "\"id\":null," + "\"buildId\":\"61\"," + "\"status\":\"SUCCESS\"," + "\"log\":\"" + log + "\","
-                + "\"artifactImportErrors\":null," + "\"brewBuildId\":11," + "\"brewBuildUrl\":\"" + KOJI_BUILD_URL + "11\""
-                + "}";
+        String result = "{" + "\"id\":null," + "\"buildId\":\"61\"," + "\"status\":\"SUCCESS\"," + "\"log\":\"" + log
+                + "\"," + "\"artifactImportErrors\":null," + "\"brewBuildId\":11," + "\"brewBuildUrl\":\""
+                + KOJI_BUILD_URL + "11\"" + "}";
 
         WireMock.verify(postRequestedFor(urlEqualTo("/callback")).withRequestBody(WireMock.equalToJson(result)));
     }
@@ -318,20 +317,23 @@ public class ImportControllerTest {
         String artifacts = "null";
         if (!artifactImportErrors.isEmpty()) {
             artifacts = artifactImportErrors.stream()
-                                            .map(a -> "{" + "\"artifactId\":\"" + a.getArtifactId() + "\","
-                                                    + "\"errorMessage\":\"" + a.getErrorMessage() + "\"" + "}")
-                                            .collect(Collectors.joining(",", "[", "]"));
+                    .map(
+                            a -> "{" + "\"artifactId\":\"" + a.getArtifactId() + "\"," + "\"errorMessage\":\""
+                                    + a.getErrorMessage() + "\"" + "}")
+                    .collect(Collectors.joining(",", "[", "]"));
         }
 
-        String result = "{" + "\"id\":null," + "\"buildId\":\"61\"," + "\"status\":\"FAILED\"," + "\"log\":\"" + log + "\","
-                + "\"artifactImportErrors\":" + artifacts + "," + "\"brewBuildId\":null," + "\"brewBuildUrl\":null" + "}";
+        String result = "{" + "\"id\":null," + "\"buildId\":\"61\"," + "\"status\":\"FAILED\"," + "\"log\":\"" + log
+                + "\"," + "\"artifactImportErrors\":" + artifacts + "," + "\"brewBuildId\":null,"
+                + "\"brewBuildUrl\":null" + "}";
 
         WireMock.verify(postRequestedFor(urlEqualTo("/callback")).withRequestBody(WireMock.equalToJson(result)));
     }
 
     private void verifyError(String log) {
-        String result = "{" + "\"id\":null," + "\"buildId\":\"61\"," + "\"status\":\"SYSTEM_ERROR\"," + "\"log\":\"" + log
-                + "\"," + "\"artifactImportErrors\":null," + "\"brewBuildId\":null," + "\"brewBuildUrl\":null" + "}";
+        String result = "{" + "\"id\":null," + "\"buildId\":\"61\"," + "\"status\":\"SYSTEM_ERROR\"," + "\"log\":\""
+                + log + "\"," + "\"artifactImportErrors\":null," + "\"brewBuildId\":null," + "\"brewBuildUrl\":null"
+                + "}";
 
         WireMock.verify(postRequestedFor(urlEqualTo("/callback")).withRequestBody(WireMock.equalToJson(result)));
     }

@@ -59,22 +59,28 @@ public class TranslatorTest {
 
         org.jboss.pnc.dto.Build build = mapper.readValue(json, org.jboss.pnc.dto.Build.class);
         BuildArtifacts artifacts = new BuildArtifacts();
-        artifacts.buildArtifacts.add(newArtifact(2369,
-                                                 "org.apache.geronimo.specs",
-                                                 "geronimo-annotation_1.0_spec",
-                                                 "1.1.1.redhat-1",
-                                                 "pom"));
-        artifacts.buildArtifacts.add(newArtifact(2370,
-                                                 "org.apache.geronimo.specs",
-                                                 "geronimo-annotation_1.0_spec",
-                                                 "1.1.1.redhat-1",
-                                                 "jar"));
-        artifacts.buildArtifacts.add(newArtifact(2371,
-                                                 "org.apache.geronimo.specs",
-                                                 "geronimo-annotation_1.0_spec",
-                                                 "1.1.1.redhat-1",
-                                                 "tar.gz",
-                                                 "project-sources"));
+        artifacts.buildArtifacts.add(
+                newArtifact(
+                        2369,
+                        "org.apache.geronimo.specs",
+                        "geronimo-annotation_1.0_spec",
+                        "1.1.1.redhat-1",
+                        "pom"));
+        artifacts.buildArtifacts.add(
+                newArtifact(
+                        2370,
+                        "org.apache.geronimo.specs",
+                        "geronimo-annotation_1.0_spec",
+                        "1.1.1.redhat-1",
+                        "jar"));
+        artifacts.buildArtifacts.add(
+                newArtifact(
+                        2371,
+                        "org.apache.geronimo.specs",
+                        "geronimo-annotation_1.0_spec",
+                        "1.1.1.redhat-1",
+                        "tar.gz",
+                        "project-sources"));
 
         artifacts.dependencies.add(newArtifact(7, "org.apache.maven", "maven-project", "2.0.6", "pom"));
         artifacts.dependencies.add(newArtifact(9, "org.apache.maven.shared", "maven-shared-io", "1.1", "jar"));
@@ -100,20 +106,22 @@ public class TranslatorTest {
         System.out.println("RESULTA:\n" + jsonOut);
     }
 
-    private static org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact newArtifact(int id,
-                                                                                           String groupId,
-                                                                                           String artifactId,
-                                                                                           String version,
-                                                                                           String type) {
+    private static org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact newArtifact(
+            int id,
+            String groupId,
+            String artifactId,
+            String version,
+            String type) {
         return newArtifact(id, groupId, artifactId, version, type, null);
     }
 
-    private static BuildArtifacts.PncArtifact newArtifact(int id,
-                                                          String groupId,
-                                                          String artifactId,
-                                                          String version,
-                                                          String type,
-                                                          String specifier) {
+    private static BuildArtifacts.PncArtifact newArtifact(
+            int id,
+            String groupId,
+            String artifactId,
+            String version,
+            String type,
+            String specifier) {
         final String filename;
         final String identifier;
         if (specifier == null) {
@@ -124,8 +132,13 @@ public class TranslatorTest {
             identifier = groupId + ":" + artifactId + ":" + type + ":" + version + ":" + specifier;
         }
         final String path = groupId.replace('.', '/') + "/" + artifactId + "/" + version + "/" + filename;
-        return new BuildArtifacts.PncArtifact(id, identifier, filename, "bedf8af1b107b36c72f52009e6fcc768",
-                "http://ulozto.cz/api/hosted/build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/" + path, 13245,
+        return new BuildArtifacts.PncArtifact(
+                id,
+                identifier,
+                filename,
+                "bedf8af1b107b36c72f52009e6fcc768",
+                "http://ulozto.cz/api/hosted/build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/" + path,
+                13245,
                 ArtifactQuality.NEW);
     }
 

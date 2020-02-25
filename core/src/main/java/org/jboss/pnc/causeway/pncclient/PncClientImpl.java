@@ -63,11 +63,15 @@ public class PncClientImpl implements PncClient {
         try {
             milestone = milestoneClient.getSpecific(String.valueOf(milestoneId));
         } catch (RemoteResourceNotFoundException e) {
-            throw new CausewayException("Can not read tag because PNC haven't managed to find product milestone with id "
-                    + milestoneId + " - response " + e.getStatus(), e);
+            throw new CausewayException(
+                    "Can not read tag because PNC haven't managed to find product milestone with id " + milestoneId
+                            + " - response " + e.getStatus(),
+                    e);
         } catch (RemoteResourceException e) {
-            throw new CausewayException("Can not read tag because PNC responded with an error when getting product milestone "
-                    + milestoneId + " - response " + e.getStatus(), e);
+            throw new CausewayException(
+                    "Can not read tag because PNC responded with an error when getting product milestone " + milestoneId
+                            + " - response " + e.getStatus(),
+                    e);
         } catch (ClientException e) {
             throw new CausewayException("Unknown error - message = " + e.getMessage(), e);
         }
@@ -78,10 +82,11 @@ public class PncClientImpl implements PncClient {
     public Collection<Build> findBuildsOfProductMilestone(int milestoneId) throws CausewayException {
         Collection<Build> builds = new HashSet<>();
         try {
-            RemoteCollection<Build> buildPages = milestoneClient.getBuilds(String.valueOf(milestoneId),
-                                                                           new BuildsFilterParameters(),
-                                                                           Optional.empty(),
-                                                                           Optional.of("status==SUCCESS"));
+            RemoteCollection<Build> buildPages = milestoneClient.getBuilds(
+                    String.valueOf(milestoneId),
+                    new BuildsFilterParameters(),
+                    Optional.empty(),
+                    Optional.of("status==SUCCESS"));
             for (Build build : buildPages) {
                 if (build.getStatus().equals(BuildStatus.SUCCESS))
                     ;
@@ -89,7 +94,8 @@ public class PncClientImpl implements PncClient {
             }
         } catch (RemoteResourceException e) {
             throw new CausewayException(
-                    "Can not read builds for product milestone " + milestoneId + " - response " + e.getStatus(), e);
+                    "Can not read builds for product milestone " + milestoneId + " - response " + e.getStatus(),
+                    e);
         }
         return builds;
     }
@@ -99,13 +105,16 @@ public class PncClientImpl implements PncClient {
         Optional<InputStream> log;
         try {
             log = buildClient.getBuildLogs(String.valueOf(buildId));
-            InputStream logInput = log.orElseThrow(() -> new CausewayException(
-                    "Build log for Build " + buildId + " is empty - response " + NOT_FOUND_CODE));
+            InputStream logInput = log.orElseThrow(
+                    () -> new CausewayException(
+                            "Build log for Build " + buildId + " is empty - response " + NOT_FOUND_CODE));
             Scanner s = new Scanner(logInput).useDelimiter("\\A");
             return s.hasNext() ? s.next() : "";
         } catch (RemoteResourceException e) {
-            throw new CausewayException("Can not read build log of build " + buildId
-                    + " because PNC responded with an error - response " + e.getStatus(), e);
+            throw new CausewayException(
+                    "Can not read build log of build " + buildId + " because PNC responded with an error - response "
+                            + e.getStatus(),
+                    e);
         }
     }
 
@@ -127,13 +136,19 @@ public class PncClientImpl implements PncClient {
         String deployPath = artifact.getDeployPath();
         if (deployPath.startsWith("/"))
             deployPath = deployPath.substring(1);
-        return new PncArtifact(Integer.valueOf(artifact.getId()), artifact.getIdentifier(), deployPath, artifact.getMd5(),
-                artifact.getDeployUrl(), artifact.getSize() == null ? 1 : artifact.getSize(), artifact.getArtifactQuality());
+        return new PncArtifact(
+                Integer.valueOf(artifact.getId()),
+                artifact.getIdentifier(),
+                deployPath,
+                artifact.getMd5(),
+                artifact.getDeployUrl(),
+                artifact.getSize() == null ? 1 : artifact.getSize(),
+                artifact.getArtifactQuality());
     }
 
-    private Collection<PncArtifact> getArtifacts(Integer buildId,
-                                                 IntFunctionWithRemoteException<RemoteCollection<Artifact>> query)
-            throws CausewayException {
+    private Collection<PncArtifact> getArtifacts(
+            Integer buildId,
+            IntFunctionWithRemoteException<RemoteCollection<Artifact>> query) throws CausewayException {
         Collection<PncArtifact> pncArtifacts = new HashSet<>();
         try {
             RemoteCollection<Artifact> artifacts = query.get(String.valueOf(buildId));
@@ -141,7 +156,9 @@ public class PncClientImpl implements PncClient {
                 pncArtifacts.add(toPncArtifact(artifact));
             }
         } catch (RemoteResourceException e) {
-            throw new CausewayException("Can't get info for build with id " + buildId + " - response " + e.getStatus(), e);
+            throw new CausewayException(
+                    "Can't get info for build with id " + buildId + " - response " + e.getStatus(),
+                    e);
         }
         return pncArtifacts;
     }

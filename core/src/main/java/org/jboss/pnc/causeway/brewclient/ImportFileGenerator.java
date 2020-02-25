@@ -92,9 +92,10 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
                 MDCUtils.headersFromContext().forEach(connection::addRequestProperty);
                 connection.setRequestMethod("HEAD");
                 if (connection.getResponseCode() != 200) {
-                    fail(artifact,
-                         "Failed to obtain artifact (status " + connection.getResponseCode() + " "
-                                 + connection.getResponseMessage() + ")");
+                    fail(
+                            artifact,
+                            "Failed to obtain artifact (status " + connection.getResponseCode() + " "
+                                    + connection.getResponseMessage() + ")");
                     return null;
                 }
                 String contentLength = connection.getHeaderField("Content-Length");

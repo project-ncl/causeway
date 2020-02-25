@@ -16,7 +16,8 @@ class UserService {
     private HttpServletRequest sr;
 
     public String getUsername() {
-        KeycloakSecurityContext ksc = (KeycloakSecurityContext) sr.getAttribute(KeycloakSecurityContext.class.getName());
+        KeycloakSecurityContext ksc = (KeycloakSecurityContext) sr
+                .getAttribute(KeycloakSecurityContext.class.getName());
 
         if (ksc == null) {
             throw new IllegalStateException("No user information. Is user logged in?");
