@@ -30,5 +30,6 @@ public enum BuildImportStatus {
     /**
      * some of the artifacts failed to import
      */
-    FAILED, SUCCESSFUL
+    FAILED,
+    SUCCESSFUL
 }
