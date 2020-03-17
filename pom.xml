@@ -19,9 +19,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava</groupId>
-    <artifactId>commonjava</artifactId>
-    <version>13</version>
+    <groupId>org.jboss</groupId>
+    <artifactId>jboss-parent</artifactId>
+    <version>36</version>
+    <relativePath />
   </parent>
   
   <groupId>org.jboss.pnc.causeway</groupId>
@@ -260,23 +261,6 @@
     </dependency>
   </dependencies>
   <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-ejb-plugin</artifactId>
-          <version>2.5.1</version>
-          <configuration>
-            <ejbVersion>3.1</ejbVersion>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-war-plugin</artifactId>
-          <version>2.5</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -312,24 +296,6 @@
           </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>enforce-best-practices</id>
-            <configuration>
-              <rules>
-                <requireNoRepositories>
-                  <banRepositories>
-                      false
-                  </banRepositories>
-                </requireNoRepositories>
-              </rules>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
           <groupId>com.mycila</groupId>
           <artifactId>license-maven-plugin</artifactId>
           <executions>
@@ -337,6 +303,26 @@
                   <phase>none</phase>
               </execution>
           </executions>
+      </plugin>
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <configuration>
+              <tagNameFormat>@{project.version}</tagNameFormat>
+              <autoVersionSubmodules>true</autoVersionSubmodules>
+	      <releaseProfiles>release</releaseProfiles>
+          </configuration>
+      </plugin>
+      <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-staging-maven-plugin</artifactId>
+          <version>1.6.8</version>
+          <extensions>true</extensions>
+          <configuration>
+              <serverId>ossrh</serverId>
+              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+              <autoReleaseAfterClose>false</autoReleaseAfterClose>
+          </configuration>
       </plugin>
     </plugins>
   </build>
