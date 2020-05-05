@@ -37,7 +37,6 @@ import org.jboss.pnc.causeway.rest.pnc.BuildImportResultRest;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportStatus;
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
 import org.jboss.pnc.causeway.rest.pnc.ReleaseStatus;
-import org.jboss.pnc.dto.ArtifactImportError;
 import org.jboss.pnc.dto.Build;
 import org.jboss.pnc.dto.BuildConfigurationRevision;
 import org.jboss.pnc.dto.Environment;
@@ -55,12 +54,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -238,7 +235,6 @@ public class PncImportControllerTest {
                 11,
                 "https://koji.myco.com/brew/buildinfo?buildID=11",
                 BuildImportStatus.SUCCESSFUL,
-                null,
                 null);
         doReturn(buildImportResultRest).when(brewClient)
                 .importBuild(eq(NVR), eq(buildId), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
@@ -328,26 +324,17 @@ public class PncImportControllerTest {
     public void testImportProductReleaseWithArtifactImportErrors() throws Exception {
         Integer milestoneId = generator.nextInt();
         Integer buildId = generator.nextInt();
-        String errorMessage = "Artifact import error";
-
         // Test setup
         mockPNC(milestoneId, buildId, BuildType.MVN);
         mockBrew();
         mockTranslator();
 
-        List<ArtifactImportError> artifactImportErrors = new ArrayList<>();
-        ArtifactImportError importError = ArtifactImportError.builder()
-                .artifactId(String.valueOf(123))
-                .errorMessage(errorMessage)
-                .build();
-        artifactImportErrors.add(importError);
         BuildImportResultRest buildImportResultRest = new BuildImportResultRest(
                 buildId,
                 11,
                 "https://koji.myco.com/brew/buildinfo?buildID=11",
                 BuildImportStatus.FAILED,
-                null,
-                artifactImportErrors);
+                null);
 
         doReturn(buildImportResultRest).when(brewClient)
                 .importBuild(eq(NVR), eq(buildId), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
@@ -363,15 +350,6 @@ public class PncImportControllerTest {
         BuildImportResultRest buildResult = result.getBuilds().get(0);
         assertEquals(buildId, buildResult.getBuildRecordId());
         assertEquals(BuildImportStatus.FAILED, buildResult.getStatus());
-        // that the aritfact import error is present
-        assertNotNull(buildImportResultRest.getErrors());
-        assertEquals(1, buildImportResultRest.getErrors().size());
-        ArtifactImportError resultImportError = buildImportResultRest.getErrors().get(0);
-        // that user gets the exception message
-        assertNotNull(resultImportError.getErrorMessage());
-        assertTrue(
-                "Build error message doesn't contain expected data",
-                resultImportError.getErrorMessage().contains(errorMessage));
     }
 
     @Test
