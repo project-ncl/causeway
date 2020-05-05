@@ -42,7 +42,6 @@ import org.jboss.pnc.causeway.rest.model.MavenBuild;
 import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
 import org.jboss.pnc.causeway.rest.model.NpmBuild;
 import org.jboss.pnc.causeway.rest.model.NpmBuiltArtifact;
-import org.jboss.pnc.dto.ArtifactImportError;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,10 +54,6 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -76,6 +71,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.when;
+import static org.skyscreamer.jsonassert.JSONCompareMode.LENIENT;
 
 public class ImportControllerTest {
 
@@ -231,27 +227,20 @@ public class ImportControllerTest {
 
     @Test
     public void testImportBuildWithArtifactImportErrors() throws Exception {
-        String errorMessage = "Artifact import error";
         final String exceptionMessage = "Failure while importing artifacts";
 
         // Test setup
         mockBrew();
         mockTranslator();
 
-        List<ArtifactImportError> artifactImportErrors = new ArrayList<>();
-        ArtifactImportError importError = ArtifactImportError.builder()
-                .artifactId(String.valueOf(123))
-                .errorMessage(errorMessage)
-                .build();
-        artifactImportErrors.add(importError);
-        doThrow(new CausewayFailure(artifactImportErrors, exceptionMessage)).when(brewClient)
+        doThrow(new CausewayFailure(exceptionMessage)).when(brewClient)
                 .importBuild(eq(NVR), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
 
         // Run import
         importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME);
 
         // Verify
-        verifyFailure(exceptionMessage, artifactImportErrors);
+        verifyFailure(exceptionMessage);
     }
 
     @Test
@@ -300,42 +289,29 @@ public class ImportControllerTest {
         field.set(obj, newValue);
     }
 
-    private void verifySuccess(String log) {
+    private void verifySuccess(String message) {
 
-        String result = "{" + "\"id\":null," + "\"buildId\":\"61\"," + "\"status\":\"SUCCESS\"," + "\"log\":\"" + log
-                + "\"," + "\"artifactImportErrors\":null," + "\"brewBuildId\":11," + "\"brewBuildUrl\":\""
-                + KOJI_BUILD_URL + "11\"" + "}";
+        String result = "{" + "\"id\":null," + "\"buildId\":\"61\"," + "\"status\":\"SUCCESS\"," + "\"message\":\""
+                + message + "\"," + "\"brewBuildId\":11," + "\"brewBuildUrl\":\"" + KOJI_BUILD_URL + "11\"" + "}";
 
-        WireMock.verify(postRequestedFor(urlEqualTo("/callback")).withRequestBody(WireMock.equalToJson(result)));
+        WireMock.verify(
+                postRequestedFor(urlEqualTo("/callback")).withRequestBody(WireMock.equalToJson(result, LENIENT)));
     }
 
-    private void verifyFailure(String log) {
-        verifyFailure(log, Collections.emptyList());
+    private void verifyFailure(String message) {
+        String result = "{" + "\"id\":null," + "\"buildId\":\"61\"," + "\"status\":\"FAILED\"," + "\"message\":\""
+                + message + "\"," + "\"brewBuildId\":null," + "\"brewBuildUrl\":null" + "}";
+
+        WireMock.verify(
+                postRequestedFor(urlEqualTo("/callback")).withRequestBody(WireMock.equalToJson(result, LENIENT)));
     }
 
-    private void verifyFailure(String log, List<ArtifactImportError> artifactImportErrors) {
-        String artifacts = "null";
-        if (!artifactImportErrors.isEmpty()) {
-            artifacts = artifactImportErrors.stream()
-                    .map(
-                            a -> "{" + "\"artifactId\":\"" + a.getArtifactId() + "\"," + "\"errorMessage\":\""
-                                    + a.getErrorMessage() + "\"" + "}")
-                    .collect(Collectors.joining(",", "[", "]"));
-        }
+    private void verifyError(String message) {
+        String result = "{" + "\"id\":null," + "\"buildId\":\"61\"," + "\"status\":\"SYSTEM_ERROR\"," + "\"message\":\""
+                + message + "\"," + "\"brewBuildId\":null," + "\"brewBuildUrl\":null" + "}";
 
-        String result = "{" + "\"id\":null," + "\"buildId\":\"61\"," + "\"status\":\"FAILED\"," + "\"log\":\"" + log
-                + "\"," + "\"artifactImportErrors\":" + artifacts + "," + "\"brewBuildId\":null,"
-                + "\"brewBuildUrl\":null" + "}";
-
-        WireMock.verify(postRequestedFor(urlEqualTo("/callback")).withRequestBody(WireMock.equalToJson(result)));
-    }
-
-    private void verifyError(String log) {
-        String result = "{" + "\"id\":null," + "\"buildId\":\"61\"," + "\"status\":\"SYSTEM_ERROR\"," + "\"log\":\""
-                + log + "\"," + "\"artifactImportErrors\":null," + "\"brewBuildId\":null," + "\"brewBuildUrl\":null"
-                + "}";
-
-        WireMock.verify(postRequestedFor(urlEqualTo("/callback")).withRequestBody(WireMock.equalToJson(result)));
+        WireMock.verify(
+                postRequestedFor(urlEqualTo("/callback")).withRequestBody(WireMock.equalToJson(result, LENIENT)));
     }
 
     private String readResponseBodyFromTemplate(String name) throws IOException {

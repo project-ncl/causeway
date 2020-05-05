@@ -29,14 +29,11 @@ import org.jboss.pnc.causeway.CausewayFailure;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
-import org.jboss.pnc.dto.ArtifactImportError;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportResultRest;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportStatus;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
@@ -167,9 +164,7 @@ public class BrewClientImpl implements BrewClient {
             KojiImportResult result = koji.importBuild(kojiImport, importFiles, session);
             koji.logout(session);
 
-            List<ArtifactImportError> importErrors = getImportErrors(result, importFiles);
-            if (!importErrors.isEmpty()) {
-                ret.setErrors(importErrors);
+            if (checkImportErrors(result, importFiles)) {
                 ret.setStatus(BuildImportStatus.FAILED);
             }
 
@@ -198,16 +193,13 @@ public class BrewClientImpl implements BrewClient {
         try {
             result = koji.importBuild(kojiImport, importFiles, session);
         } catch (KojiClientException ex) {
-            throw new CausewayFailure(
-                    getImportErrors(null, importFiles),
-                    "Failure while importing builds to Koji: " + ex.getMessage(),
-                    ex);
+            checkImportErrors(null, importFiles); // to ensure errors are logged for users
+            throw new CausewayFailure("Failure while importing builds to Koji: " + ex.getMessage(), ex);
         }
         koji.logout(session);
 
-        List<ArtifactImportError> importErrors = getImportErrors(result, importFiles);
-        if (!importErrors.isEmpty()) {
-            throw new CausewayFailure(importErrors, "Failure while importing artifacts");
+        if (checkImportErrors(result, importFiles)) {
+            throw new CausewayFailure("Failure while importing artifacts");
         }
 
         KojiBuildInfo bi = result.getBuildInfo();
@@ -218,36 +210,22 @@ public class BrewClientImpl implements BrewClient {
         return toBrewBuild(bi, nvr);
     }
 
-    private List<ArtifactImportError> getImportErrors(KojiImportResult result, ImportFileGenerator importFiles) {
-        List<ArtifactImportError> importErrors = new ArrayList<>();
+    private boolean checkImportErrors(KojiImportResult result, ImportFileGenerator importFiles) {
+        boolean errorsPresent = false;
         Map<String, KojijiErrorInfo> kojiErrors = result == null ? null : result.getUploadErrors();
         if (kojiErrors != null) {
             for (Map.Entry<String, KojijiErrorInfo> e : kojiErrors.entrySet()) {
                 Integer artifactId = importFiles.getId(e.getKey());
-                if (artifactId == null) {
-                    log.error("Artifact id is null for path {}. This shouldn't happen.", e.getKey());
-                    artifactId = -1;
-                }
-                ArtifactImportError importError = ArtifactImportError.builder()
-                        .artifactId(String.valueOf(artifactId))
-                        .errorMessage(e.getValue().getError().getMessage())
-                        .build();
-                importErrors.add(importError);
-                log.warn("Failed to import: {}", e.getValue());
+                log.warn("Failed to import artifact {} ({}): {}", artifactId, e.getKey(), e.getValue());
+                errorsPresent = true;
             }
         }
-        Map<Integer, String> importerErrors = importFiles.getErrors();
-        if (!importerErrors.isEmpty()) {
-            for (Map.Entry<Integer, String> e : importerErrors.entrySet()) {
-                ArtifactImportError importError = ArtifactImportError.builder()
-                        .artifactId(String.valueOf(e.getKey()))
-                        .errorMessage(e.getValue())
-                        .build();
-                importErrors.add(importError);
-                log.warn("Failed to import: {}", e.getValue());
-            }
+
+        for (Map.Entry<Integer, String> e : importFiles.getErrors().entrySet()) {
+            log.warn("Failed to import artifact {}: {}", e.getKey(), e.getValue());
+            errorsPresent = true;
         }
-        return importErrors;
+        return errorsPresent;
     }
 
     @Override

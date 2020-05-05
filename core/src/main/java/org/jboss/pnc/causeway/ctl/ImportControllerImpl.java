@@ -102,17 +102,16 @@ public class ImportControllerImpl implements ImportController {
             response.brewBuildId(result.getBrewID());
             response.brewBuildUrl(result.getBrewURL());
             response.status(BuildPushStatus.SUCCESS);
-            response.log(result.getMessage());
+            response.message(result.getMessage());
         } catch (CausewayFailure ex) {
             log.error("Failed to import build.", ex);
             response.status(BuildPushStatus.FAILED);
-            response.artifactImportErrors(ex.getArtifactErrors());
-            response.log(getMessageOrStacktrace(ex));
+            response.message(getMessageOrStacktrace(ex));
             errors.mark();
         } catch (CausewayException | RuntimeException ex) {
             log.error("Error while importing build.", ex);
             response.status(BuildPushStatus.SYSTEM_ERROR);
-            response.log(getMessageOrStacktrace(ex));
+            response.message(getMessageOrStacktrace(ex));
             errors.mark();
         }
         respond(callback, response.build());

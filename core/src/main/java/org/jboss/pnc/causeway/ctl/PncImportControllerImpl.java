@@ -43,7 +43,6 @@ import org.jboss.pnc.causeway.rest.pnc.BuildImportResultRest;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportStatus;
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
 import org.jboss.pnc.causeway.rest.pnc.ReleaseStatus;
-import org.jboss.pnc.dto.ArtifactImportError;
 import org.jboss.pnc.dto.Build;
 import org.jboss.pnc.enums.ArtifactQuality;
 
@@ -247,11 +246,10 @@ public class PncImportControllerImpl implements PncImportController {
         }
 
         for (BuildArtifacts.PncArtifact artifact : blackArtifacts) {
-            ArtifactImportError error = ArtifactImportError.builder()
-                    .artifactId(String.valueOf(artifact.id))
-                    .errorMessage("This artifact is blacklisted, so it was not imported.")
-                    .build();
-            buildResult.getErrors().add(error);
+            log.warn(
+                    "Failed to import artifact {}: {}",
+                    artifact.id,
+                    "This artifact is blacklisted, so it was not imported.");
         }
         return buildResult;
     }
