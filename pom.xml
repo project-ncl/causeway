@@ -81,6 +81,7 @@
         <enabled>true</enabled>
       </releases>
     </repository>
+
     <repository>
       <id>jboss-snapshots</id>
       <url>https://repository.jboss.org/nexus/content/repositories/snapshots</url>
@@ -90,6 +91,14 @@
       <releases>
         <enabled>false</enabled>
       </releases>
+    </repository>
+    
+    <repository>
+      <id>Nexus Staging</id>
+      <url>https://oss.sonatype.org/content/groups/staging</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
     </repository>
   </repositories>
 
