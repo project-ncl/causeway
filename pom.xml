@@ -64,13 +64,10 @@
   </properties>
 
   <modules>
-    <module>model-java</module>
     <module>core</module>
     <module>rest</module>
     <module>web</module>
     <module>application</module>
-    <module>tck</module>
-    <module>ftest</module>
   </modules>
 
   <repositories>
@@ -152,11 +149,6 @@
       </dependency>
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
-        <artifactId>causeway-model-java</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-core</artifactId>
         <type>ejb</type>
         <version>${project.version}</version>
@@ -172,12 +164,6 @@
         <artifactId>causeway-web</artifactId>
         <type>war</type>
         <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.pnc.causeway</groupId>
-        <artifactId>causeway-tck</artifactId>
-        <version>${project.version}</version>
-        <scope>test</scope>
       </dependency>
 
       <dependency>
