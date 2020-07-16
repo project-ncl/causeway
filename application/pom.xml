@@ -44,15 +44,6 @@
       <artifactId>causeway-rest</artifactId>
       <type>ejb</type>
     </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
-    <!-- Metrics dependencies -->
-    <dependency>
-      <groupId>org.jboss.pnc.metrics</groupId>
-      <artifactId>pncmetrics</artifactId>
-    </dependency>
   </dependencies>
   
   <build>
