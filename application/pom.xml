@@ -31,10 +31,6 @@
   <dependencies>
     <dependency>
       <groupId>org.jboss.pnc.causeway</groupId>
-      <artifactId>causeway-model-java</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.pnc.causeway</groupId>
       <artifactId>causeway-core</artifactId>
       <type>ejb</type>
     </dependency>
