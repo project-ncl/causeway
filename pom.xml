@@ -101,26 +101,7 @@
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
-       <groupId>com.github.zafarkhaja</groupId>
-        <artifactId>java-semver</artifactId>
-        <version>${semverVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.pnc</groupId>
-        <artifactId>constants</artifactId>
-        <version>${pncVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.pnc</groupId>
-        <artifactId>dto</artifactId>
-        <version>${pncVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.pnc</groupId>
-        <artifactId>rest-client</artifactId>
-        <version>${pncVersion}</version>
-      </dependency>
+      <!-- BOM -->
       <dependency>
         <groupId>org.jboss.bom</groupId>
         <artifactId>jboss-eap-javaee8-with-tools</artifactId>
@@ -135,18 +116,41 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <dependency>
-        <groupId>org.jboss.spec</groupId>
-        <artifactId>jboss-javaee-8.0</artifactId>
-        <version>1.0.1.Final</version>
-        <type>pom</type>
-      </dependency>
+
+      <!-- provided dependencies -->
       <dependency>
         <groupId>javax.annotation</groupId>
         <artifactId>javax.annotation-api</artifactId>
         <version>1.3.2</version>
         <scope>provided</scope>
       </dependency>
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>3.0.1</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>1.18.6</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.keycloak</groupId>
+        <artifactId>keycloak-core</artifactId>
+        <version>1.9.8.Final-redhat-1</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.spec</groupId>
+        <artifactId>jboss-javaee-8.0</artifactId>
+        <version>1.0.1.Final</version>
+        <type>pom</type>
+        <scope>provided</scope>
+      </dependency>
+
+      <!-- Causeway modules -->
       <dependency>
         <groupId>org.jboss.pnc.causeway</groupId>
         <artifactId>causeway-core</artifactId>
@@ -166,6 +170,24 @@
         <version>${project.version}</version>
       </dependency>
 
+      <!-- PNC dependencies -->
+      <dependency>
+        <groupId>org.jboss.pnc</groupId>
+        <artifactId>rest-client</artifactId>
+        <version>${pncVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.pnc.metrics</groupId>
+        <artifactId>pncmetrics</artifactId>
+        <version>${pncmetrics.version}</version>
+      </dependency>
+
+      <!-- Other dependencies -->
+      <dependency>
+       <groupId>com.github.zafarkhaja</groupId>
+        <artifactId>java-semver</artifactId>
+        <version>${semverVersion}</version>
+      </dependency>
       <dependency>
         <groupId>org.commonjava.util</groupId>
         <artifactId>configuration-api</artifactId>
@@ -178,53 +200,21 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.atlas</groupId>
-        <artifactId>atlas-identities</artifactId>
-        <version>${atlasVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.atlas</groupId>
         <artifactId>atlas-npm-identities</artifactId>
         <version>${atlasVersion}</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.util</groupId>
-        <artifactId>jhttpc</artifactId>
-        <version>${jhttpcVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.rwx</groupId>
-        <artifactId>rwx-bindings</artifactId>
-        <version>1.1</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <version>1.18.6</version>
+        <groupId>com.redhat.red.build</groupId>
+        <artifactId>kojiji</artifactId>
+        <version>${kojijiVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-servlets</artifactId>
         <version>9.3.11.v20160721</version>
       </dependency>
-      <dependency>
-        <groupId>org.keycloak</groupId>
-        <artifactId>keycloak-core</artifactId>
-        <version>1.9.8.Final-redhat-1</version>
-      </dependency>
 
-      <dependency>
-        <groupId>com.redhat.red.build</groupId>
-        <artifactId>kojiji</artifactId>
-        <version>${kojijiVersion}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.commonjava.util</groupId>
-        <artifactId>http-testserver</artifactId>
-        <version>1.1</version>
-        <scope>test</scope>
-      </dependency>
+      <!-- Test dependencies -->
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-all</artifactId>
@@ -238,13 +228,6 @@
         <scope>test</scope>
       </dependency>
 
-      <!-- Metrics dependencies -->
-      <dependency>
-        <groupId>org.jboss.pnc.metrics</groupId>
-        <artifactId>pncmetrics</artifactId>
-        <version>${pncmetrics.version}</version>
-      </dependency>
-
     </dependencies>
   </dependencyManagement>
   
@@ -252,7 +235,7 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <scope>compile</scope>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
   <build>
