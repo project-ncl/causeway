@@ -24,12 +24,12 @@
     <version>36</version>
     <relativePath />
   </parent>
-  
+
   <groupId>org.jboss.pnc.causeway</groupId>
   <artifactId>causeway</artifactId>
   <version>2.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-  
+
   <name>Causeway PNCL-to-Koji Bridge</name>
   <inceptionYear>2015</inceptionYear>
   <url>http://github.com/project-ncl/causeway</url>
@@ -89,7 +89,7 @@
         <enabled>false</enabled>
       </releases>
     </repository>
-    
+
     <repository>
       <id>Nexus Staging</id>
       <url>https://oss.sonatype.org/content/groups/staging</url>
@@ -204,6 +204,11 @@
         <version>${atlasVersion}</version>
       </dependency>
       <dependency>
+        <groupId>org.commonjava.rwx</groupId>
+        <artifactId>rwx-bindings</artifactId>
+        <version>1.1</version>
+      </dependency>
+      <dependency>
         <groupId>com.redhat.red.build</groupId>
         <artifactId>kojiji</artifactId>
         <version>${kojijiVersion}</version>
@@ -230,7 +235,7 @@
 
     </dependencies>
   </dependencyManagement>
-  
+
   <dependencies>
     <dependency>
       <groupId>org.slf4j</groupId>
