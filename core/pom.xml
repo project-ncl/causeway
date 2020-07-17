@@ -41,9 +41,9 @@
     </dependency>
 
     <dependency>
-      <groupId>org.jboss.spec</groupId>
-      <artifactId>jboss-javaee-8.0</artifactId>
-      <type>pom</type>
+      <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId>
+      <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
+      <type>jar</type>
     </dependency>
 
     <dependency>
@@ -98,6 +98,16 @@
     <dependency>
       <groupId>com.github.tomakehurst</groupId>
       <artifactId>wiremock</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-jackson2-provider</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

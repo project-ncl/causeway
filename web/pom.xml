@@ -43,6 +43,11 @@
       <type>ejb</type>
     </dependency>
     <dependency>
+      <groupId>org.jboss.spec.javax.ws.rs</groupId>
+      <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-core</artifactId>
     </dependency>
@@ -53,6 +58,10 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlets</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
     </dependency>
   </dependencies>
 
