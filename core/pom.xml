@@ -110,4 +110,25 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-ejb-plugin</artifactId>
+          <configuration>
+            <archive>
+              <manifestEntries combine.children="append">
+                <Dependencies>
+                  org.apache.httpcomponents export meta-inf
+                </Dependencies>
+              </manifestEntries>
+            </archive>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
 </project>
