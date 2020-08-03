@@ -44,6 +44,8 @@ import java.io.StringWriter;
 import lombok.extern.slf4j.Slf4j;
 
 import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageMissingTag;
+import org.jboss.pnc.constants.MDCKeys;
+import org.slf4j.MDC;
 
 /**
  *
@@ -85,6 +87,7 @@ public class ImportControllerImpl implements ImportController {
     @Override
     @Asynchronous
     public void importBuild(Build build, CallbackTarget callback, String username) {
+        MDC.put(MDCKeys.BUILD_ID_KEY, String.valueOf(build.getExternalBuildID()));
         log.info("Importing external build {} to tag {}.", build.getExternalBuildID(), build.getTagPrefix());
 
         MetricRegistry registry = metricsConfiguration.getMetricRegistry();

@@ -61,6 +61,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import static org.jboss.pnc.constants.Attributes.BUILD_BREW_NAME;
 import static org.jboss.pnc.constants.Attributes.BUILD_BREW_VERSION;
+import org.jboss.pnc.constants.MDCKeys;
+import org.slf4j.MDC;
 
 @Deprecated
 @Stateless
@@ -160,7 +162,7 @@ public class PncImportControllerImpl implements PncImportController {
         List<BuildImportResultRest> results = new ArrayList<>();
         for (Build build : builds) {
             BuildImportResultRest importResult;
-            try {
+            try (MDC.MDCCloseable mdcClose = MDC.putCloseable(MDCKeys.BUILD_ID_KEY, build.getId())) {
                 BuildArtifacts artifacts = pncClient.findBuildArtifacts(Integer.valueOf(build.getId()));
                 importResult = importBuild(build, username, artifacts);
                 if (importResult.getStatus() == BuildImportStatus.SUCCESSFUL && importResult.getBrewBuildId() != null) {
