@@ -34,7 +34,7 @@ public class MDCUtils {
 
     private static final String USER_ID_KEY = "userId";
 
-    private static final String TMP_KEY = "tmp";;
+    private static final String TMP_KEY = "tmp";
 
     private static final String EXP_KEY = "exp";
 
