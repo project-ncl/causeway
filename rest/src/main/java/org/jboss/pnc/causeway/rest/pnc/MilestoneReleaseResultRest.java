@@ -31,7 +31,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Deprecated
 public class MilestoneReleaseResultRest {
 
-    private final String eventType = "BREW_IMPORT_SUCCESS";
+    private static final String SUCCESS = "BREW_IMPORT_SUCCESS";
+    private static final String FAILURE = "BREW_IMPORT_FAILURE";
 
     private Integer milestoneId;
 
@@ -39,6 +40,14 @@ public class MilestoneReleaseResultRest {
     private String errorMessage;
 
     private List<BuildImportResultRest> builds = new ArrayList<>();
+
+    public String getEventType() {
+        if (isSuccessful()) {
+            return SUCCESS;
+        } else {
+            return FAILURE;
+        }
+    }
 
     @JsonIgnore
     public boolean isSuccessful() {
