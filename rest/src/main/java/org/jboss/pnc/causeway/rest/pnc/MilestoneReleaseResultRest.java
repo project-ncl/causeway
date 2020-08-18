@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class MilestoneReleaseResultRest {
 
     private static final String SUCCESS = "BREW_IMPORT_SUCCESS";
-    private static final String FAILURE = "BREW_IMPORT_FAILURE";
+    private static final String ERROR = "BREW_IMPORT_ERROR";
 
     private Integer milestoneId;
 
@@ -45,7 +45,7 @@ public class MilestoneReleaseResultRest {
         if (isSuccessful()) {
             return SUCCESS;
         } else {
-            return FAILURE;
+            return ERROR;
         }
     }
 
