@@ -58,6 +58,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.jboss.pnc.causeway.CausewayFailure;
 
 import static org.jboss.pnc.constants.Attributes.BUILD_BREW_NAME;
 import static org.jboss.pnc.constants.Attributes.BUILD_BREW_VERSION;
@@ -131,14 +132,13 @@ public class PncImportControllerImpl implements PncImportController {
                 result.setReleaseStatus(ReleaseStatus.SUCCESS);
                 bpmClient.success(callback.getUrl(), callbackId, result);
             }
-
-        } catch (CausewayException ex) {
+        } catch (CausewayFailure ex) {
             log.error("Failed to import milestone.", ex);
             result.setErrorMessage(ex.getMessage());
-            result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
+            result.setReleaseStatus(ReleaseStatus.FAILURE);
             bpmClient.failure(callback.getUrl(), callbackId, result);
             errors.mark();
-        } catch (RuntimeException ex) {
+        } catch (CausewayException | RuntimeException ex) {
             log.error("Failed to import milestone.", ex);
             result.setErrorMessage(ex.getMessage());
             result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
@@ -154,7 +154,7 @@ public class PncImportControllerImpl implements PncImportController {
             throws CausewayException {
         String tagPrefix = pncClient.getTagForMilestone(milestoneId);
         if (!brewClient.tagsExists(tagPrefix)) {
-            throw new CausewayException(messageMissingTag(tagPrefix, config.getKojiURL()));
+            throw new CausewayFailure(messageMissingTag(tagPrefix, config.getKojiURL()));
         }
 
         Collection<Build> builds = findAndAssertBuilds(milestoneId);

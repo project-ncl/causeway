@@ -262,7 +262,7 @@ public class PncImportControllerTest {
         importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
-        MilestoneReleaseResultRest result = verifyFailure();
+        MilestoneReleaseResultRest result = verifyError(true);
         // that user gets the exception message
         assertNotNull(result.getErrorMessage());
         assertTrue("Error message doesn't contain expected data", result.getErrorMessage().contains(exceptionMessage));
@@ -285,7 +285,7 @@ public class PncImportControllerTest {
         importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
-        verifyFailure();
+        verifyError(true);
         // TODO verify the error message somehow?
     }
 
@@ -306,7 +306,7 @@ public class PncImportControllerTest {
         importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
-        MilestoneReleaseResultRest result = verifyFailure();
+        MilestoneReleaseResultRest result = verifyError(false);
         // that the build is in the result with error
         assertNotNull(result.getBuilds());
         assertEquals(1, result.getBuilds().size());
@@ -343,7 +343,7 @@ public class PncImportControllerTest {
         importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
-        MilestoneReleaseResultRest result = verifyFailure(ReleaseStatus.IMPORT_ERROR);
+        MilestoneReleaseResultRest result = verifyCallback(ReleaseStatus.IMPORT_ERROR, true);
         // that the build is in the result with error
         assertNotNull(result.getBuilds());
         assertEquals(1, result.getBuilds().size());
@@ -421,13 +421,21 @@ public class PncImportControllerTest {
     }
 
     private MilestoneReleaseResultRest verifyFailure() {
-        return verifyFailure(ReleaseStatus.SET_UP_ERROR);
+        return verifyCallback(ReleaseStatus.FAILURE, true);
     }
 
-    private MilestoneReleaseResultRest verifyFailure(ReleaseStatus expectedStatus) {
+    private MilestoneReleaseResultRest verifyError(boolean importError) {
+        return verifyCallback(ReleaseStatus.SET_UP_ERROR, !importError);
+    }
+
+    private MilestoneReleaseResultRest verifyCallback(ReleaseStatus expectedStatus, boolean failure) {
         ArgumentCaptor<MilestoneReleaseResultRest> resultArgument = ArgumentCaptor
                 .forClass(MilestoneReleaseResultRest.class);
-        verify(bpmClient).failure(eq(CALLBACK_URL), eq(CALLBACK_ID), resultArgument.capture());
+        if (failure) {
+            verify(bpmClient).failure(eq(CALLBACK_URL), eq(CALLBACK_ID), resultArgument.capture());
+        } else {
+            verify(bpmClient).error(eq(CALLBACK_URL), eq(CALLBACK_ID), resultArgument.capture());
+        }
         MilestoneReleaseResultRest milestoneReleaseResultRest = resultArgument.getValue();
         assertEquals(expectedStatus, milestoneReleaseResultRest.getReleaseStatus());
         assertFalse(milestoneReleaseResultRest.isSuccessful());

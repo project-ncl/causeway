@@ -23,6 +23,6 @@ package org.jboss.pnc.causeway.rest.pnc;
 @Deprecated
 public enum ReleaseStatus {
 
-    SUCCESS, IMPORT_ERROR, SET_UP_ERROR;
+    SUCCESS, FAILURE, IMPORT_ERROR, SET_UP_ERROR;
 
 }
