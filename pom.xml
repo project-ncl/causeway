@@ -27,7 +27,7 @@
 
   <groupId>org.jboss.pnc.causeway</groupId>
   <artifactId>causeway</artifactId>
-  <version>2.0.0-SNAPSHOT</version>
+  <version>2.0.0</version>
   <packaging>pom</packaging>
 
   <name>Causeway PNCL-to-Koji Bridge</name>
@@ -46,7 +46,7 @@
     <connection>scm:git:http://github.com/project-ncl/causeway.git</connection>
     <developerConnection>scm:git:git@github.com:project-ncl/causeway.git</developerConnection>
     <url>http://github.com/project-ncl/causeway</url>
-    <tag>HEAD</tag>
+    <tag>2.0.0.RC1</tag>
   </scm>
 
   <properties>
@@ -61,7 +61,7 @@
     <semverVersion>0.9.0</semverVersion>
     <atlasVersion>1.0.1</atlasVersion>
     <pncVersion>2.0.0</pncVersion>
-    <tagSuffix/>
+    <tagSuffix />
   </properties>
 
   <modules>
