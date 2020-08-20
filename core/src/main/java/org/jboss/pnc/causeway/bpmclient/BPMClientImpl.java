@@ -58,14 +58,14 @@ public class BPMClientImpl implements BPMClient {
     @Override
     public void error(String url, String callbackId, MilestoneReleaseResultRest result) {
         log.info("Import of milestone {} ended with error.", result.getMilestoneId());
-        Callback callback = new Callback(callbackId, 418);
+        Callback callback = new Callback(callbackId, 500);
         send(url, new BrewPushMilestoneResult(result, callback));
     }
 
     @Override
     public void failure(String url, String callbackId, MilestoneReleaseResultRest result) {
         log.info("Import of milestone {} ended with failure.", result.getMilestoneId());
-        Callback callback = new Callback(callbackId, 500);
+        Callback callback = new Callback(callbackId, 418);
         send(url, new BrewPushMilestoneResult(result, callback));
     }
 }
