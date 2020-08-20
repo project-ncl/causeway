@@ -107,12 +107,12 @@ public class ImportControllerImpl implements ImportController {
             response.status(BuildPushStatus.SUCCESS);
             response.message(result.getMessage());
         } catch (CausewayFailure ex) {
-            log.error("Failed to import build.", ex);
+            log.error("Failed to import build. " + ex.getMessage(), ex);
             response.status(BuildPushStatus.FAILED);
             response.message(getMessageOrStacktrace(ex));
             errors.mark();
         } catch (CausewayException | RuntimeException ex) {
-            log.error("Error while importing build.", ex);
+            log.error("Error while importing build. " + ex.getMessage(), ex);
             response.status(BuildPushStatus.SYSTEM_ERROR);
             response.message(getMessageOrStacktrace(ex));
             errors.mark();
