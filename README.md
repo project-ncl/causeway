@@ -1,4 +1,5 @@
 ## Integration tests
+test
 Integration tests are run in phase integration-test. To run them use mvn verify.
 
 Tests are using by default url http://pnc-host/pnc-rest/rest to connect to PNC (you can define IP for pnc-host in your hosts file).
