@@ -17,6 +17,8 @@ package org.jboss.pnc.causeway.bpmclient;
 
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
 
+import java.util.Map;
+
 /**
  *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
@@ -26,8 +28,28 @@ public interface BPMClient {
 
     void error(String url, String callbackId, MilestoneReleaseResultRest result);
 
+    void error(
+            String url,
+            Map<String, String> headers,
+            String httpMethod,
+            String callbackId,
+            MilestoneReleaseResultRest result);
+
     void failure(String url, String callbackId, MilestoneReleaseResultRest result);
+
+    void failure(
+            String url,
+            Map<String, String> headers,
+            String httpMethod,
+            String callbackId,
+            MilestoneReleaseResultRest result);
 
     void success(String url, String callbackId, MilestoneReleaseResultRest result);
 
+    void success(
+            String url,
+            Map<String, String> headers,
+            String httpMethod,
+            String callbackId,
+            MilestoneReleaseResultRest result);
 }

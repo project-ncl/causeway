@@ -122,27 +122,52 @@ public class PncImportControllerImpl implements PncImportController {
 
             if (results.stream().anyMatch(r -> r.getStatus() == BuildImportStatus.ERROR)) {
                 result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
-                bpmClient.failure(callback.getUrl(), callbackId, result);
+                bpmClient.failure(
+                        callback.getUrl(),
+                        callback.getHeaders(),
+                        callback.getMethod().toString(),
+                        callbackId,
+                        result);
                 errors.mark();
             } else if (results.stream().anyMatch(r -> r.getStatus() == BuildImportStatus.FAILED)) {
                 result.setReleaseStatus(ReleaseStatus.IMPORT_ERROR);
-                bpmClient.failure(callback.getUrl(), callbackId, result);
+                bpmClient.failure(
+                        callback.getUrl(),
+                        callback.getHeaders(),
+                        callback.getMethod().toString(),
+                        callbackId,
+                        result);
                 errors.mark();
             } else {
                 result.setReleaseStatus(ReleaseStatus.SUCCESS);
-                bpmClient.success(callback.getUrl(), callbackId, result);
+                bpmClient.success(
+                        callback.getUrl(),
+                        callback.getHeaders(),
+                        callback.getMethod().toString(),
+                        callbackId,
+                        result);
             }
         } catch (CausewayFailure ex) {
             log.error("Failed to import milestone. " + ex.getMessage(), ex);
             result.setErrorMessage(ex.getMessage());
             result.setReleaseStatus(ReleaseStatus.FAILURE);
-            bpmClient.failure(callback.getUrl(), callbackId, result);
+            bpmClient.failure(
+                    callback.getUrl(),
+                    callback.getHeaders(),
+                    callback.getMethod().toString(),
+                    callbackId,
+                    result);
             errors.mark();
         } catch (CausewayException | RuntimeException ex) {
             log.error("Failed to import milestone. " + ex.getMessage(), ex);
             result.setErrorMessage(ex.getMessage());
             result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
-            bpmClient.error(callback.getUrl(), callbackId, result);
+            bpmClient.error(
+                    callback.getUrl(),
+                    callback.getHeaders(),
+                    callback.getMethod().toString(),
+                    callbackId,
+                    result);
             errors.mark();
         }
 

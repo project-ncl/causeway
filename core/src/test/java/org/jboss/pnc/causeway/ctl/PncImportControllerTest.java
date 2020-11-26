@@ -19,6 +19,7 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.google.common.collect.ImmutableMap;
 import com.redhat.red.build.koji.model.json.KojiImport;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.bpmclient.BPMClient;
@@ -90,7 +91,13 @@ public class PncImportControllerTest {
     private static final String BREW_BUILD_NAME = "test:artifact";
     private static final String CALLBACK_ID = "callbackId";
     private static final String CALLBACK_URL = "http://dummy.org";
-    private static final CallbackTarget CALLBACK_TARGET = new CallbackTarget(CALLBACK_URL, CallbackMethod.PUT);
+    private static final Map<String, String> CALLBACK_HEADERS = ImmutableMap
+            .of("header1", "value1", "header2", "value2");
+    private static final CallbackMethod CALLBACK_METHOD = CallbackMethod.PUT;
+    private static final CallbackTarget CALLBACK_TARGET = new CallbackTarget(
+            CALLBACK_URL,
+            CALLBACK_METHOD,
+            CALLBACK_HEADERS);
 
     private static final BrewNVR NVR = new BrewNVR(BREW_BUILD_NAME, BREW_BUILD_VERSION, "1");
 
@@ -413,7 +420,12 @@ public class PncImportControllerTest {
     private void verifySuccess() {
         ArgumentCaptor<MilestoneReleaseResultRest> resultArgument = ArgumentCaptor
                 .forClass(MilestoneReleaseResultRest.class);
-        verify(bpmClient).success(eq(CALLBACK_URL), eq(CALLBACK_ID), resultArgument.capture());
+        verify(bpmClient).success(
+                eq(CALLBACK_URL),
+                eq(CALLBACK_HEADERS),
+                eq(CALLBACK_METHOD.toString()),
+                eq(CALLBACK_ID),
+                resultArgument.capture());
         MilestoneReleaseResultRest milestoneReleaseResultRest = resultArgument.getValue();
         assertEquals(ReleaseStatus.SUCCESS, milestoneReleaseResultRest.getReleaseStatus());
         assertTrue(milestoneReleaseResultRest.isSuccessful());
@@ -432,9 +444,19 @@ public class PncImportControllerTest {
         ArgumentCaptor<MilestoneReleaseResultRest> resultArgument = ArgumentCaptor
                 .forClass(MilestoneReleaseResultRest.class);
         if (failure) {
-            verify(bpmClient).failure(eq(CALLBACK_URL), eq(CALLBACK_ID), resultArgument.capture());
+            verify(bpmClient).failure(
+                    eq(CALLBACK_URL),
+                    eq(CALLBACK_HEADERS),
+                    eq(CALLBACK_METHOD.toString()),
+                    eq(CALLBACK_ID),
+                    resultArgument.capture());
         } else {
-            verify(bpmClient).error(eq(CALLBACK_URL), eq(CALLBACK_ID), resultArgument.capture());
+            verify(bpmClient).error(
+                    eq(CALLBACK_URL),
+                    eq(CALLBACK_HEADERS),
+                    eq(CALLBACK_METHOD.toString()),
+                    eq(CALLBACK_ID),
+                    resultArgument.capture());
         }
         MilestoneReleaseResultRest milestoneReleaseResultRest = resultArgument.getValue();
         assertEquals(expectedStatus, milestoneReleaseResultRest.getReleaseStatus());
