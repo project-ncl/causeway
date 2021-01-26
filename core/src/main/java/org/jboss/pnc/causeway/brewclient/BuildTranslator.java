@@ -90,6 +90,7 @@ public interface BuildTranslator {
         final int parts;
         switch (buildType) {
             case MVN:
+            case SBT:
             case GRADLE:
                 parts = 4;
                 break;

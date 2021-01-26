@@ -195,6 +195,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             switch (buildType) {
                 case GRADLE:
                 case NPM:
+                case SBT:
                 case MVN: {
                     componentBuilder.withFileSize(artifact.size);
                     break;
@@ -227,6 +228,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
 
             switch (buildType) {
                 case GRADLE:
+                case SBT:
                 case MVN: {
                     SimpleArtifactRef ref = SimpleArtifactRef.parse(artifact.identifier);
                     outputBuilder.withFileSize((int) artifact.size);
@@ -380,6 +382,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
         BuildType buildType = build.getBuildConfigRevision().getBuildType();
         switch (buildType) {
             case MVN:
+            case SBT:
             case GRADLE:
                 buildDescription.withMavenInfoAndType(buildRootToGAV(build, artifacts));
                 break;
@@ -397,6 +400,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
             case MVN:
                 buildRootBuilder.withTool("JDK", build.getEnvironment().getAttributes().get("JDK"));
                 break;
+            case SBT:
+                buildRootBuilder.withTool("SBT", build.getEnvironment().getAttributes().get("SBT"));
             case GRADLE:
                 buildRootBuilder.withTool("GRADLE", build.getEnvironment().getAttributes().get("GRADLE"));
                 break;
