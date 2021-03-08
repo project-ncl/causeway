@@ -43,12 +43,17 @@ import org.jboss.pnc.causeway.rest.model.MavenBuild;
 import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
 import org.jboss.pnc.causeway.rest.model.NpmBuild;
 import org.jboss.pnc.causeway.rest.model.NpmBuiltArtifact;
+import org.jboss.pnc.causeway.source.RenamedSources;
+import org.jboss.pnc.causeway.source.SourceRenamer;
 import org.jboss.pnc.enums.BuildType;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
@@ -70,10 +75,12 @@ public class BuildTranslatorImpl implements BuildTranslator {
     private static final String MD5 = "md5";
 
     private final CausewayConfig config;
+    private final SourceRenamer renamer;
 
     @Inject
-    public BuildTranslatorImpl(CausewayConfig config) {
+    public BuildTranslatorImpl(CausewayConfig config, SourceRenamer renamer) {
         this.config = config;
+        this.renamer = renamer;
         config.configurationDone();
     }
 
@@ -315,6 +322,47 @@ public class BuildTranslatorImpl implements BuildTranslator {
             return ret;
         } catch (MalformedURLException ex) {
             throw new CausewayException("Failed to parse artifact url: " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public RenamedSources getSources(
+            org.jboss.pnc.dto.Build build,
+            BuildArtifacts artifacts,
+            InputStream sources) throws CausewayException {
+        BuildType buildType = build.getBuildConfigRevision().getBuildType();
+        switch (buildType) {
+            case MVN:
+            case GRADLE:
+                ProjectVersionRef gav = buildRootToGAV(build, artifacts);
+                return renamer.repackMaven(sources, gav.getGroupId(), gav.getArtifactId(), gav.getVersionString());
+            case NPM:
+                NpmPackageRef npmPackage = buildRootToNV(build, artifacts);
+                return renamer.repackNPM(sources, npmPackage.getName(), npmPackage.getVersionString());
+            default:
+                throw new IllegalArgumentException("Unsupported build type " + buildType);
+        }
+    }
+
+    @Override
+    public RenamedSources getSources(Build build) throws CausewayException {
+        try {
+            URL sourcesUrl = new URL(build.getSourcesURL());
+            if (build.getClass().equals(MavenBuild.class)) {
+                MavenBuild mavenBuild = (MavenBuild) build;
+                return renamer.repackMaven(
+                        sourcesUrl.openStream(),
+                        mavenBuild.getGroupId(),
+                        mavenBuild.getArtifactId(),
+                        mavenBuild.getVersion());
+            } else if (build.getClass().equals(NpmBuild.class)) {
+                NpmBuild npmBuild = (NpmBuild) build;
+                return renamer.repackNPM(sourcesUrl.openStream(), npmBuild.getName(), npmBuild.getVersion());
+            } else {
+                throw new IllegalArgumentException("Unsupported build type " + build.getClass());
+            }
+        } catch (IOException ex) {
+            throw new CausewayException("Failed to read sources url: " + ex.getMessage(), ex);
         }
     }
 

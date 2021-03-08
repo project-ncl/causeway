@@ -44,6 +44,7 @@ public class NpmBuild extends Build {
             String scmTag,
             BuildRoot buildRoot,
             Set<Logfile> logs,
+            String sourcesURL,
             Set<Dependency> dependencies,
             Set<BuiltArtifact> builtArtifacts,
             String tagPrefix) {
@@ -60,6 +61,7 @@ public class NpmBuild extends Build {
                 scmTag,
                 buildRoot,
                 logs,
+                sourcesURL,
                 dependencies,
                 builtArtifacts,
                 tagPrefix);

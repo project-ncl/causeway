@@ -25,8 +25,10 @@ import org.jboss.pnc.causeway.rest.model.MavenBuild;
 import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
 import org.jboss.pnc.causeway.rest.model.NpmBuild;
 import org.jboss.pnc.causeway.rest.model.NpmBuiltArtifact;
+import org.jboss.pnc.causeway.source.RenamedSources;
 import org.jboss.pnc.enums.BuildType;
 
+import java.io.InputStream;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -47,6 +49,13 @@ public interface BuildTranslator {
             BuildArtifacts artifacts,
             String log,
             String username) throws CausewayException;
+
+    RenamedSources getSources(
+            org.jboss.pnc.dto.Build build,
+            BuildArtifacts artifacts,
+            InputStream sourcesStream) throws CausewayException;
+
+    RenamedSources getSources(Build build) throws CausewayException;
 
     public ImportFileGenerator getImportFiles(Build build) throws CausewayException;
 
