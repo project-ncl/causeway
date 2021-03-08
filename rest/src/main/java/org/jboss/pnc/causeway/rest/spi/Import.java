@@ -15,7 +15,7 @@
  */
 package org.jboss.pnc.causeway.rest.spi;
 
-import org.jboss.pnc.causeway.rest.model.BuildImportRequest;
+import org.jboss.pnc.api.causeway.dto.push.BuildImportRequest;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;

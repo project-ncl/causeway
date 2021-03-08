@@ -15,8 +15,8 @@
  */
 package org.jboss.pnc.causeway.rest;
 
+import org.jboss.pnc.api.causeway.dto.push.BuildImportRequest;
 import org.jboss.pnc.causeway.ctl.ImportController;
-import org.jboss.pnc.causeway.rest.model.BuildImportRequest;
 import org.jboss.pnc.causeway.rest.spi.Import;
 
 import javax.enterprise.context.RequestScoped;

@@ -61,6 +61,7 @@
     <semverVersion>0.9.0</semverVersion>
     <atlasVersion>1.0.1</atlasVersion>
     <pncVersion>2.1.0-SNAPSHOT</pncVersion>
+    <pncApiVersion>2.0.2-SNAPSHOT</pncApiVersion>
     <tagSuffix />
   </properties>
 
@@ -184,6 +185,11 @@
         <groupId>org.jboss.pnc.metrics</groupId>
         <artifactId>pncmetrics</artifactId>
         <version>${pncmetrics.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.pnc</groupId>
+        <artifactId>pnc-api</artifactId>
+        <version>${pncApiVersion}</version>
       </dependency>
 
       <!-- Other dependencies -->

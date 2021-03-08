@@ -30,19 +30,19 @@ import org.commonjava.atlas.maven.ident.ref.SimpleArtifactRef;
 import org.commonjava.atlas.maven.ident.ref.SimpleProjectVersionRef;
 import org.commonjava.atlas.npm.ident.ref.NpmPackageRef;
 import org.commonjava.atlas.npm.ident.util.NpmVersionUtils;
+import org.jboss.pnc.api.causeway.dto.push.Build;
+import org.jboss.pnc.api.causeway.dto.push.BuiltArtifact;
+import org.jboss.pnc.api.causeway.dto.push.Dependency;
+import org.jboss.pnc.api.causeway.dto.push.Logfile;
+import org.jboss.pnc.api.causeway.dto.push.MavenBuild;
+import org.jboss.pnc.api.causeway.dto.push.MavenBuiltArtifact;
+import org.jboss.pnc.api.causeway.dto.push.NpmBuild;
+import org.jboss.pnc.api.causeway.dto.push.NpmBuiltArtifact;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact;
 import org.jboss.pnc.causeway.rest.BrewNVR;
-import org.jboss.pnc.causeway.rest.model.Build;
-import org.jboss.pnc.causeway.rest.model.BuiltArtifact;
-import org.jboss.pnc.causeway.rest.model.Dependency;
-import org.jboss.pnc.causeway.rest.model.Logfile;
-import org.jboss.pnc.causeway.rest.model.MavenBuild;
-import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
-import org.jboss.pnc.causeway.rest.model.NpmBuild;
-import org.jboss.pnc.causeway.rest.model.NpmBuiltArtifact;
 import org.jboss.pnc.causeway.source.RenamedSources;
 import org.jboss.pnc.causeway.source.SourceRenamer;
 import org.jboss.pnc.enums.BuildType;
@@ -143,7 +143,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 .withStartTime(build.getStartTime())
                 .withEndTime(build.getEndTime())
                 .withBuildSource(normalizeScmUrl(build.getScmURL()), build.getScmRevision())
-                .withExternalBuildId(String.valueOf(build.getExternalBuildID()))
+                .withExternalBuildId(build.getExternalBuildID())
                 .withExternalBuildUrl(build.getExternalBuildURL())
                 .withBuildSystem(PNC);
         if (build.getScmTag() != null) {
@@ -293,7 +293,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }
     }
 
-    private BuildContainer getContainer(org.jboss.pnc.causeway.rest.model.BuildRoot buildRoot) {
+    private BuildContainer getContainer(org.jboss.pnc.api.causeway.dto.push.BuildRoot buildRoot) {
         return new BuildContainer(buildRoot.getContainer(), buildRoot.getContainerArchitecture());
     }
 
@@ -307,10 +307,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
     }
 
     @Override
-    public ImportFileGenerator getImportFiles(
-            BuildArtifacts artifacts,
-            RenamedSources sources,
-            String log) throws CausewayException {
+    public ImportFileGenerator getImportFiles(BuildArtifacts artifacts, RenamedSources sources, String log)
+            throws CausewayException {
         try {
             StringLogImportFileGenerator ret = new StringLogImportFileGenerator(log, sources);
             for (PncArtifact artifact : artifacts.buildArtifacts) {
@@ -323,8 +321,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
     }
 
     @Override
-    public ImportFileGenerator getImportFiles(Build build, RenamedSources sources)
-            throws CausewayException {
+    public ImportFileGenerator getImportFiles(Build build, RenamedSources sources) throws CausewayException {
         try {
             ExternalLogImportFileGenerator ret = new ExternalLogImportFileGenerator(sources);
             for (Logfile logfile : build.getLogs()) {
@@ -343,10 +340,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
     }
 
     @Override
-    public RenamedSources getSources(
-            org.jboss.pnc.dto.Build build,
-            BuildArtifacts artifacts,
-            InputStream sources) throws CausewayException {
+    public RenamedSources getSources(org.jboss.pnc.dto.Build build, BuildArtifacts artifacts, InputStream sources)
+            throws CausewayException {
         BuildType buildType = build.getBuildConfigRevision().getBuildType();
         switch (buildType) {
             case MVN:

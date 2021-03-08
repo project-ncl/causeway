@@ -16,22 +16,30 @@
 package org.jboss.pnc.causeway.brewclient;
 
 import com.redhat.red.build.koji.model.json.KojiImport;
+
+import org.jboss.pnc.api.causeway.dto.push.Build;
+import org.jboss.pnc.api.causeway.dto.push.BuildRoot;
+import org.jboss.pnc.api.causeway.dto.push.BuiltArtifact;
+import org.jboss.pnc.api.causeway.dto.push.Dependency;
+import org.jboss.pnc.api.causeway.dto.push.Logfile;
+import org.jboss.pnc.api.causeway.dto.push.MavenBuild;
+import org.jboss.pnc.api.causeway.dto.push.MavenBuiltArtifact;
+import org.jboss.pnc.api.causeway.dto.push.NpmBuild;
+import org.jboss.pnc.api.causeway.dto.push.NpmBuiltArtifact;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.rest.BrewNVR;
-import org.jboss.pnc.causeway.rest.model.Build;
-import org.jboss.pnc.causeway.rest.model.BuiltArtifact;
-import org.jboss.pnc.causeway.rest.model.MavenBuild;
-import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
-import org.jboss.pnc.causeway.rest.model.NpmBuild;
-import org.jboss.pnc.causeway.rest.model.NpmBuiltArtifact;
 import org.jboss.pnc.causeway.source.RenamedSources;
 import org.jboss.pnc.enums.BuildType;
 
 import java.io.InputStream;
+import java.util.Date;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import lombok.NonNull;
 
 /**
  *
@@ -52,17 +60,14 @@ public interface BuildTranslator {
             String log,
             String username) throws CausewayException;
 
-    RenamedSources getSources(
-            org.jboss.pnc.dto.Build build,
-            BuildArtifacts artifacts,
-            InputStream sourcesStream) throws CausewayException;
+    RenamedSources getSources(org.jboss.pnc.dto.Build build, BuildArtifacts artifacts, InputStream sourcesStream)
+            throws CausewayException;
 
     RenamedSources getSources(Build build) throws CausewayException;
 
     ImportFileGenerator getImportFiles(Build build, RenamedSources sources) throws CausewayException;
 
-    KojiImport translate(BrewNVR nvr, Build build, RenamedSources sources, String username)
-            throws CausewayException;
+    KojiImport translate(BrewNVR nvr, Build build, RenamedSources sources, String username) throws CausewayException;
 
     public static String guessVersion(Build build) throws CausewayException {
         final Predicate<BuiltArtifact> filter;
@@ -123,4 +128,5 @@ public interface BuildTranslator {
                         () -> new CausewayException(
                                 "Build version or BuildType (MVN,NPM...) not specified and couldn't determine any from artifacts."));
     }
+
 }

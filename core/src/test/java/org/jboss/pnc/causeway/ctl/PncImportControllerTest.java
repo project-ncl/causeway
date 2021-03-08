@@ -21,6 +21,9 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableMap;
 import com.redhat.red.build.koji.model.json.KojiImport;
+
+import org.jboss.pnc.api.causeway.dto.CallbackTarget;
+import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.bpmclient.BPMClient;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
@@ -31,9 +34,7 @@ import org.jboss.pnc.pncmetrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.PncClient;
 import org.jboss.pnc.causeway.rest.BrewBuild;
-import org.jboss.pnc.causeway.rest.BrewNVR;
-import org.jboss.pnc.causeway.rest.CallbackMethod;
-import org.jboss.pnc.causeway.rest.CallbackTarget;
+import org.jboss.pnc.causeway.rest.BrewNVR;;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportResultRest;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportStatus;
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
@@ -93,7 +94,7 @@ public class PncImportControllerTest {
     private static final String CALLBACK_URL = "http://dummy.org";
     private static final Map<String, String> CALLBACK_HEADERS = ImmutableMap
             .of("header1", "value1", "header2", "value2");
-    private static final CallbackMethod CALLBACK_METHOD = CallbackMethod.PUT;
+    private static final Request.Method CALLBACK_METHOD = Request.Method.PUT;
     private static final CallbackTarget CALLBACK_TARGET = new CallbackTarget(
             CALLBACK_URL,
             CALLBACK_METHOD,
