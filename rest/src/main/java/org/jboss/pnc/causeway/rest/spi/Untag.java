@@ -15,7 +15,7 @@
  */
 package org.jboss.pnc.causeway.rest.spi;
 
-import org.jboss.pnc.causeway.rest.model.UntagRequest;
+import org.jboss.pnc.api.causeway.dto.untag.UntagRequest;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;

@@ -15,7 +15,7 @@
  */
 package org.jboss.pnc.causeway.ctl;
 
-import org.jboss.pnc.causeway.rest.CallbackTarget;
+import org.jboss.pnc.api.causeway.dto.CallbackTarget;
 
 /**
  *

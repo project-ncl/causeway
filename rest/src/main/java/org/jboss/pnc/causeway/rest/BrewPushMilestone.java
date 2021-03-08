@@ -15,6 +15,7 @@
  */
 package org.jboss.pnc.causeway.rest;
 
+import org.jboss.pnc.api.causeway.dto.CallbackTarget;
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseRest;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;

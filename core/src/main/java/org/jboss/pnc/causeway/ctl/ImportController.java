@@ -1,8 +1,8 @@
 package org.jboss.pnc.causeway.ctl;
 
-import org.jboss.pnc.causeway.rest.CallbackTarget;
-import org.jboss.pnc.causeway.rest.model.Build;
-import org.jboss.pnc.causeway.rest.model.TaggedBuild;
+import org.jboss.pnc.api.causeway.dto.CallbackTarget;
+import org.jboss.pnc.api.causeway.dto.push.Build;
+import org.jboss.pnc.api.causeway.dto.untag.TaggedBuild;
 
 /**
  *

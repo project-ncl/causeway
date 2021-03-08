@@ -16,6 +16,9 @@
 package org.jboss.pnc.causeway.rest;
 
 import static org.junit.Assert.assertFalse;
+
+import org.jboss.pnc.api.causeway.dto.CallbackTarget;
+import org.jboss.pnc.api.dto.Request;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -32,7 +35,7 @@ public class CallbackTargetTest {
         Map<String, String> headers = new HashMap<>();
         headers.put("foo", "bar");
         headers.put("Authorization", "top-secret-token");
-        CallbackTarget ct = new CallbackTarget("http://foo.bar/", CallbackMethod.POST, headers);
+        CallbackTarget ct = new CallbackTarget("http://foo.bar/", Request.Method.POST, headers);
         String toString = ct.toString();
         assertFalse("Secret token should be censored", toString.contains("top-secret-token"));
     }
