@@ -35,6 +35,7 @@
       "md5": "bedf8af1b107b36c72f52009e6fcc768"
     }
   ],
+  "sourcesURL": "http://internal.maven.repo.com/productization-test3/geronimo-specs.tar.gz",
   "dependencies": [
     {
       "filename": "file.tar.gz",

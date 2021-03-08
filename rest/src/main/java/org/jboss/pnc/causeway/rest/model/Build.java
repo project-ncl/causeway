@@ -58,6 +58,8 @@ public abstract class Build {
     @NonNull
     private final Set<Logfile> logs;
     @NonNull
+    private final String sourcesURL;
+    @NonNull
     private final Set<Dependency> dependencies;
     @NonNull
     private final Set<BuiltArtifact> builtArtifacts;
@@ -79,6 +81,7 @@ public abstract class Build {
             String scmTag,
             BuildRoot buildRoot,
             Set<Logfile> logs,
+            String sourcesURL,
             Set<Dependency> dependencies,
             Set<BuiltArtifact> builtArtifacts,
             String tagPrefix) {
@@ -94,6 +97,7 @@ public abstract class Build {
         this.scmTag = scmTag;
         this.buildRoot = Objects.requireNonNull(buildRoot);
         this.logs = Objects.requireNonNull(logs);
+        this.sourcesURL = Objects.requireNonNull(sourcesURL);
         this.dependencies = Objects.requireNonNull(dependencies);
         this.builtArtifacts = Objects.requireNonNull(builtArtifacts);
         this.tagPrefix = Objects.requireNonNull(tagPrefix);
