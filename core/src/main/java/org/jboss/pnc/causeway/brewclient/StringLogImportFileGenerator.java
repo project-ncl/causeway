@@ -22,6 +22,8 @@ import com.redhat.red.build.koji.model.ImportFile;
 import java.util.Iterator;
 import java.util.function.Supplier;
 
+import org.jboss.pnc.causeway.source.RenamedSources;
+
 /**
  *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
@@ -30,7 +32,8 @@ import java.util.function.Supplier;
 public class StringLogImportFileGenerator extends ImportFileGenerator {
     private final String log;
 
-    public StringLogImportFileGenerator(String log) {
+    public StringLogImportFileGenerator(String log, RenamedSources sources) {
+        super(sources);
         this.log = log;
     }
 

@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import org.jboss.pnc.causeway.source.RenamedSources;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -13,6 +15,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -43,9 +48,11 @@ public class ImportFileGeneratorTest {
     private static final String NONEXISTING_LOCATION = "/api/" + NONEXISTING_PATH;
     private static final String LOG_PATH = "build.log";
     private static final String LOG_LOCATION = "/other-api/" + LOG_PATH;
+    private static final String SOURCES_PATH = "sources.tar.gz";
     private static final String FIRST_ARTIFACT = "First artifact";
     private static final String SECOND_ARTIFACT = "This is second artifact";
     private static final String BUILD_LOG = "foobar";
+    private static final String SOURCES = "Burn this after reading!";
 
     @Before
     public void stubArtifacts() {
@@ -76,15 +83,21 @@ public class ImportFileGeneratorTest {
                         aResponse().withStatus(200).withHeader("Content-Type", "text/plain").withBody(BUILD_LOG)));
     }
 
+    private RenamedSources prepareSourcesFile() throws IOException {
+        Path tempFile = Files.createTempFile("burn", "me");
+        Files.write(tempFile, Collections.singleton(SOURCES));
+        return new RenamedSources(tempFile, SOURCES_PATH, "01234");
+    }
+
     @Test
     public void testStringLogImportFileGenerator() throws MalformedURLException, IOException {
-        final StringLogImportFileGenerator ifg = new StringLogImportFileGenerator(BUILD_LOG);
+        final StringLogImportFileGenerator ifg = new StringLogImportFileGenerator(BUILD_LOG, prepareSourcesFile());
         doTestImportFileGenerator(ifg);
     }
 
     @Test
     public void testExternalLongImportFileGenerator() throws MalformedURLException, IOException {
-        final ExternalLogImportFileGenerator ifg = new ExternalLogImportFileGenerator();
+        final ExternalLogImportFileGenerator ifg = new ExternalLogImportFileGenerator(prepareSourcesFile());
         ifg.addLog(HOST + LOG_LOCATION, LOG_PATH, 6);
         doTestImportFileGenerator(ifg);
     }
@@ -113,23 +126,27 @@ public class ImportFileGeneratorTest {
                     assertEquals(6, file.getSize());
                     assertEquals(BUILD_LOG, toString(file.getStream()));
                     break;
+                case SOURCES_PATH:
+                    assertEquals(25, file.getSize());
+                    assertEquals(SOURCES, toString(file.getStream()));
+                    break;
                 default:
                     fail("Unexpected file path: " + file.getFilePath());
             }
             count++;
         }
-        assertEquals(3, count);
+        assertEquals(4, count);
     }
 
     @Test
     public void testStringLogImportFileGeneratorFail() throws MalformedURLException, IOException {
-        final StringLogImportFileGenerator ifg = new StringLogImportFileGenerator(BUILD_LOG);
+        final StringLogImportFileGenerator ifg = new StringLogImportFileGenerator(BUILD_LOG, prepareSourcesFile());
         doTestImportFileGeneratorFail(ifg);
     }
 
     @Test
     public void testExternalLongImportFileGeneratorFail() throws MalformedURLException, IOException {
-        final ExternalLogImportFileGenerator ifg = new ExternalLogImportFileGenerator();
+        final ExternalLogImportFileGenerator ifg = new ExternalLogImportFileGenerator(prepareSourcesFile());
         ifg.addLog(HOST + LOG_LOCATION, LOG_PATH, 6);
         doTestImportFileGeneratorFail(ifg);
     }

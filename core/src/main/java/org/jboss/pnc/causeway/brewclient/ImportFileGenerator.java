@@ -16,6 +16,7 @@
 package org.jboss.pnc.causeway.brewclient;
 
 import com.redhat.red.build.koji.model.ImportFile;
+
 import lombok.Data;
 
 import java.io.IOException;
@@ -29,22 +30,29 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
+
 import lombok.extern.slf4j.Slf4j;
+
+import org.jboss.pnc.causeway.source.RenamedSources;
 import org.jboss.pnc.causeway.util.MDCUtils;
 
 /**
- *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
 @Slf4j
 public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFile>> {
     protected final Set<Artifact> artifacts = new HashSet<>();
+    protected final RenamedSources sources;
     protected final Map<String, Integer> paths = new HashMap<>();
     protected final Map<Integer, String> errors = new HashMap<>();
 
+    public ImportFileGenerator(RenamedSources sources) {
+        this.sources = sources;
+    }
+
     /**
      * Adds artifact URL to the generator.
-     * 
+     *
      * @param id External ID of the artifact.
      * @param url URL of the artifact.
      * @param filePath Deploy path for the artifact.
@@ -61,7 +69,7 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
 
     /**
      * Returns external ID of artifact given it's deploy path.
-     * 
+     *
      * @param path Deploy path of the artifact.
      * @return External ID of the artifact or null if aritfact not present.
      */
@@ -80,6 +88,7 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
 
         private Iterator<Artifact> it;
         private ImportFileSupplier next;
+        private boolean sourcesGiven = false;
 
         protected ImportFileIterator(Iterator<Artifact> it) {
             this.it = it;
@@ -128,6 +137,9 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
 
         @Override
         public boolean hasNext() {
+            if (!sourcesGiven) {
+                return true;
+            }
             while (next == null && it.hasNext()) {
                 next = getNext();
             }
@@ -137,6 +149,16 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
 
         @Override
         public Supplier<ImportFile> next() {
+            if (!sourcesGiven) {
+                sourcesGiven = true;
+                return () -> {
+                    try {
+                        return new ImportFile(sources.getName(), sources.read(), sources.getSize());
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                };
+            }
             while (next == null) { // will throw NoSuchElementException if there is no next
                 next = getNext();
             }

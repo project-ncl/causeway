@@ -28,6 +28,8 @@ import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.model.Build;
 import org.jboss.pnc.causeway.rest.model.MavenBuild;
 import org.jboss.pnc.causeway.rest.model.MavenBuiltArtifact;
+import org.jboss.pnc.causeway.source.RenamedSources;
+import org.jboss.pnc.causeway.source.SourceRenamer;
 import org.jboss.pnc.enums.ArtifactQuality;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -35,6 +37,9 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
 
 /**
  *
@@ -42,8 +47,11 @@ import java.nio.charset.Charset;
  */
 public class TranslatorTest {
     private static final CausewayConfig config = new CausewayConfig();
-    private static final BuildTranslator bt = new BuildTranslatorImpl(config);
+    private static final SourceRenamer renamer = new SourceRenamer();
+    private static final BuildTranslator bt = new BuildTranslatorImpl(config, renamer);
     private static final ObjectMapper mapper = new KojiObjectMapper();
+    private static final String SOURCES_PATH = "sources.tar.gz";
+    private static final String SOURCES = "Burn this after reading!";
 
     @BeforeClass
     public static void setUp() {
@@ -86,7 +94,9 @@ public class TranslatorTest {
         artifacts.dependencies.add(newArtifact(9, "org.apache.maven.shared", "maven-shared-io", "1.1", "jar"));
         artifacts.dependencies.add(newArtifact(10, "xml-apis", "xml-apis", "1.0.b2", "jar"));
 
-        KojiImport out = bt.translate(new BrewNVR("g:a", "1.2.3", "1"), build, artifacts, "foo-bar-logs", "joe");
+        RenamedSources sources = prepareSourcesFile();
+        KojiImport out = bt
+                .translate(new BrewNVR("g:a", "1.2.3", "1"), build, artifacts, sources, "foo-bar-logs", "joe");
 
         mapper.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
         String jsonOut = mapper.writeValueAsString(out);
@@ -98,12 +108,19 @@ public class TranslatorTest {
         String json = readResponseBodyFromTemplate("build.json");
 
         Build build = mapper.readValue(json, Build.class);
+        RenamedSources sources = prepareSourcesFile();
 
-        KojiImport out = bt.translate(new BrewNVR("g:a", "1.2.3", "1"), build, "joe");
+        KojiImport out = bt.translate(new BrewNVR("g:a", "1.2.3", "1"), build, sources, "joe");
 
         mapper.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
         String jsonOut = mapper.writeValueAsString(out);
         System.out.println("RESULTA:\n" + jsonOut);
+    }
+
+    private RenamedSources prepareSourcesFile() throws IOException {
+        Path tempFile = Files.createTempFile("burn", "me");
+        Files.write(tempFile, Collections.singleton(SOURCES));
+        return new RenamedSources(tempFile, SOURCES_PATH, "01234");
     }
 
     private static org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact newArtifact(

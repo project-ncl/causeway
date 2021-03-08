@@ -33,6 +33,7 @@ import org.jboss.pnc.rest.api.parameters.BuildsFilterParameters;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashSet;
@@ -113,6 +114,18 @@ public class PncClientImpl implements PncClient {
         } catch (RemoteResourceException e) {
             throw new CausewayException(
                     "Can not read build log of build " + buildId + " because PNC responded with an error - response "
+                            + e.getStatus(),
+                    e);
+        }
+    }
+
+    @Override
+    public InputStream getSources(String id) throws CausewayException {
+        try (Response response = buildClient.getInternalScmArchiveLink(id)) {
+            return response.readEntity(InputStream.class);
+        } catch (RemoteResourceException e) {
+            throw new CausewayException(
+                    "Can not read sources of build " + id + " because PNC responded with an error - response "
                             + e.getStatus(),
                     e);
         }

@@ -18,6 +18,7 @@ package org.jboss.pnc.causeway.pncclient;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.dto.Build;
 
+import java.io.InputStream;
 import java.util.Collection;
 
 /**
@@ -35,4 +36,5 @@ public interface PncClient {
 
     public String getBuildLog(int buildId) throws CausewayException;
 
+    public InputStream getSources(String id) throws CausewayException;
 }
