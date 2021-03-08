@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import org.jboss.pnc.causeway.source.RenamedSources;
+
 import lombok.Data;
 
 /**
@@ -33,6 +35,10 @@ import lombok.Data;
  */
 public class ExternalLogImportFileGenerator extends ImportFileGenerator {
     private final Set<Log> logs = new HashSet<>();
+
+    public ExternalLogImportFileGenerator(RenamedSources sources) {
+        super(sources);
+    }
 
     /**
      * Add log url to the generator.

@@ -33,6 +33,7 @@ import org.jboss.pnc.causeway.brewclient.BrewClientImpl;
 import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
+import org.jboss.pnc.causeway.source.RenamedSources;
 import org.jboss.pnc.pncmetrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.PncClient;
@@ -52,6 +53,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -257,8 +259,10 @@ public class PncImportControllerImpl implements PncImportController {
             log.info("PNC build {} doesn't contain any artifacts to import, skipping.", build.getId());
         } else {
             String log = pncClient.getBuildLog(Integer.valueOf(build.getId()));
-            KojiImport kojiImport = translator.translate(nvr, build, artifacts, log, username);
-            ImportFileGenerator importFiles = translator.getImportFiles(artifacts, log);
+            InputStream sourcesStream = pncClient.getSources(build.getId());
+            RenamedSources sources = translator.getSources(build, artifacts, sourcesStream);
+            KojiImport kojiImport = translator.translate(nvr, build, artifacts, sources, log, username);
+            ImportFileGenerator importFiles = translator.getImportFiles(artifacts, sources, log);
             buildResult = brewClient.importBuild(nvr, Integer.valueOf(build.getId()), kojiImport, importFiles);
 
             long artifactSize = artifacts.buildArtifacts.stream().mapToLong(pncArtifact -> pncArtifact.size).sum();

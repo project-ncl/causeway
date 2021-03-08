@@ -13,6 +13,7 @@ import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
+import org.jboss.pnc.causeway.source.RenamedSources;
 import org.jboss.pnc.pncmetrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
@@ -222,8 +223,9 @@ public class ImportControllerImpl implements ImportController {
     }
 
     private BrewBuild translateAndImport(BrewNVR nvr, Build build, String username) throws CausewayException {
-        KojiImport kojiImport = translator.translate(nvr, build, username);
-        ImportFileGenerator importFiles = translator.getImportFiles(build);
+        RenamedSources sources = translator.getSources(build);
+        KojiImport kojiImport = translator.translate(nvr, build, sources, username);
+        ImportFileGenerator importFiles = translator.getImportFiles(build, sources);
         return brewClient.importBuild(nvr, kojiImport, importFiles);
     }
 

@@ -89,6 +89,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             BrewNVR nvr,
             org.jboss.pnc.dto.Build build,
             BuildArtifacts artifacts,
+            RenamedSources sources,
             String log,
             String username) throws CausewayException {
         String externalBuildId = String.valueOf(build.getId());
@@ -125,6 +126,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 buildRootId,
                 build.getBuildConfigRevision().getBuildType());
         addLog(log, builder, buildRootId);
+        addSources(sources, builder, buildRootId);
 
         KojiImport translatedBuild = buildTranslatedBuild(builder);
         translatedBuild.getBuild().getExtraInfo().setImportInitiator(username);
@@ -132,7 +134,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
     }
 
     @Override
-    public KojiImport translate(BrewNVR nvr, Build build, String username) throws CausewayException {
+    public KojiImport translate(BrewNVR nvr, Build build, RenamedSources sources, String username)
+            throws CausewayException {
         KojiImport.Builder builder = new KojiImport.Builder();
 
         BuildDescription.Builder descriptionBuilder = builder
@@ -158,6 +161,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
         addDependencies(build.getDependencies(), buildRootBuilder);
         addBuiltArtifacts(build.getBuiltArtifacts(), builder, buildRootId);
         addLogs(build, builder, buildRootId);
+        addSources(sources, builder, buildRootId);
 
         KojiImport translatedBuild = buildTranslatedBuild(builder);
         translatedBuild.getBuild().getExtraInfo().setImportInitiator(username);
@@ -185,6 +189,15 @@ public class BuildTranslatorImpl implements BuildTranslator {
         } catch (NoSuchAlgorithmException ex) {
             throw new CausewayException("Failed to compute md5 sum of build log: " + ex.getMessage(), ex);
         }
+    }
+
+    private void addSources(RenamedSources sources, KojiImport.Builder builder, int buildRootId)
+            throws CausewayException {
+        builder.withNewOutput(buildRootId, sources.getName())
+                .withOutputType(StandardOutputType.log)
+                .withFileSize(sources.getSize())
+                .withArch(StandardArchitecture.noarch)
+                .withChecksum(MD5, sources.getMd5());
     }
 
     private void addLogs(Build build, KojiImport.Builder builder, int buildRootId) {
@@ -294,10 +307,13 @@ public class BuildTranslatorImpl implements BuildTranslator {
     }
 
     @Override
-    public ImportFileGenerator getImportFiles(BuildArtifacts build, String log) throws CausewayException {
+    public ImportFileGenerator getImportFiles(
+            BuildArtifacts artifacts,
+            RenamedSources sources,
+            String log) throws CausewayException {
         try {
-            StringLogImportFileGenerator ret = new StringLogImportFileGenerator(log);
-            for (PncArtifact artifact : build.buildArtifacts) {
+            StringLogImportFileGenerator ret = new StringLogImportFileGenerator(log, sources);
+            for (PncArtifact artifact : artifacts.buildArtifacts) {
                 ret.addUrl(artifact.id, artifact.deployUrl, artifact.deployPath);
             }
             return ret;
@@ -307,9 +323,10 @@ public class BuildTranslatorImpl implements BuildTranslator {
     }
 
     @Override
-    public ImportFileGenerator getImportFiles(Build build) throws CausewayException {
+    public ImportFileGenerator getImportFiles(Build build, RenamedSources sources)
+            throws CausewayException {
         try {
-            ExternalLogImportFileGenerator ret = new ExternalLogImportFileGenerator();
+            ExternalLogImportFileGenerator ret = new ExternalLogImportFileGenerator(sources);
             for (Logfile logfile : build.getLogs()) {
                 String url = config.getLogStorage() + stripSlash(logfile.getDeployPath());
                 ret.addLog(url, logfile.getFilename(), logfile.getSize());

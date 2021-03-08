@@ -160,8 +160,8 @@ public class ImportControllerTest {
     }
 
     private void mockTranslator() throws CausewayException {
-        doReturn(KOJI_IMPORT).when(translator).translate(eq(NVR), any(), any());
-        doReturn(IMPORT_FILE_GENERATOR).when(translator).getImportFiles(any());
+        doReturn(KOJI_IMPORT).when(translator).translate(eq(NVR), any(), any(), any());
+        doReturn(IMPORT_FILE_GENERATOR).when(translator).getImportFiles(any(), any());
     }
 
     private BrewBuild mockExistingBuild(int id, BrewNVR nvr, boolean tagged) throws Exception {
@@ -198,7 +198,7 @@ public class ImportControllerTest {
         mockExistingBuild(11, NVR, true);
         // Mock Brew import
         KojiImport kojiImport = mock(KojiImport.class);
-        doReturn(kojiImport).when(translator).translate(eq(NVR2), any(), any());
+        doReturn(kojiImport).when(translator).translate(eq(NVR2), any(), any(), any());
         BrewBuild brewBuild = new BrewBuild(12, NVR2);
         doReturn(brewBuild).when(brewClient).importBuild(eq(NVR2), same(kojiImport), same(IMPORT_FILE_GENERATOR));
 

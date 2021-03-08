@@ -40,13 +40,15 @@ import java.util.function.Predicate;
 public interface BuildTranslator {
 
     @Deprecated
-    ImportFileGenerator getImportFiles(BuildArtifacts build, String log) throws CausewayException;
+    ImportFileGenerator getImportFiles(BuildArtifacts artifacts, RenamedSources sources, String log)
+            throws CausewayException;
 
     @Deprecated
     KojiImport translate(
             BrewNVR nvr,
             org.jboss.pnc.dto.Build build,
             BuildArtifacts artifacts,
+            RenamedSources sources,
             String log,
             String username) throws CausewayException;
 
@@ -57,9 +59,10 @@ public interface BuildTranslator {
 
     RenamedSources getSources(Build build) throws CausewayException;
 
-    public ImportFileGenerator getImportFiles(Build build) throws CausewayException;
+    ImportFileGenerator getImportFiles(Build build, RenamedSources sources) throws CausewayException;
 
-    public KojiImport translate(BrewNVR nvr, Build build, String username) throws CausewayException;
+    KojiImport translate(BrewNVR nvr, Build build, RenamedSources sources, String username)
+            throws CausewayException;
 
     public static String guessVersion(Build build) throws CausewayException {
         final Predicate<BuiltArtifact> filter;
