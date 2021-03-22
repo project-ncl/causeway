@@ -15,7 +15,7 @@
  */
 package org.jboss.pnc.causeway.rest;
 
-import org.jboss.pnc.api.causeway.dto.CallbackTarget;
+import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseRest;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
@@ -36,5 +36,5 @@ public class BrewPushMilestone {
     @NonNull
     private MilestoneReleaseRest content;
     @NonNull
-    private CallbackTarget callback;
+    private Request callback;
 }

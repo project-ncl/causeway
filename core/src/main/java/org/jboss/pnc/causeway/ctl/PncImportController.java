@@ -15,7 +15,7 @@
  */
 package org.jboss.pnc.causeway.ctl;
 
-import org.jboss.pnc.api.causeway.dto.CallbackTarget;
+import org.jboss.pnc.api.dto.Request;
 
 /**
  *
@@ -24,5 +24,5 @@ import org.jboss.pnc.api.causeway.dto.CallbackTarget;
 @Deprecated
 public interface PncImportController {
 
-    public void importMilestone(int milestoneId, CallbackTarget callback, String callbackId, String username);
+    public void importMilestone(int milestoneId, Request callback, String callbackId, String username);
 }

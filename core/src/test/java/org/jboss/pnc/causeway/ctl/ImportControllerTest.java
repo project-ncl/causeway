@@ -26,7 +26,6 @@ import com.redhat.red.build.koji.model.json.KojiImport;
 import com.redhat.red.build.koji.model.json.util.KojiObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jboss.pnc.api.causeway.dto.CallbackTarget;
 import org.jboss.pnc.api.causeway.dto.push.Build;
 import org.jboss.pnc.api.causeway.dto.push.MavenBuild;
 import org.jboss.pnc.api.causeway.dto.push.MavenBuiltArtifact;
@@ -54,6 +53,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -86,8 +87,8 @@ public class ImportControllerTest {
     private static final String BUILD_VERSION = "1.1.1";
     private static final String ARTIFACTS_VERSION = "1.1.1.redhat_1";
     private static final String BUILD_NAME = "org.apache.geronimo.specs:geronimo-annotation_1.0_spec";
-    private static final String CALLBACK_URL = "http://localhost:8081/callback";
-    private static final CallbackTarget CALLBACK_TARGET = new CallbackTarget(CALLBACK_URL, Request.Method.POST);
+    private static final URI CALLBACK_URL = URI.create("http://localhost:8081/callback");
+    private static final Request CALLBACK_TARGET = new Request(Request.Method.POST, CALLBACK_URL);
     private static final String KOJI_URL = "http://koji.example.com/koji";
     private static final String KOJI_BUILD_URL = KOJI_URL + "/build?id=";
 

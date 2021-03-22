@@ -15,8 +15,10 @@
  */
 package org.jboss.pnc.causeway.bpmclient;
 
+import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
 
+import java.net.URI;
 import java.util.Map;
 
 /**
@@ -26,30 +28,10 @@ import java.util.Map;
 @Deprecated
 public interface BPMClient {
 
-    void error(String url, String callbackId, MilestoneReleaseResultRest result);
+    void error(Request callback, String callbackId, MilestoneReleaseResultRest result);
 
-    void error(
-            String url,
-            Map<String, String> headers,
-            String httpMethod,
-            String callbackId,
-            MilestoneReleaseResultRest result);
+    void failure(Request callback, String callbackId, MilestoneReleaseResultRest result);
 
-    void failure(String url, String callbackId, MilestoneReleaseResultRest result);
+    void success(Request callback, String callbackId, MilestoneReleaseResultRest result);
 
-    void failure(
-            String url,
-            Map<String, String> headers,
-            String httpMethod,
-            String callbackId,
-            MilestoneReleaseResultRest result);
-
-    void success(String url, String callbackId, MilestoneReleaseResultRest result);
-
-    void success(
-            String url,
-            Map<String, String> headers,
-            String httpMethod,
-            String callbackId,
-            MilestoneReleaseResultRest result);
 }
