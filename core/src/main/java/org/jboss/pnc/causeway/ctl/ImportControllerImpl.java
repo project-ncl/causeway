@@ -8,11 +8,11 @@ import com.codahale.metrics.UniformReservoir;
 import com.redhat.red.build.koji.model.json.KojiImport;
 import lombok.Data;
 
-import org.jboss.pnc.api.causeway.dto.CallbackTarget;
 import org.jboss.pnc.api.causeway.dto.push.Build;
 import org.jboss.pnc.api.causeway.dto.push.BuiltArtifact;
 import org.jboss.pnc.api.causeway.dto.push.Logfile;
 import org.jboss.pnc.api.causeway.dto.untag.TaggedBuild;
+import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.CausewayFailure;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
@@ -91,7 +91,7 @@ public class ImportControllerImpl implements ImportController {
 
     @Override
     @Asynchronous
-    public void importBuild(Build build, CallbackTarget callback, String username, boolean reimport) {
+    public void importBuild(Build build, Request callback, String username, boolean reimport) {
         MDC.put(MDCKeys.BUILD_ID_KEY, String.valueOf(build.getExternalBuildID()));
         log.info("Importing external build {} to tag {}.", build.getExternalBuildID(), build.getTagPrefix());
 
@@ -130,7 +130,7 @@ public class ImportControllerImpl implements ImportController {
 
     @Override
     @Asynchronous
-    public void untagBuild(TaggedBuild build, CallbackTarget callback) {
+    public void untagBuild(TaggedBuild build, Request callback) {
         log.info("Untaging build {} from tag {}.", build.getBrewBuildId(), build.getTagPrefix());
 
         MetricRegistry registry = metricsConfiguration.getMetricRegistry();
@@ -265,15 +265,15 @@ public class ImportControllerImpl implements ImportController {
         return new BrewNVR(build.getBuildName(), buildVersion, Integer.toString(revision));
     }
 
-    private <T> void respond(CallbackTarget callback, T responseEntity) {
+    private <T> void respond(Request callback, T responseEntity) {
         if (callback == null) {
             log.info("Not sending callback.");
             return;
         }
-        log.info("Sending callback to {}.", callback.getUrl());
-        ResteasyWebTarget target = restClient.target(callback.getUrl());
+        log.info("Sending callback to {}.", callback.getUri());
+        ResteasyWebTarget target = restClient.target(callback.getUri());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
-        callback.getHeaders().forEach(request::header);
+        callback.getHeaders().forEach(h -> request.header(h.getName(), h.getValue()));
         Response response = request.post(Entity.entity(responseEntity, MediaType.APPLICATION_JSON_TYPE));
         log.debug("Callback response: {} - {}.", response.getStatusInfo(), response.readEntity(String.class));
     }

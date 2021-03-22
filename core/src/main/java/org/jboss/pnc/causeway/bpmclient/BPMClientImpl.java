@@ -15,6 +15,7 @@
  */
 package org.jboss.pnc.causeway.bpmclient;
 
+import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.causeway.rest.BrewPushMilestoneResult;
 import org.jboss.pnc.causeway.rest.Callback;
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
@@ -24,14 +25,10 @@ import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
 
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Collections;
-import java.util.Map;
 
 /**
  *
@@ -47,73 +44,34 @@ public class BPMClientImpl implements BPMClient {
         client = new ResteasyClientBuilder().connectionPoolSize(4).build();
     }
 
-    private synchronized void send(
-            String url,
-            Map<String, String> headers,
-            String httpMethod,
-            BrewPushMilestoneResult result) {
-        log.info("Will send callback to {} using http method: {}", url, httpMethod);
+    private synchronized void send(Request callback, BrewPushMilestoneResult result) {
+        log.info("Will send callback to {} using http method: {}", callback.getUri(), callback.getMethod());
 
-        ResteasyWebTarget target = client.target(url);
-        target.request(MediaType.APPLICATION_JSON)
-                .headers(toMultivaluedMap(headers))
-                .method(httpMethod, Entity.entity(result, MediaType.APPLICATION_JSON_TYPE));
+        ResteasyWebTarget target = client.target(callback.getUri());
+        Invocation.Builder requestBuilder = target.request(MediaType.APPLICATION_JSON);
+        callback.getHeaders().forEach(h -> requestBuilder.header(h.getName(), h.getValue()));
+        requestBuilder.method(callback.getMethod().toString(), Entity.entity(result, MediaType.APPLICATION_JSON_TYPE));
     }
 
     @Override
-    public void success(String url, String callbackId, MilestoneReleaseResultRest result) {
-        success(url, Collections.EMPTY_MAP, "POST", callbackId, result);
-    }
-
-    @Override
-    public void success(
-            String url,
-            Map<String, String> headers,
-            String httpMethod,
-            String callbackId,
-            MilestoneReleaseResultRest result) {
+    public void success(Request callbackTarget, String callbackId, MilestoneReleaseResultRest result) {
         log.info("Import of milestone {} ended with success.", result.getMilestoneId());
         Callback callback = new Callback(callbackId, 200);
-        send(url, headers, httpMethod, new BrewPushMilestoneResult(result, callback));
+        send(callbackTarget, new BrewPushMilestoneResult(result, callback));
     }
 
     @Override
-    public void error(String url, String callbackId, MilestoneReleaseResultRest result) {
-        error(url, Collections.EMPTY_MAP, "POST", callbackId, result);
-    }
-
-    @Override
-    public void error(
-            String url,
-            Map<String, String> headers,
-            String httpMethod,
-            String callbackId,
-            MilestoneReleaseResultRest result) {
+    public void error(Request callbackTarget, String callbackId, MilestoneReleaseResultRest result) {
         log.info("Import of milestone {} ended with error.", result.getMilestoneId());
         Callback callback = new Callback(callbackId, 500);
-        send(url, headers, httpMethod, new BrewPushMilestoneResult(result, callback));
+        send(callbackTarget, new BrewPushMilestoneResult(result, callback));
     }
 
     @Override
-    public void failure(String url, String callbackId, MilestoneReleaseResultRest result) {
-        failure(url, Collections.EMPTY_MAP, "POST", callbackId, result);
-    }
-
-    @Override
-    public void failure(
-            String url,
-            Map<String, String> headers,
-            String httpMethod,
-            String callbackId,
-            MilestoneReleaseResultRest result) {
+    public void failure(Request callbackTarget, String callbackId, MilestoneReleaseResultRest result) {
         log.info("Import of milestone {} ended with failure.", result.getMilestoneId());
         Callback callback = new Callback(callbackId, 418);
-        send(url, headers, httpMethod, new BrewPushMilestoneResult(result, callback));
+        send(callbackTarget, new BrewPushMilestoneResult(result, callback));
     }
 
-    private static MultivaluedMap<String, Object> toMultivaluedMap(Map<String, String> map) {
-        MultivaluedMap<String, Object> toReturn = new MultivaluedHashMap<>();
-        map.forEach(toReturn::add);
-        return toReturn;
-    }
 }

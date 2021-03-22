@@ -17,10 +17,11 @@ package org.jboss.pnc.causeway.rest;
 
 import static org.junit.Assert.assertFalse;
 
-import org.jboss.pnc.api.causeway.dto.CallbackTarget;
 import org.jboss.pnc.api.dto.Request;
 import org.junit.Test;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,11 +32,13 @@ import java.util.Map;
 public class CallbackTargetTest {
 
     @Test
-    public void testSecurityCensoring() {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("foo", "bar");
-        headers.put("Authorization", "top-secret-token");
-        CallbackTarget ct = new CallbackTarget("http://foo.bar/", Request.Method.POST, headers);
+    public void testSecurityCensoring() throws URISyntaxException {
+        Request ct = Request.builder()
+                .method(Request.Method.POST)
+                .uri(new URI("http://foo.bar/"))
+                .header("foo", "bar")
+                .header("Authorization", "top-secret-token")
+                .build();
         String toString = ct.toString();
         assertFalse("Secret token should be censored", toString.contains("top-secret-token"));
     }

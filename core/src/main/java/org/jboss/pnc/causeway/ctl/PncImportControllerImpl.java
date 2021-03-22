@@ -27,7 +27,7 @@ import com.codahale.metrics.Timer;
 import com.codahale.metrics.UniformReservoir;
 import com.redhat.red.build.koji.model.json.KojiImport;
 
-import org.jboss.pnc.api.causeway.dto.CallbackTarget;
+import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.bpmclient.BPMClient;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
@@ -105,7 +105,7 @@ public class PncImportControllerImpl implements PncImportController {
 
     @Override
     @Asynchronous
-    public void importMilestone(int milestoneId, CallbackTarget callback, String callbackId, String username) {
+    public void importMilestone(int milestoneId, Request callback, String callbackId, String username) {
         log.info("Importing PNC milestone {}.", milestoneId);
 
         MetricRegistry registry = metricsConfiguration.getMetricRegistry();
@@ -125,52 +125,27 @@ public class PncImportControllerImpl implements PncImportController {
 
             if (results.stream().anyMatch(r -> r.getStatus() == BuildImportStatus.ERROR)) {
                 result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
-                bpmClient.failure(
-                        callback.getUrl(),
-                        callback.getHeaders(),
-                        callback.getMethod().toString(),
-                        callbackId,
-                        result);
+                bpmClient.failure(callback, callbackId, result);
                 errors.mark();
             } else if (results.stream().anyMatch(r -> r.getStatus() == BuildImportStatus.FAILED)) {
                 result.setReleaseStatus(ReleaseStatus.IMPORT_ERROR);
-                bpmClient.failure(
-                        callback.getUrl(),
-                        callback.getHeaders(),
-                        callback.getMethod().toString(),
-                        callbackId,
-                        result);
+                bpmClient.failure(callback, callbackId, result);
                 errors.mark();
             } else {
                 result.setReleaseStatus(ReleaseStatus.SUCCESS);
-                bpmClient.success(
-                        callback.getUrl(),
-                        callback.getHeaders(),
-                        callback.getMethod().toString(),
-                        callbackId,
-                        result);
+                bpmClient.success(callback, callbackId, result);
             }
         } catch (CausewayFailure ex) {
             log.error("Failed to import milestone. " + ex.getMessage(), ex);
             result.setErrorMessage(ex.getMessage());
             result.setReleaseStatus(ReleaseStatus.FAILURE);
-            bpmClient.failure(
-                    callback.getUrl(),
-                    callback.getHeaders(),
-                    callback.getMethod().toString(),
-                    callbackId,
-                    result);
+            bpmClient.failure(callback, callbackId, result);
             errors.mark();
         } catch (CausewayException | RuntimeException ex) {
             log.error("Failed to import milestone. " + ex.getMessage(), ex);
             result.setErrorMessage(ex.getMessage());
             result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
-            bpmClient.error(
-                    callback.getUrl(),
-                    callback.getHeaders(),
-                    callback.getMethod().toString(),
-                    callbackId,
-                    result);
+            bpmClient.error(callback, callbackId, result);
             errors.mark();
         }
 
