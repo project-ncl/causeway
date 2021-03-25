@@ -194,7 +194,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
     private void addSources(RenamedSources sources, KojiImport.Builder builder, int buildRootId)
             throws CausewayException {
         builder.withNewOutput(buildRootId, sources.getName())
-                .withOutputType(StandardOutputType.log)
+                .withOutputType(sources.getType())
                 .withFileSize(sources.getSize())
                 .withArch(StandardArchitecture.noarch)
                 .withChecksum(MD5, sources.getMd5());
