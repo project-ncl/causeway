@@ -22,6 +22,8 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.jboss.pnc.causeway.CausewayException;
 
+import com.redhat.red.build.koji.model.json.StandardOutputType;
+
 @ApplicationScoped
 public class SourceRenamer {
 
@@ -37,7 +39,7 @@ public class SourceRenamer {
         String gid = groupId.replace(".", "/");
         String name = artifactId + "-" + version;
         Path path = Paths.get(gid).resolve(artifactId).resolve(version);
-        return repack(input, name, path);
+        return repack(input, name, path, StandardOutputType.maven);
     }
 
     /**
@@ -46,10 +48,11 @@ public class SourceRenamer {
      */
     public RenamedSources repackNPM(InputStream input, String packageName, String version) throws CausewayException {
         String name = packageName + "-" + version;
-        return repack(input, name, Paths.get(""));
+        return repack(input, name, Paths.get(""), StandardOutputType.npm);
     }
 
-    private RenamedSources repack(InputStream input, String name, Path path) throws CausewayException {
+    private RenamedSources repack(InputStream input, String name, Path path, StandardOutputType type)
+            throws CausewayException {
         try {
             Path tempFile = Files.createTempFile("renamer-", ".tar.gz");
 
@@ -62,7 +65,7 @@ public class SourceRenamer {
 
             String archiveName = name + ARCHIVE_SUFFIX;
 
-            return new RenamedSources(tempFile, path.resolve(archiveName).toString(), md5Hash);
+            return new RenamedSources(tempFile, path.resolve(archiveName).toString(), md5Hash, type);
         } catch (IOException | CompressorException e) {
             throw new CausewayException("Error while repacking archive with changed root directory name", e);
         } catch (NoSuchAlgorithmException e) {

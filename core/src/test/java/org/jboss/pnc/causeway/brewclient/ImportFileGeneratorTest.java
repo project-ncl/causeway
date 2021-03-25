@@ -29,6 +29,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.redhat.red.build.koji.model.ImportFile;
+import com.redhat.red.build.koji.model.json.StandardOutputType;
 
 /**
  *
@@ -86,7 +87,7 @@ public class ImportFileGeneratorTest {
     private RenamedSources prepareSourcesFile() throws IOException {
         Path tempFile = Files.createTempFile("burn", "me");
         Files.write(tempFile, Collections.singleton(SOURCES));
-        return new RenamedSources(tempFile, SOURCES_PATH, "01234");
+        return new RenamedSources(tempFile, SOURCES_PATH, "01234", StandardOutputType.maven);
     }
 
     @Test
