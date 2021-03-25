@@ -1,5 +1,6 @@
 package org.jboss.pnc.causeway.source;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -71,7 +72,8 @@ public class SourceRenamer {
 
     private void rewrite(InputStream input, OutputStream output, String name) throws CompressorException, IOException {
         Path newDirectoryName = Paths.get(name);
-        try (TarArchiveInputStream in = new TarArchiveInputStream(compressor.createCompressorInputStream(input));
+        try (TarArchiveInputStream in = new TarArchiveInputStream(
+                compressor.createCompressorInputStream(new BufferedInputStream(input)));
                 TarArchiveOutputStream out = new TarArchiveOutputStream(new GzipCompressorOutputStream(output))) {
             out.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
 
