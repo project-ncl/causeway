@@ -136,7 +136,7 @@ public class PncImportControllerImpl implements PncImportController {
                 bpmClient.success(callback, callbackId, result);
             }
         } catch (CausewayFailure ex) {
-            log.error("Failed to import milestone. " + ex.getMessage(), ex);
+            log.warn("Failed to import milestone. " + ex.getMessage(), ex);
             result.setErrorMessage(ex.getMessage());
             result.setReleaseStatus(ReleaseStatus.FAILURE);
             bpmClient.failure(callback, callbackId, result);
