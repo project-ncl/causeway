@@ -54,6 +54,7 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
@@ -285,7 +286,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                     .withNewOutput(buildRootId, stripSlash(artifact.getArtifactPath()))
                     .withArch(artifact.getArchitecture())
                     .withChecksum(MD5, artifact.getMd5())
-                    .withFileSize((int) artifact.getSize());
+                    .withFileSize(artifact.getSize());
 
             if (artifact.getClass().equals(MavenBuiltArtifact.class)) {
                 outputBuilder.withMavenInfoAndType(mavenArtifactToGAV((MavenBuiltArtifact) artifact));
@@ -333,8 +334,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 ret.addLog(url, logfile.getFilename(), logfile.getSize());
             }
             for (BuiltArtifact artifact : build.getBuiltArtifacts()) {
-                String url = config.getArtifactStorage() + stripSlash(artifact.getRepositoryPath()) + "/"
-                        + stripSlash(artifact.getArtifactPath());
+                String url = config.getArtifactStorage()
+                        + stripSlash(Paths.get(artifact.getRepositoryPath(), artifact.getArtifactPath()).toString());
                 ret.addUrl(artifact.getId(), url, stripSlash(artifact.getArtifactPath()));
             }
             return ret;
@@ -405,10 +406,11 @@ public class BuildTranslatorImpl implements BuildTranslator {
             throw new CausewayException("Build attribute " + BUILD_BREW_NAME + " can't be missing");
         }
         String[] splittedName = build.getAttributes().get(BUILD_BREW_NAME).split(":");
-        if (splittedName.length != 2)
+        if (splittedName.length != 2) {
             throw new IllegalArgumentException(
                     BUILD_BREW_NAME + " attribute '" + build.getAttributes().get(BUILD_BREW_NAME)
                             + "' doesn't seem to be maven G:A.");
+        }
         String version = build.getAttributes().get(BUILD_BREW_VERSION);
         if (version == null) {
             version = BuildTranslator.guessVersion(build, artifacts);

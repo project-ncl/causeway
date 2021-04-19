@@ -15,6 +15,8 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
+import lombok.NonNull;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -22,9 +24,19 @@ import com.redhat.red.build.koji.model.json.KojiImport;
 import com.redhat.red.build.koji.model.json.util.KojiObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.hamcrest.core.Is;
+import org.hamcrest.core.IsEqual;
 import org.jboss.pnc.api.causeway.dto.push.Build;
+import org.jboss.pnc.api.causeway.dto.push.BuildRoot;
+import org.jboss.pnc.api.causeway.dto.push.BuiltArtifact;
+import org.jboss.pnc.api.causeway.dto.push.Dependency;
+import org.jboss.pnc.api.causeway.dto.push.Logfile;
 import org.jboss.pnc.api.causeway.dto.push.MavenBuild;
 import org.jboss.pnc.api.causeway.dto.push.MavenBuiltArtifact;
+import org.jboss.pnc.api.causeway.dto.push.NpmBuild;
+import org.jboss.pnc.api.causeway.dto.push.NpmBuiltArtifact;
+import org.jboss.pnc.causeway.CausewayException;
+import org.jboss.pnc.causeway.brewclient.ImportFileGenerator.Artifact;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.rest.BrewNVR;
@@ -40,6 +52,11 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -56,6 +73,7 @@ public class TranslatorTest {
     @BeforeClass
     public static void setUp() {
         config.setPnclBuildsURL("http://example.com/build-records/");
+        config.setArtifactStorage("http://example.com/storage/");
         mapper.registerSubtypes(MavenBuild.class, MavenBuiltArtifact.class);
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
@@ -115,6 +133,51 @@ public class TranslatorTest {
         mapper.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
         String jsonOut = mapper.writeValueAsString(out);
         System.out.println("RESULTA:\n" + jsonOut);
+    }
+
+    @Test
+    public void testNpmImportPathsComposition() throws CausewayException {
+        Set<BuiltArtifact> artifacts = new HashSet<>();
+        artifacts.add(
+                NpmBuiltArtifact.builder()
+                        .repositoryPath("/api/content/npm/hosted/pnc-builds/")
+                        .artifactPath("/thepackage/-/thepackage-1.0.0.tgz")
+                        .architecture("")
+                        .filename("thepackage-1.0.0.tgz")
+                        .md5("")
+                        .name("thepackage_1.0.0")
+                        .version("1.0.0")
+                        .build());
+        BuildRoot buildRoot = BuildRoot.builder()
+                .container("")
+                .containerArchitecture("")
+                .host("")
+                .hostArchitecture("")
+                .tools(Collections.emptyMap())
+                .build();
+        Build build = NpmBuild.builder()
+                .buildName("")
+                .builtArtifacts(artifacts)
+                .externalBuildSystem("")
+                .externalBuildURL("")
+                .startTime(new Date())
+                .endTime(new Date())
+                .scmURL("")
+                .scmRevision("")
+                .buildRoot(buildRoot)
+                .logs(Collections.emptySet())
+                .sourcesURL("")
+                .dependencies(Collections.emptySet())
+                .tagPrefix("")
+                .name("")
+                .build();
+        ImportFileGenerator importFiles = bt.getImportFiles(build, null);
+
+        Set<Artifact> importArtifacts = importFiles.artifacts;
+        assertEquals(1, importArtifacts.size());
+        assertEquals(
+                "http://example.com/storage/api/content/npm/hosted/pnc-builds/thepackage/-/thepackage-1.0.0.tgz",
+                importArtifacts.iterator().next().getUrl().toString());
     }
 
     private RenamedSources prepareSourcesFile() throws IOException {
