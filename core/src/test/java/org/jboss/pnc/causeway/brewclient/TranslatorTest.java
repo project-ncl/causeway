@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.redhat.red.build.koji.model.json.KojiImport;
-import com.redhat.red.build.koji.model.json.StandardOutputType;
 import com.redhat.red.build.koji.model.json.util.KojiObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -121,7 +120,7 @@ public class TranslatorTest {
     private RenamedSources prepareSourcesFile() throws IOException {
         Path tempFile = Files.createTempFile("burn", "me");
         Files.write(tempFile, Collections.singleton(SOURCES));
-        return new RenamedSources(tempFile, SOURCES_PATH, "01234", StandardOutputType.maven);
+        return new RenamedSources(tempFile, SOURCES_PATH, "01234");
     }
 
     private static org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact newArtifact(

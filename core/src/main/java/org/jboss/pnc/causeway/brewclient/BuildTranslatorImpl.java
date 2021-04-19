@@ -126,7 +126,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 buildRootId,
                 build.getBuildConfigRevision().getBuildType());
         addLog(log, builder, buildRootId);
-        addSources(sources, builder, buildRootId);
+        addSources(sources, builder, descriptionBuilder, buildRootId);
 
         KojiImport translatedBuild = buildTranslatedBuild(builder);
         translatedBuild.getBuild().getExtraInfo().setImportInitiator(username);
@@ -161,7 +161,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
         addDependencies(build.getDependencies(), buildRootBuilder);
         addBuiltArtifacts(build.getBuiltArtifacts(), builder, buildRootId);
         addLogs(build, builder, buildRootId);
-        addSources(sources, builder, buildRootId);
+        addSources(sources, builder, descriptionBuilder, buildRootId);
 
         KojiImport translatedBuild = buildTranslatedBuild(builder);
         translatedBuild.getBuild().getExtraInfo().setImportInitiator(username);
@@ -191,10 +191,14 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }
     }
 
-    private void addSources(RenamedSources sources, KojiImport.Builder builder, int buildRootId)
-            throws CausewayException {
+    private void addSources(
+            RenamedSources sources,
+            KojiImport.Builder builder,
+            BuildDescription.Builder descriptionBuilder,
+            int buildRootId) {
+        descriptionBuilder.withRemoteSourceFile(null);
         builder.withNewOutput(buildRootId, sources.getName())
-                .withOutputType(sources.getType())
+                .withRemoteSourceFileInfoAndType(sources.getMd5())
                 .withFileSize(sources.getSize())
                 .withArch(StandardArchitecture.noarch)
                 .withChecksum(MD5, sources.getMd5());
