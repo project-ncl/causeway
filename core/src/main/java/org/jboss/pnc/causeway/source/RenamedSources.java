@@ -6,8 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-import com.redhat.red.build.koji.model.json.StandardOutputType;
-
 import lombok.Getter;
 
 public class RenamedSources {
@@ -18,16 +16,13 @@ public class RenamedSources {
     private final String name;
     @Getter
     private final String md5;
-    @Getter
-    private final StandardOutputType type;
     private boolean read = false;
 
-    public RenamedSources(Path file, String name, String md5, StandardOutputType type) throws IOException {
+    public RenamedSources(Path file, String name, String md5) throws IOException {
         this.file = file;
         this.name = name;
         this.md5 = md5;
         this.size = (int) Files.size(file);
-        this.type = type;
     }
 
     public InputStream read() throws IOException {
