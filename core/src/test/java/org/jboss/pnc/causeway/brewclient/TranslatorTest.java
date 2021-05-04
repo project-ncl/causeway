@@ -155,6 +155,36 @@ public class TranslatorTest {
                 .areExactly(2, anyOf(buildLog, sourceFile));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testTranslateBuildWithMissingTool() throws Exception {
+        // given
+        String groupId = "org.jboss.pnc";
+        String artifactId = "parent";
+        String version = "2.0.0";
+
+        String json = readResponseBodyFromTemplate("build-dto-missing-tool-version.json");
+        org.jboss.pnc.dto.Build build = mapper.readValue(json, org.jboss.pnc.dto.Build.class);
+
+        BuildArtifacts artifacts = new BuildArtifacts();
+        artifacts.buildArtifacts.add(
+                newArtifact(
+                        2369,
+                        "org.apache.geronimo.specs",
+                        "geronimo-annotation_1.0_spec",
+                        "1.1.1.redhat-1",
+                        "pom"));
+        RenamedSources sources = prepareSourcesFile();
+
+        // throw exception when
+        KojiImport out = bt.translate(
+                new BrewNVR(groupId + ":" + artifactId, version, "1"),
+                build,
+                artifacts,
+                sources,
+                "foo-bar-logs",
+                "joe");
+    }
+
     @Test
     public void testReadBuild() throws Exception {
         // given

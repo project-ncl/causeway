@@ -1,0 +1,234 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$description": "Koji content generator metadata",
+  "type": "object",
+  "definitions": {
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "oneOf": [
+          {
+            "properties": {
+              "type": {"const": "rpm"},
+              "name": {"type": "string"},
+              "version": {"type": "string"},
+              "release": {"type": "string"},
+              "epoch": {
+                "oneOf": [
+                  {"type": "integer"},
+                  {"const": null}
+                ]
+              },
+              "arch": {"type": "string"},
+              "sigmd5": {"type": "string"},
+              "signature": {
+                "anyOf": [
+                  {"type": "string"},
+                  {"const": null}
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "properties": {
+              "type": {"const": "file"},
+              "filename": {"type": "string"},
+              "filesize": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "checksum": {"type": "string"},
+              "checksum_type": {"type": "string"}
+            },
+            "additionalProperties": false
+          },
+          {
+            "properties": {
+              "type": {"const": "kojifile"},
+              "filename": {"type": "string"},
+              "filesize": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "checksum": {"type": "string"},
+              "checksum_type": {"type": "string"},
+              "nvr": {"type": "string"},
+              "archive_id": {"type": "integer"}
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
+    }
+  },
+  "properties": {
+    "metadata_version": {
+      "type": "integer",
+      "const": 0
+    },
+    "build": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string"},
+        "version": {"type": "string"},
+        "release": {"type": "string"},
+        "source": {"type": "string"},
+        "start_time": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end_time": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "owner": {
+          "type": "string",
+          "description": "optional user name"
+        },
+        "extra": {
+          "type": "object",
+          "oneOf": [
+            {
+              "properties": {"typeinfo": {"type": "object"}},
+              "required": ["typeinfo"],
+              "additionalProperties": false
+            },
+            {
+              "properties": {"maven": {"type": "object"}},
+              "required": ["maven"],
+              "additionalProperties": false
+            },
+            {
+              "properties": {"win": {"type": "object"}},
+              "required": ["win"],
+              "additionalProperties": false
+            },
+            {
+              "properties": {"image": {"type": "object"}},
+              "required": ["image"],
+              "additionalProperties": false
+            },
+            {
+              "properties": {},
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "release",
+        "source",
+        "start_time",
+        "end_time"
+      ]
+    },
+    "buildroots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "host": {
+            "type": "object",
+            "properties": {
+              "os": {"type": "string"},
+              "arch": {"type": "string"}
+            },
+            "required": ["os", "arch"],
+            "additionalProperties": false
+          },
+          "content_generator": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "version": {"type": "string"}
+            },
+            "required": ["name", "version"],
+            "additionalProperties": false
+          },
+          "container": {
+            "type": "object",
+            "properties": {
+              "type": {"type": "string"},
+              "arch": {"type": "string"}
+            },
+            "required": ["type", "arch"],
+            "additionalProperties": false
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {"type": "string"},
+                "version": {"type": "string"}
+              },
+              "required": ["name", "version"],
+              "additionalProperties": false
+            }
+          },
+          "components": { "$ref": "#/definitions/components" },
+          "extra": {
+            "type": "object",
+            "properties": {
+              "osbs": {
+                "type": "object",
+                "description": "OSBS has predefined extra",
+                "properties": {
+                  "build_id": {"type": "integer"},
+                  "builder_image_id": {"type": "integer"}
+                },
+                "required": ["build_id", "builder_image_id"]
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "required": [
+          "id",
+          "host",
+          "content_generator",
+          "container",
+          "tools",
+          "components",
+          "extra"
+        ]
+      }
+    },
+    "output": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "buildroot_id": {"type": "integer"},
+          "filename": {"type": "string"},
+          "filesize": {"type": "integer"},
+          "arch": {"type": "string"},
+          "checksum": {"type": "string"},
+          "checksum_type": {"type": "string"},
+          "type": {"type": "string"},
+          "components": { "$ref": "#/definitions/components" },
+          "extra": {"type": "object"}
+        },
+        "required": [
+          "buildroot_id",
+          "filename",
+          "filesize",
+          "arch",
+          "checksum",
+          "checksum_type",
+          "type"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "additionalProperties": false
+  }
+}

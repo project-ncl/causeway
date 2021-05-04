@@ -20,6 +20,7 @@ import com.redhat.red.build.koji.model.json.BuildContainer;
 import com.redhat.red.build.koji.model.json.BuildDescription;
 import com.redhat.red.build.koji.model.json.BuildOutput;
 import com.redhat.red.build.koji.model.json.BuildRoot;
+import com.redhat.red.build.koji.model.json.BuildTool;
 import com.redhat.red.build.koji.model.json.FileBuildComponent;
 import com.redhat.red.build.koji.model.json.KojiImport;
 import com.redhat.red.build.koji.model.json.StandardArchitecture;
@@ -59,6 +60,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -473,19 +475,41 @@ public class BuildTranslatorImpl implements BuildTranslator {
             throws CausewayException {
         switch (buildType) {
             case MVN:
-                buildRootBuilder.withTool("JDK", tools.remove("JDK"));
+                buildRootBuilder.withTool(getTool("JDK", tools));
+                buildRootBuilder.withTool(getTool("MAVEN", tools));
                 break;
             case SBT:
-                buildRootBuilder.withTool("SBT", tools.remove("SBT"));
+                buildRootBuilder.withTool(getTool("SBT", tools));
+                break;
             case GRADLE:
-                buildRootBuilder.withTool("GRADLE", tools.remove("GRADLE"));
+                buildRootBuilder.withTool(getTool("GRADLE", tools));
                 break;
             case NPM:
-                buildRootBuilder.withTool("NPM", tools.remove("NPM"));
+                buildRootBuilder.withTool(getTool("NPM", tools));
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported build type.");
         }
+    }
+
+    private BuildTool getTool(String name, Map<String, String> tools) {
+        String version = tools.remove(name);
+        if (version == null) {
+            for (Iterator<Map.Entry<String, String>> it = tools.entrySet().iterator(); it.hasNext();) {
+                Map.Entry<String, String> e = it.next();
+                if (e.getKey().equalsIgnoreCase(name)) {
+                    if (version != null) {
+                        throw new IllegalArgumentException("Build environment has multiple versions for tool " + name);
+                    }
+                    version = e.getValue();
+                    it.remove();
+                }
+            }
+            if (version == null) {
+                throw new IllegalArgumentException("Build environment has no version for tool " + name);
+            }
+        }
+        return new BuildTool(name, version);
     }
 
     private ProjectVersionRef mavenBuildToGAV(MavenBuild mb) throws CausewayException {
