@@ -15,22 +15,19 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
-import lombok.NonNull;
-
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.redhat.red.build.koji.model.json.BuildOutput;
+import com.redhat.red.build.koji.model.json.BuildTool;
 import com.redhat.red.build.koji.model.json.KojiImport;
-import com.redhat.red.build.koji.model.json.util.KojiObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.hamcrest.core.Is;
-import org.hamcrest.core.IsEqual;
+import org.assertj.core.api.Condition;
 import org.jboss.pnc.api.causeway.dto.push.Build;
 import org.jboss.pnc.api.causeway.dto.push.BuildRoot;
 import org.jboss.pnc.api.causeway.dto.push.BuiltArtifact;
-import org.jboss.pnc.api.causeway.dto.push.Dependency;
-import org.jboss.pnc.api.causeway.dto.push.Logfile;
 import org.jboss.pnc.api.causeway.dto.push.MavenBuild;
 import org.jboss.pnc.api.causeway.dto.push.MavenBuiltArtifact;
 import org.jboss.pnc.api.causeway.dto.push.NpmBuild;
@@ -45,12 +42,15 @@ import org.jboss.pnc.causeway.source.SourceRenamer;
 import org.jboss.pnc.enums.ArtifactQuality;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.assertj.core.api.Assertions.anyOf;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -66,7 +66,7 @@ public class TranslatorTest {
     private static final CausewayConfig config = new CausewayConfig();
     private static final SourceRenamer renamer = new SourceRenamer();
     private static final BuildTranslator bt = new BuildTranslatorImpl(config, renamer);
-    private static final ObjectMapper mapper = new KojiObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper();
     private static final String SOURCES_PATH = "sources.tar.gz";
     private static final String SOURCES = "Burn this after reading!";
 
@@ -76,14 +76,18 @@ public class TranslatorTest {
         config.setArtifactStorage("http://example.com/storage/");
         mapper.registerSubtypes(MavenBuild.class, MavenBuiltArtifact.class);
         mapper.registerModule(new JavaTimeModule());
-        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
     @Test
     public void testReadBuildArtifacts() throws Exception {
-        String json = readResponseBodyFromTemplate("build-dto-1.json");
+        // given
+        String groupId = "org.jboss.pnc";
+        String artifactId = "parent";
+        String version = "2.0.0";
 
+        String json = readResponseBodyFromTemplate("build-dto-1.json");
         org.jboss.pnc.dto.Build build = mapper.readValue(json, org.jboss.pnc.dto.Build.class);
+
         BuildArtifacts artifacts = new BuildArtifacts();
         artifacts.buildArtifacts.add(
                 newArtifact(
@@ -113,22 +117,86 @@ public class TranslatorTest {
         artifacts.dependencies.add(newArtifact(10, "xml-apis", "xml-apis", "1.0.b2", "jar"));
 
         RenamedSources sources = prepareSourcesFile();
-        KojiImport out = bt
-                .translate(new BrewNVR("g:a", "1.2.3", "1"), build, artifacts, sources, "foo-bar-logs", "joe");
 
-        mapper.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
-        String jsonOut = mapper.writeValueAsString(out);
-        System.out.println("RESULTA:\n" + jsonOut);
+        // when
+        KojiImport out = bt.translate(
+                new BrewNVR(groupId + ":" + artifactId, version, "1"),
+                build,
+                artifacts,
+                sources,
+                "foo-bar-logs",
+                "joe");
+
+        // Then
+        Condition<BuildOutput> buildArtifact = new Condition<>(
+                bo -> artifacts.buildArtifacts.stream().anyMatch(a -> a.deployPath.equals(bo.getFilename())),
+                "build artifact");
+        Condition<BuildOutput> buildLog = new Condition<>(bo -> bo.getOutputType().equals("log"), "build log");
+        Condition<BuildOutput> sourceFile = new Condition<>(
+                bo -> bo.getOutputType().equals("remote-source-file"),
+                "source file");
+
+        assertThat(out.getBuild()).hasFieldOrPropertyWithValue("name", groupId + "-" + artifactId)
+                .hasFieldOrPropertyWithValue("version", version)
+                .hasFieldOrPropertyWithValue("release", "1")
+                .hasFieldOrPropertyWithValue("startTime", Date.from(Instant.parse("2019-02-15T02:02:36.645Z")));
+        assertThat(out.getBuild().getSource())
+                .hasFieldOrPropertyWithValue("revision", "57ebfa20374d708e232fc8b45f37def055300260");
+        assertThat(out.getBuild().getSource().getUrl()).contains("http://github.com/project-ncl/pnc.git");
+        assertThat(out.getBuild().getExtraInfo().getMavenExtraInfo()).hasFieldOrPropertyWithValue("groupId", groupId)
+                .hasFieldOrPropertyWithValue("artifactId", artifactId)
+                .hasFieldOrPropertyWithValue("version", version);
+        assertThat(out.getBuildRoots()).hasSize(1);
+        assertThat(out.getBuildRoots().get(0).getBuildTools()).hasSize(3)
+                .extracting(BuildTool::getName)
+                .containsExactly("JDK", "MAVEN", "OS");
+        assertThat(out.getOutputs()).hasSize(3 + 2) // 3 artifacts + build log + sources
+                .areExactly(3, buildArtifact)
+                .areExactly(2, anyOf(buildLog, sourceFile));
     }
 
     @Test
     public void testReadBuild() throws Exception {
+        // given
+        String groupId = "org.apache.geronimo.specs";
+        String artifactId = "geronimo-annotation_1.0_spec";
+        String version = "1.1.1";
         String json = readResponseBodyFromTemplate("build.json");
 
         Build build = mapper.readValue(json, Build.class);
         RenamedSources sources = prepareSourcesFile();
 
-        KojiImport out = bt.translate(new BrewNVR("g:a", "1.2.3", "1"), build, sources, "joe");
+        // when
+        KojiImport out = bt.translate(new BrewNVR(groupId + ":" + artifactId, version, "1"), build, sources, "joe");
+
+        // Then
+        Condition<BuildOutput> buildArtifact = new Condition<>(
+                bo -> bo.getOutputType().equals("maven"),
+                "maven artifact");
+        Condition<BuildOutput> logFile = new Condition<>(bo -> bo.getOutputType().equals("log"), "log file");
+        Condition<BuildOutput> sourceFile = new Condition<>(
+                bo -> bo.getOutputType().equals("remote-source-file"),
+                "source file");
+
+        assertThat(out.getBuild()).hasFieldOrPropertyWithValue("name", groupId + "-" + artifactId)
+                .hasFieldOrPropertyWithValue("version", version)
+                .hasFieldOrPropertyWithValue("release", "1")
+                .hasFieldOrPropertyWithValue("startTime", new Date(1470309691844l));
+        assertThat(out.getBuild().getSource())
+                .hasFieldOrPropertyWithValue("revision", "repour-57ebfa20374d708e232fc8b45f37def055300260");
+        assertThat(out.getBuild().getSource().getUrl())
+                .contains("http://internal.maven.repo.com/productization-test3/geronimo-specs");
+        assertThat(out.getBuild().getExtraInfo().getMavenExtraInfo()).hasFieldOrPropertyWithValue("groupId", groupId)
+                .hasFieldOrPropertyWithValue("artifactId", artifactId)
+                .hasFieldOrPropertyWithValue("version", version);
+        assertThat(out.getBuildRoots()).hasSize(1);
+        assertThat(out.getBuildRoots().get(0).getBuildTools()).hasSize(3)
+                .extracting(BuildTool::getName)
+                .containsExactly("JDK", "MAVEN", "OS");
+        assertThat(out.getOutputs()).hasSize(3 + 2 + 1) // 3 artifacts + 2 logs + sources
+                .areExactly(3, buildArtifact)
+                .areExactly(2, logFile)
+                .areExactly(1, sourceFile);
 
         mapper.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
         String jsonOut = mapper.writeValueAsString(out);

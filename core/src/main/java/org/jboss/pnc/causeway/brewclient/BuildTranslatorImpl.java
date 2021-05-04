@@ -58,6 +58,7 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -119,7 +120,9 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 .withContainer(getContainer(build))
                 .withHost(build.getEnvironment().getAttributes().get("OS"), StandardArchitecture.noarch);
 
-        addTool(buildRootBuilder, build);
+        Map<String, String> tools = new HashMap<>(build.getEnvironment().getAttributes());
+        addTool(buildRootBuilder, build.getBuildConfigRevision().getBuildType(), tools);
+        addTools(buildRootBuilder, tools);
         addDependencies(artifacts.dependencies, buildRootBuilder, build.getBuildConfigRevision().getBuildType());
         addBuiltArtifacts(
                 artifacts.buildArtifacts,
@@ -466,19 +469,19 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }
     }
 
-    private void addTool(BuildRoot.Builder buildRootBuilder, org.jboss.pnc.dto.Build build) throws CausewayException {
-        BuildType buildType = build.getBuildConfigRevision().getBuildType();
+    private void addTool(BuildRoot.Builder buildRootBuilder, BuildType buildType, Map<String, String> tools)
+            throws CausewayException {
         switch (buildType) {
             case MVN:
-                buildRootBuilder.withTool("JDK", build.getEnvironment().getAttributes().get("JDK"));
+                buildRootBuilder.withTool("JDK", tools.remove("JDK"));
                 break;
             case SBT:
-                buildRootBuilder.withTool("SBT", build.getEnvironment().getAttributes().get("SBT"));
+                buildRootBuilder.withTool("SBT", tools.remove("SBT"));
             case GRADLE:
-                buildRootBuilder.withTool("GRADLE", build.getEnvironment().getAttributes().get("GRADLE"));
+                buildRootBuilder.withTool("GRADLE", tools.remove("GRADLE"));
                 break;
             case NPM:
-                buildRootBuilder.withTool("NPM", build.getEnvironment().getAttributes().get("NPM"));
+                buildRootBuilder.withTool("NPM", tools.remove("NPM"));
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported build type.");
