@@ -30,6 +30,7 @@
     "systemImageId": "12345678",
     "attributes": {
       "JDK": "1.7.0",
+      "MAVEN": "2.6.3",
       "OS": "Linux"
     },
     "systemImageType": "DOCKER_IMAGE",
