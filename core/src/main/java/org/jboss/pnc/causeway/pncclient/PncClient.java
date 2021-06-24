@@ -28,13 +28,13 @@ import java.util.Collection;
 @Deprecated
 public interface PncClient {
 
-    BuildArtifacts findBuildArtifacts(Integer buildId) throws CausewayException;
+    BuildArtifacts findBuildArtifacts(String buildId) throws CausewayException;
 
     public Collection<Build> findBuildsOfProductMilestone(int milestoneId) throws CausewayException;
 
     public String getTagForMilestone(int milestoneId) throws CausewayException;
 
-    public String getBuildLog(int buildId) throws CausewayException;
+    public String getBuildLog(String buildId) throws CausewayException;
 
     public InputStream getSources(String id) throws CausewayException;
 }

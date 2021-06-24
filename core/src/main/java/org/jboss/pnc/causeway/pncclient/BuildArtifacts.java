@@ -32,7 +32,7 @@ public final class BuildArtifacts {
     }
 
     public static class PncArtifact {
-        public final int id;
+        public final String id;
         public final String identifier;
         public final String deployPath;
         public final String checksum;
@@ -41,7 +41,7 @@ public final class BuildArtifacts {
         public final long size;
 
         public PncArtifact(
-                int id,
+                String id,
                 String identifier,
                 String deployPath,
                 String checksum,

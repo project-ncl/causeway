@@ -43,8 +43,8 @@ import org.jboss.pnc.causeway.util.MDCUtils;
 public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFile>> {
     protected final Set<Artifact> artifacts = new HashSet<>();
     protected final RenamedSources sources;
-    protected final Map<String, Integer> paths = new HashMap<>();
-    protected final Map<Integer, String> errors = new HashMap<>();
+    protected final Map<String, String> paths = new HashMap<>();
+    protected final Map<String, String> errors = new HashMap<>();
 
     public ImportFileGenerator(RenamedSources sources) {
         this.sources = sources;
@@ -57,13 +57,13 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
      * @param url URL of the artifact.
      * @param filePath Deploy path for the artifact.
      */
-    public void addUrl(Integer id, String url, String filePath) throws MalformedURLException {
+    public void addUrl(String id, String url, String filePath) throws MalformedURLException {
         URL artifactUrl = new URL(url);
         artifacts.add(new Artifact(id, artifactUrl, filePath));
         paths.put(filePath, id);
     }
 
-    public Map<Integer, String> getErrors() {
+    public Map<String, String> getErrors() {
         return errors;
     }
 
@@ -73,13 +73,13 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
      * @param path Deploy path of the artifact.
      * @return External ID of the artifact or null if aritfact not present.
      */
-    public Integer getId(String path) {
+    public String getId(String path) {
         return paths.get(path);
     }
 
     @Data
     protected static class Artifact {
-        private final int id;
+        private final String id;
         private final URL url;
         private final String filePath;
     }
@@ -125,13 +125,13 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
 
         private void fail(Artifact artifact, String message) {
             log.warn("{} '{}'", message, artifact.getUrl());
-            Integer id = artifact.getId();
+            String id = artifact.getId();
             errors.put(id, message + " '" + artifact.getUrl() + "'.");
         }
 
         private void fail(Artifact artifact, String message, Exception ex) {
             log.warn(message + " '" + artifact.getUrl() + "'", ex);
-            Integer id = artifact.getId();
+            String id = artifact.getId();
             errors.put(id, message + " '" + artifact.getUrl() + "': " + ex.getMessage());
         }
 

@@ -102,7 +102,7 @@ public class PncClientImpl implements PncClient {
     }
 
     @Override
-    public String getBuildLog(int buildId) throws CausewayException {
+    public String getBuildLog(String buildId) throws CausewayException {
         Optional<InputStream> log;
         try {
             log = buildClient.getBuildLogs(String.valueOf(buildId));
@@ -132,7 +132,7 @@ public class PncClientImpl implements PncClient {
     }
 
     @Override
-    public BuildArtifacts findBuildArtifacts(Integer buildId) throws CausewayException {
+    public BuildArtifacts findBuildArtifacts(String buildId) throws CausewayException {
         Collection<PncArtifact> builtArtifacts = getArtifacts(buildId, buildClient::getBuiltArtifacts);
         Collection<PncArtifact> dependantArtifact = getArtifacts(buildId, buildClient::getDependencyArtifacts);
 
@@ -150,7 +150,7 @@ public class PncClientImpl implements PncClient {
         if (deployPath.startsWith("/"))
             deployPath = deployPath.substring(1);
         return new PncArtifact(
-                Integer.valueOf(artifact.getId()),
+                artifact.getId(),
                 artifact.getIdentifier(),
                 deployPath,
                 artifact.getMd5(),
@@ -160,11 +160,11 @@ public class PncClientImpl implements PncClient {
     }
 
     private Collection<PncArtifact> getArtifacts(
-            Integer buildId,
+            String buildId,
             IntFunctionWithRemoteException<RemoteCollection<Artifact>> query) throws CausewayException {
         Collection<PncArtifact> pncArtifacts = new HashSet<>();
         try {
-            RemoteCollection<Artifact> artifacts = query.get(String.valueOf(buildId));
+            RemoteCollection<Artifact> artifacts = query.get(buildId);
             for (Artifact artifact : artifacts) {
                 pncArtifacts.add(toPncArtifact(artifact));
             }

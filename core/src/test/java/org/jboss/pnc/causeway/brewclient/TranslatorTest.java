@@ -15,7 +15,6 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -91,30 +90,30 @@ public class TranslatorTest {
         BuildArtifacts artifacts = new BuildArtifacts();
         artifacts.buildArtifacts.add(
                 newArtifact(
-                        2369,
+                        "2369",
                         "org.apache.geronimo.specs",
                         "geronimo-annotation_1.0_spec",
                         "1.1.1.redhat-1",
                         "pom"));
         artifacts.buildArtifacts.add(
                 newArtifact(
-                        2370,
+                        "2370",
                         "org.apache.geronimo.specs",
                         "geronimo-annotation_1.0_spec",
                         "1.1.1.redhat-1",
                         "jar"));
         artifacts.buildArtifacts.add(
                 newArtifact(
-                        2371,
+                        "2371",
                         "org.apache.geronimo.specs",
                         "geronimo-annotation_1.0_spec",
                         "1.1.1.redhat-1",
                         "tar.gz",
                         "project-sources"));
 
-        artifacts.dependencies.add(newArtifact(7, "org.apache.maven", "maven-project", "2.0.6", "pom"));
-        artifacts.dependencies.add(newArtifact(9, "org.apache.maven.shared", "maven-shared-io", "1.1", "jar"));
-        artifacts.dependencies.add(newArtifact(10, "xml-apis", "xml-apis", "1.0.b2", "jar"));
+        artifacts.dependencies.add(newArtifact("7", "org.apache.maven", "maven-project", "2.0.6", "pom"));
+        artifacts.dependencies.add(newArtifact("9", "org.apache.maven.shared", "maven-shared-io", "1.1", "jar"));
+        artifacts.dependencies.add(newArtifact("10", "xml-apis", "xml-apis", "1.0.b2", "jar"));
 
         RenamedSources sources = prepareSourcesFile();
 
@@ -168,7 +167,7 @@ public class TranslatorTest {
         BuildArtifacts artifacts = new BuildArtifacts();
         artifacts.buildArtifacts.add(
                 newArtifact(
-                        2369,
+                        "2369",
                         "org.apache.geronimo.specs",
                         "geronimo-annotation_1.0_spec",
                         "1.1.1.redhat-1",
@@ -285,7 +284,7 @@ public class TranslatorTest {
     }
 
     private static org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact newArtifact(
-            int id,
+            String id,
             String groupId,
             String artifactId,
             String version,
@@ -294,7 +293,7 @@ public class TranslatorTest {
     }
 
     private static BuildArtifacts.PncArtifact newArtifact(
-            int id,
+            String id,
             String groupId,
             String artifactId,
             String version,
