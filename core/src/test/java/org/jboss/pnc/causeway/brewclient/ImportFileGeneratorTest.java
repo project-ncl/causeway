@@ -103,11 +103,11 @@ public class ImportFileGeneratorTest {
     }
 
     private void doTestImportFileGenerator(ImportFileGenerator ifg) throws MalformedURLException, IOException {
-        ifg.addUrl(1, HOST + FIRST_LOCATION, FIRST_PATH);
-        ifg.addUrl(2, HOST + SECOND_LOCATION, SECOND_PATH);
+        ifg.addUrl("1", HOST + FIRST_LOCATION, FIRST_PATH);
+        ifg.addUrl("2", HOST + SECOND_LOCATION, SECOND_PATH);
 
-        assertEquals(Integer.valueOf(1), ifg.getId(FIRST_PATH));
-        assertEquals(Integer.valueOf(2), ifg.getId(SECOND_PATH));
+        assertEquals("1", ifg.getId(FIRST_PATH));
+        assertEquals("2", ifg.getId(SECOND_PATH));
         assertNull(ifg.getId(NONEXISTING_PATH));
 
         int count = 0;
@@ -152,16 +152,16 @@ public class ImportFileGeneratorTest {
     }
 
     private void doTestImportFileGeneratorFail(ImportFileGenerator ifg) throws MalformedURLException, IOException {
-        ifg.addUrl(1, HOST + FIRST_LOCATION, FIRST_PATH);
-        ifg.addUrl(2, HOST + NONEXISTING_LOCATION, NONEXISTING_PATH);
+        ifg.addUrl("1", HOST + FIRST_LOCATION, FIRST_PATH);
+        ifg.addUrl("2", HOST + NONEXISTING_LOCATION, NONEXISTING_PATH);
 
         for (Supplier<ImportFile> supp : ifg) {
             ImportFile file = supp.get();
             file.getStream().close();
         }
-        Map<Integer, String> errors = ifg.getErrors();
+        Map<String, String> errors = ifg.getErrors();
         assertEquals("Errors: " + errors, 1, errors.size());
-        assertTrue("Errors: " + errors, errors.containsKey(2));
+        assertTrue("Errors: " + errors, errors.containsKey("2"));
     }
 
     public static String toString(InputStream input) throws IOException {

@@ -141,10 +141,10 @@ public class PncImportControllerTest {
     }
 
     private void mockPNC(Integer milestoneId, BuildType buildType) throws CausewayException {
-        mockPNC(milestoneId, generator.nextInt(), buildType);
+        mockPNC(milestoneId, String.valueOf(generator.nextInt()), buildType);
     }
 
-    private void mockPNC(Integer milestoneId, Integer buildId, BuildType buildType) throws CausewayException {
+    private void mockPNC(Integer milestoneId, String buildId, BuildType buildType) throws CausewayException {
         Integer id = generator.nextInt();
 
         Environment env = createEnvironment(buildType);
@@ -165,7 +165,7 @@ public class PncImportControllerTest {
         doReturn(buildRecords).when(pncClient).findBuildsOfProductMilestone(eq(milestoneId));
         doReturn(TAG_PREFIX).when(pncClient).getTagForMilestone(eq(milestoneId));
         doReturn(buildArtifacts).when(pncClient).findBuildArtifacts(eq(buildId));
-        doAnswer(i -> "Log of build " + i.getArguments()[0]).when(pncClient).getBuildLog(anyInt());
+        doAnswer(i -> "Log of build " + i.getArguments()[0]).when(pncClient).getBuildLog(anyString());
     }
 
     private Environment createEnvironment(BuildType buildType) {
@@ -229,7 +229,7 @@ public class PncImportControllerTest {
     @Test
     public void testImportProductMilestoneWithNonExistingBrewBuildIsImported() throws Exception {
         Integer milestoneId = generator.nextInt();
-        Integer buildId = generator.nextInt();
+        String buildId = String.valueOf(generator.nextInt());
 
         // Test setup
         mockPNC(milestoneId, buildId, BuildType.MVN);
@@ -299,7 +299,7 @@ public class PncImportControllerTest {
     @Test
     public void testImportProductReleaseWhereImportBuildThrowsException() throws Exception {
         Integer milestoneId = generator.nextInt();
-        Integer buildId = generator.nextInt();
+        String buildId = String.valueOf(generator.nextInt());
         String exceptionMessage = "Import build failed";
 
         // Test setup
@@ -330,7 +330,7 @@ public class PncImportControllerTest {
     @Test
     public void testImportProductReleaseWithArtifactImportErrors() throws Exception {
         Integer milestoneId = generator.nextInt();
-        Integer buildId = generator.nextInt();
+        String buildId = String.valueOf(generator.nextInt());
         // Test setup
         mockPNC(milestoneId, buildId, BuildType.MVN);
         mockBrew();
@@ -381,20 +381,20 @@ public class PncImportControllerTest {
     public void testGetNVR() throws IOException, CausewayException, ReflectiveOperationException {
         Environment env = createEnvironment(BuildType.MVN);
         BuildConfigurationRevision bcar = createBuildConfiguration(1, env, BuildType.MVN);
-        Build buildRecordRest = createBuildRecord(1, bcar, BREW_BUILD_NAME, BREW_BUILD_VERSION);
+        Build buildRecordRest = createBuildRecord("1", bcar, BREW_BUILD_NAME, BREW_BUILD_VERSION);
         BuildArtifacts buildArtifacts = new BuildArtifacts();
-        buildArtifacts.buildArtifacts.add(createArtifact(1));
+        buildArtifacts.buildArtifacts.add(createArtifact("1"));
 
         BrewNVR nvr = importController.getNVR(buildRecordRest, buildArtifacts);
         assertEquals(BREW_BUILD_NAME, nvr.getName());
         assertEquals(BREW_BUILD_VERSION, nvr.getVersion());
 
-        buildRecordRest = createBuildRecord(1, bcar, BREW_BUILD_NAME, null);
+        buildRecordRest = createBuildRecord("1", bcar, BREW_BUILD_NAME, null);
         nvr = importController.getNVR(buildRecordRest, buildArtifacts);
         assertEquals(BREW_BUILD_NAME, nvr.getName());
         assertEquals("1.1.1.redhat_1", nvr.getVersion());
 
-        buildRecordRest = createBuildRecord(1, bcar, null, null);
+        buildRecordRest = createBuildRecord("1", bcar, null, null);
         try {
             importController.getNVR(buildRecordRest, buildArtifacts);
             fail("Expected CausewayException to be thrown.");
@@ -407,9 +407,9 @@ public class PncImportControllerTest {
     public void testAutomaticVersionNPM() throws CausewayException {
         Environment env = createEnvironment(BuildType.NPM);
         BuildConfigurationRevision bcar = createBuildConfiguration(1, env, BuildType.NPM);
-        Build build = createBuildRecord(1, bcar, BREW_BUILD_NAME, null);
+        Build build = createBuildRecord("1", bcar, BREW_BUILD_NAME, null);
         BuildArtifacts buildArtifacts = new BuildArtifacts();
-        buildArtifacts.buildArtifacts.add(createNpmArtifact(1));
+        buildArtifacts.buildArtifacts.add(createNpmArtifact("1"));
 
         BrewNVR nvr = importController.getNVR(build, buildArtifacts);
 
@@ -449,7 +449,7 @@ public class PncImportControllerTest {
         return milestoneReleaseResultRest;
     }
 
-    private static BuildArtifacts.PncArtifact createArtifact(Integer buildId) {
+    private static BuildArtifacts.PncArtifact createArtifact(String buildId) {
         return new BuildArtifacts.PncArtifact(
                 buildId,
                 "org.apache.geronimo.specs:geronimo-annotation_1.0_spec:pom:1.1.1.redhat-1",
@@ -461,7 +461,7 @@ public class PncImportControllerTest {
                 ArtifactQuality.NEW);
     }
 
-    private static BuildArtifacts.PncArtifact createNpmArtifact(Integer buildId) {
+    private static BuildArtifacts.PncArtifact createNpmArtifact(String buildId) {
         return new BuildArtifacts.PncArtifact(
                 buildId,
                 "async:0.1.18.redhat-1",
@@ -473,7 +473,7 @@ public class PncImportControllerTest {
     }
 
     private Build createBuildRecord(
-            Integer buildId,
+            String buildId,
             BuildConfigurationRevision bcar,
             String brewBuildName,
             String brewBuildVersion) {

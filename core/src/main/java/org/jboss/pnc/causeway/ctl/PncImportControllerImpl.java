@@ -166,7 +166,7 @@ public class PncImportControllerImpl implements PncImportController {
         for (Build build : builds) {
             BuildImportResultRest importResult;
             try (MDC.MDCCloseable mdcClose = MDC.putCloseable(MDCKeys.BUILD_ID_KEY, build.getId())) {
-                BuildArtifacts artifacts = pncClient.findBuildArtifacts(Integer.valueOf(build.getId()));
+                BuildArtifacts artifacts = pncClient.findBuildArtifacts(build.getId());
                 importResult = importBuild(build, username, artifacts);
                 if (importResult.getStatus() == BuildImportStatus.SUCCESSFUL && importResult.getBrewBuildId() != null) {
                     brewClient.tagBuild(
@@ -176,7 +176,7 @@ public class PncImportControllerImpl implements PncImportController {
             } catch (CausewayException ex) {
                 log.error("Failed to import build " + build.getId() + ".", ex);
                 importResult = new BuildImportResultRest();
-                importResult.setBuildRecordId(Integer.valueOf(build.getId()));
+                importResult.setBuildRecordId(build.getId());
                 importResult.setErrorMessage(ex.getMessage());
                 importResult.setStatus(BuildImportStatus.ERROR);
             }
@@ -209,7 +209,7 @@ public class PncImportControllerImpl implements PncImportController {
             BuildImportResultRest ret = new BuildImportResultRest();
             ret.setBrewBuildId(brewBuild.getId());
             ret.setBrewBuildUrl(brewClient.getBuildUrl(brewBuild.getId()));
-            ret.setBuildRecordId(Integer.valueOf(build.getId()));
+            ret.setBuildRecordId(build.getId());
             ret.setStatus(BuildImportStatus.SUCCESSFUL); // TODO: replace with EXISTING?
 
             log.info("Build {} was already imported with id {}.", nvr.getNVR(), brewBuild.getId());
@@ -229,17 +229,17 @@ public class PncImportControllerImpl implements PncImportController {
         final BuildImportResultRest buildResult;
         if (artifacts.buildArtifacts.isEmpty()) {
             buildResult = new BuildImportResultRest();
-            buildResult.setBuildRecordId(Integer.valueOf(build.getId()));
+            buildResult.setBuildRecordId(build.getId());
             buildResult.setStatus(BuildImportStatus.SUCCESSFUL);
             buildResult.setErrorMessage("Build doesn't contain any artifacts to import, skipping.");
             log.info("PNC build {} doesn't contain any artifacts to import, skipping.", build.getId());
         } else {
-            String log = pncClient.getBuildLog(Integer.valueOf(build.getId()));
+            String log = pncClient.getBuildLog(build.getId());
             InputStream sourcesStream = pncClient.getSources(build.getId());
             RenamedSources sources = translator.getSources(build, artifacts, sourcesStream);
             KojiImport kojiImport = translator.translate(nvr, build, artifacts, sources, log, username);
             ImportFileGenerator importFiles = translator.getImportFiles(artifacts, sources, log);
-            buildResult = brewClient.importBuild(nvr, Integer.valueOf(build.getId()), kojiImport, importFiles);
+            buildResult = brewClient.importBuild(nvr, build.getId(), kojiImport, importFiles);
 
             long artifactSize = artifacts.buildArtifacts.stream().mapToLong(pncArtifact -> pncArtifact.size).sum();
             int artifactNumber = artifacts.buildArtifacts.size();

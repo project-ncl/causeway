@@ -167,7 +167,7 @@ public class BrewClientImpl implements BrewClient {
     @Override
     public BuildImportResultRest importBuild(
             BrewNVR nvr,
-            int buildRecordId,
+            String buildRecordId,
             KojiImport kojiImport,
             ImportFileGenerator importFiles) throws CausewayException {
         log.info("Importing build {}.", nvr.getNVR());
@@ -231,13 +231,13 @@ public class BrewClientImpl implements BrewClient {
         Map<String, KojijiErrorInfo> kojiErrors = result == null ? null : result.getUploadErrors();
         if (kojiErrors != null) {
             for (Map.Entry<String, KojijiErrorInfo> e : kojiErrors.entrySet()) {
-                Integer artifactId = importFiles.getId(e.getKey());
+                String artifactId = importFiles.getId(e.getKey());
                 log.warn("Failed to import artifact {} ({}): {}", artifactId, e.getKey(), e.getValue());
                 errorsPresent = true;
             }
         }
 
-        for (Map.Entry<Integer, String> e : importFiles.getErrors().entrySet()) {
+        for (Map.Entry<String, String> e : importFiles.getErrors().entrySet()) {
             log.warn("Failed to import artifact {}: {}", e.getKey(), e.getValue());
             errorsPresent = true;
         }

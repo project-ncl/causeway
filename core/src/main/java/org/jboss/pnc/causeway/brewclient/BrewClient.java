@@ -48,7 +48,7 @@ public interface BrewClient {
     @Deprecated
     BuildImportResultRest importBuild(
             BrewNVR nvr,
-            int buildRecordId,
+            String buildRecordId,
             KojiImport kojiImport,
             ImportFileGenerator importFiles) throws CausewayException;
 
