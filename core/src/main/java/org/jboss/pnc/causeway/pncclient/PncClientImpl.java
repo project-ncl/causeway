@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2015 Red Hat, Inc. (jbrazdil@redhat.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -121,8 +121,14 @@ public class PncClientImpl implements PncClient {
 
     @Override
     public InputStream getSources(String id) throws CausewayException {
-        try (Response response = buildClient.getInternalScmArchiveLink(id)) {
-            return response.readEntity(InputStream.class);
+        try {
+            Response response = buildClient.getInternalScmArchiveLink(id);
+            try {
+                return response.readEntity(InputStream.class);
+            } catch (RuntimeException e) {
+                response.close();
+                throw new CausewayException("Can not read sources of build " + id + ": " + e.getMessage(), e);
+            }
         } catch (RemoteResourceException e) {
             throw new CausewayException(
                     "Can not read sources of build " + id + " because PNC responded with an error - response "

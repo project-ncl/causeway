@@ -370,18 +370,20 @@ public class BuildTranslatorImpl implements BuildTranslator {
     public RenamedSources getSources(Build build) throws CausewayException {
         try {
             URL sourcesUrl = new URL(build.getSourcesURL());
-            if (build.getClass().equals(MavenBuild.class)) {
-                MavenBuild mavenBuild = (MavenBuild) build;
-                return renamer.repackMaven(
-                        sourcesUrl.openStream(),
-                        mavenBuild.getGroupId(),
-                        mavenBuild.getArtifactId(),
-                        mavenBuild.getVersion());
-            } else if (build.getClass().equals(NpmBuild.class)) {
-                NpmBuild npmBuild = (NpmBuild) build;
-                return renamer.repackNPM(sourcesUrl.openStream(), npmBuild.getName(), npmBuild.getVersion());
-            } else {
-                throw new IllegalArgumentException("Unsupported build type " + build.getClass());
+            try (InputStream input = sourcesUrl.openStream()) {
+                if (build.getClass().equals(MavenBuild.class)) {
+                    MavenBuild mavenBuild = (MavenBuild) build;
+                    return renamer.repackMaven(
+                            input,
+                            mavenBuild.getGroupId(),
+                            mavenBuild.getArtifactId(),
+                            mavenBuild.getVersion());
+                } else if (build.getClass().equals(NpmBuild.class)) {
+                    NpmBuild npmBuild = (NpmBuild) build;
+                    return renamer.repackNPM(input, npmBuild.getName(), npmBuild.getVersion());
+                } else {
+                    throw new IllegalArgumentException("Unsupported build type " + build.getClass());
+                }
             }
         } catch (IOException ex) {
             throw new CausewayException("Failed to read sources url: " + ex.getMessage(), ex);
