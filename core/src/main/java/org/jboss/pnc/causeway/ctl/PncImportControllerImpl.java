@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2015 Red Hat, Inc. (jbrazdil@redhat.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -54,17 +54,21 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.jboss.pnc.causeway.CausewayFailure;
 
 import static org.jboss.pnc.constants.Attributes.BUILD_BREW_NAME;
 import static org.jboss.pnc.constants.Attributes.BUILD_BREW_VERSION;
+
 import org.jboss.pnc.constants.MDCKeys;
 import org.slf4j.MDC;
 
@@ -235,8 +239,12 @@ public class PncImportControllerImpl implements PncImportController {
             log.info("PNC build {} doesn't contain any artifacts to import, skipping.", build.getId());
         } else {
             String log = pncClient.getBuildLog(build.getId());
-            InputStream sourcesStream = pncClient.getSources(build.getId());
-            RenamedSources sources = translator.getSources(build, artifacts, sourcesStream);
+            RenamedSources sources;
+            try (InputStream sourcesStream = pncClient.getSources(build.getId())) {
+                sources = translator.getSources(build, artifacts, sourcesStream);
+            } catch (IOException e) {
+                throw new CausewayException("Failed to read sources archive: " + e.getMessage(), e);
+            }
             KojiImport kojiImport = translator.translate(nvr, build, artifacts, sources, log, username);
             ImportFileGenerator importFiles = translator.getImportFiles(artifacts, sources, log);
             buildResult = brewClient.importBuild(nvr, build.getId(), kojiImport, importFiles);
