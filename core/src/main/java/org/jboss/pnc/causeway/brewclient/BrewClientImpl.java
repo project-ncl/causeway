@@ -236,11 +236,6 @@ public class BrewClientImpl implements BrewClient {
                 errorsPresent = true;
             }
         }
-
-        for (Map.Entry<String, String> e : importFiles.getErrors().entrySet()) {
-            log.warn("Failed to import artifact {}: {}", e.getKey(), e.getValue());
-            errorsPresent = true;
-        }
         return errorsPresent;
     }
 
