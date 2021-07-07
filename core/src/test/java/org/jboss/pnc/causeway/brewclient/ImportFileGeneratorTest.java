@@ -18,6 +18,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -63,10 +64,8 @@ public class ImportFileGeneratorTest {
                                 .withHeader("Content-Length", "14")
                                 .withBody(FIRST_ARTIFACT)));
         stubFor(
-                head(urlEqualTo(FIRST_LOCATION)).willReturn(
-                        aResponse().withStatus(200)
-                                .withHeader("Content-Type", "text/plain")
-                                .withHeader("Content-Length", "14")));
+                head(urlEqualTo(FIRST_LOCATION))
+                        .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "text/plain")));
         stubFor(
                 get(urlEqualTo(SECOND_LOCATION)).willReturn(
                         aResponse().withStatus(200)
@@ -74,10 +73,8 @@ public class ImportFileGeneratorTest {
                                 .withHeader("Content-Length", "23")
                                 .withBody(SECOND_ARTIFACT)));
         stubFor(
-                head(urlEqualTo(SECOND_LOCATION)).willReturn(
-                        aResponse().withStatus(200)
-                                .withHeader("Content-Type", "text/plain")
-                                .withHeader("Content-Length", "23")));
+                head(urlEqualTo(SECOND_LOCATION))
+                        .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "text/plain")));
         stubFor(
                 get(urlEqualTo(LOG_LOCATION)).willReturn(
                         aResponse().withStatus(200).withHeader("Content-Type", "text/plain").withBody(BUILD_LOG)));
@@ -103,8 +100,8 @@ public class ImportFileGeneratorTest {
     }
 
     private void doTestImportFileGenerator(ImportFileGenerator ifg) throws MalformedURLException, IOException {
-        ifg.addUrl("1", HOST + FIRST_LOCATION, FIRST_PATH);
-        ifg.addUrl("2", HOST + SECOND_LOCATION, SECOND_PATH);
+        ifg.addUrl("1", HOST + FIRST_LOCATION, FIRST_PATH, FIRST_ARTIFACT.length());
+        ifg.addUrl("2", HOST + SECOND_LOCATION, SECOND_PATH, SECOND_ARTIFACT.length());
 
         assertEquals("1", ifg.getId(FIRST_PATH));
         assertEquals("2", ifg.getId(SECOND_PATH));
@@ -152,16 +149,18 @@ public class ImportFileGeneratorTest {
     }
 
     private void doTestImportFileGeneratorFail(ImportFileGenerator ifg) throws MalformedURLException, IOException {
-        ifg.addUrl("1", HOST + FIRST_LOCATION, FIRST_PATH);
-        ifg.addUrl("2", HOST + NONEXISTING_LOCATION, NONEXISTING_PATH);
+        ifg.addUrl("1", HOST + FIRST_LOCATION, FIRST_PATH, FIRST_ARTIFACT.length());
+        ifg.addUrl("2", HOST + NONEXISTING_LOCATION, NONEXISTING_PATH, 42);
 
-        for (Supplier<ImportFile> supp : ifg) {
-            ImportFile file = supp.get();
-            file.getStream().close();
+        try {
+            for (Supplier<ImportFile> supp : ifg) {
+                ImportFile file = supp.get();
+                file.getStream().close();
+            }
+            fail("Should have thrown an exception");
+        } catch (RuntimeException ex) {
+            // ok
         }
-        Map<String, String> errors = ifg.getErrors();
-        assertEquals("Errors: " + errors, 1, errors.size());
-        assertTrue("Errors: " + errors, errors.containsKey("2"));
     }
 
     public static String toString(InputStream input) throws IOException {

@@ -322,7 +322,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
         try {
             StringLogImportFileGenerator ret = new StringLogImportFileGenerator(log, sources);
             for (PncArtifact artifact : artifacts.buildArtifacts) {
-                ret.addUrl(artifact.id, artifact.deployUrl, artifact.deployPath);
+                ret.addUrl(artifact.id, artifact.deployUrl, artifact.deployPath, artifact.size);
             }
             return ret;
         } catch (MalformedURLException ex) {
@@ -341,7 +341,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             for (BuiltArtifact artifact : build.getBuiltArtifacts()) {
                 String url = config.getArtifactStorage()
                         + stripSlash(Paths.get(artifact.getRepositoryPath(), artifact.getArtifactPath()).toString());
-                ret.addUrl(artifact.getId(), url, stripSlash(artifact.getArtifactPath()));
+                ret.addUrl(artifact.getId(), url, stripSlash(artifact.getArtifactPath()), artifact.getSize());
             }
             return ret;
         } catch (MalformedURLException ex) {

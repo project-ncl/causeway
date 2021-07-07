@@ -44,7 +44,6 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
     protected final Set<Artifact> artifacts = new HashSet<>();
     protected final RenamedSources sources;
     protected final Map<String, String> paths = new HashMap<>();
-    protected final Map<String, String> errors = new HashMap<>();
 
     public ImportFileGenerator(RenamedSources sources) {
         this.sources = sources;
@@ -56,15 +55,12 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
      * @param id External ID of the artifact.
      * @param url URL of the artifact.
      * @param filePath Deploy path for the artifact.
+     * @param size Size of the artifact in bytes.
      */
-    public void addUrl(String id, String url, String filePath) throws MalformedURLException {
+    public void addUrl(String id, String url, String filePath, long size) throws MalformedURLException {
         URL artifactUrl = new URL(url);
-        artifacts.add(new Artifact(id, artifactUrl, filePath));
+        artifacts.add(new Artifact(id, artifactUrl, filePath, size));
         paths.put(filePath, id);
-    }
-
-    public Map<String, String> getErrors() {
-        return errors;
     }
 
     /**
@@ -82,12 +78,12 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
         private final String id;
         private final URL url;
         private final String filePath;
+        private final long size;
     }
 
     protected abstract class ImportFileIterator implements Iterator<Supplier<ImportFile>> {
 
         private Iterator<Artifact> it;
-        private ImportFileSupplier next;
         private boolean sourcesGiven = false;
 
         protected ImportFileIterator(Iterator<Artifact> it) {
@@ -96,43 +92,8 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
 
         private ImportFileSupplier getNext() {
             Artifact artifact = it.next();
-            try {
-                HttpURLConnection connection = (HttpURLConnection) artifact.getUrl().openConnection();
-                MDCUtils.headersFromContext().forEach(connection::addRequestProperty);
-                connection.setRequestMethod("HEAD");
-                if (connection.getResponseCode() != 200) {
-                    fail(
-                            artifact,
-                            "Failed to obtain artifact (status " + connection.getResponseCode() + " "
-                                    + connection.getResponseMessage() + ")");
-                    return null;
-                }
-                String contentLength = connection.getHeaderField("Content-Length");
-                if (contentLength == null) {
-                    fail(artifact, "Failed to obtain file size of artifact");
-                    return null;
-                }
-                long size = Long.parseLong(contentLength);
-                connection.disconnect();
-
-                log.info("Reading file {} from {}", artifact.getFilePath(), artifact.getUrl());
-                return new ImportFileSupplier(artifact, size);
-            } catch (IOException | NumberFormatException ex) {
-                fail(artifact, "Failed to obtain file size of artifact", ex);
-                return null;
-            }
-        }
-
-        private void fail(Artifact artifact, String message) {
-            log.warn("{} '{}'", message, artifact.getUrl());
-            String id = artifact.getId();
-            errors.put(id, message + " '" + artifact.getUrl() + "'.");
-        }
-
-        private void fail(Artifact artifact, String message, Exception ex) {
-            log.warn(message + " '" + artifact.getUrl() + "'", ex);
-            String id = artifact.getId();
-            errors.put(id, message + " '" + artifact.getUrl() + "': " + ex.getMessage());
+            log.info("Reading file {} from {}", artifact.getFilePath(), artifact.getUrl());
+            return new ImportFileSupplier(artifact);
         }
 
         @Override
@@ -140,11 +101,7 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
             if (!sourcesGiven) {
                 return true;
             }
-            while (next == null && it.hasNext()) {
-                next = getNext();
-            }
-
-            return next != null;
+            return it.hasNext();
         }
 
         @Override
@@ -159,31 +116,38 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
                     }
                 };
             }
-            while (next == null) { // will throw NoSuchElementException if there is no next
-                next = getNext();
-            }
-
-            ImportFileSupplier ret = next;
-            next = null;
-            return ret;
+            return getNext();
         }
     }
 
     protected static class ImportFileSupplier implements Supplier<ImportFile> {
 
         private final Artifact artifact;
-        private final long size;
 
-        public ImportFileSupplier(Artifact artifact, long size) {
+        public ImportFileSupplier(Artifact artifact) {
             this.artifact = artifact;
-            this.size = size;
         }
 
         @Override
         public ImportFile get() {
             try {
-                InputStream stream = artifact.getUrl().openStream();
-                return new ImportFile(artifact.getFilePath(), stream, size);
+                HttpURLConnection connection = (HttpURLConnection) artifact.getUrl().openConnection();
+                try {
+                    MDCUtils.headersFromContext().forEach(connection::addRequestProperty);
+                    connection.setRequestMethod("GET");
+                    int responseCode = connection.getResponseCode();
+                    if (responseCode != 200) {
+                        String responseMessage = connection.getResponseMessage();
+                        connection.disconnect();
+                        throw new RuntimeException(
+                                "Failed to obtain artifact (status " + responseCode + " " + responseMessage + ")");
+                    }
+                    InputStream stream = connection.getInputStream();
+                    return new ImportFile(artifact.getFilePath(), stream, artifact.getSize());
+                } catch (RuntimeException ex) {
+                    connection.disconnect();
+                    throw ex;
+                }
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
