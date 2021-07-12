@@ -27,6 +27,8 @@ import com.codahale.metrics.Timer;
 import com.codahale.metrics.UniformReservoir;
 import com.redhat.red.build.koji.model.json.KojiImport;
 
+import org.commonjava.atlas.maven.ident.ref.ProjectVersionRef;
+import org.commonjava.atlas.npm.ident.ref.NpmPackageRef;
 import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.bpmclient.BPMClient;
@@ -36,6 +38,8 @@ import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.source.RenamedSources;
+import org.jboss.pnc.causeway.source.SourceRenamer;
+import org.jboss.pnc.enums.BuildType;
 import org.jboss.pnc.pncmetrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.PncClient;
@@ -57,10 +61,13 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -88,6 +95,7 @@ public class PncImportControllerImpl implements PncImportController {
     private final BPMClient bpmClient;
     private final BuildTranslator translator;
     private final CausewayConfig config;
+    private final SourceRenamer renamer;
 
     private final MetricsConfiguration metricsConfiguration;
 
@@ -98,12 +106,14 @@ public class PncImportControllerImpl implements PncImportController {
             BPMClient bpmClient,
             BuildTranslator translator,
             CausewayConfig config,
+            SourceRenamer renamer,
             MetricsConfiguration metricConfiguration) {
         this.pncClient = pnclClient;
         this.brewClient = brewClient;
         this.bpmClient = bpmClient;
         this.translator = translator;
         this.config = config;
+        this.renamer = renamer;
         this.metricsConfiguration = metricConfiguration;
     }
 
@@ -239,11 +249,21 @@ public class PncImportControllerImpl implements PncImportController {
             log.info("PNC build {} doesn't contain any artifacts to import, skipping.", build.getId());
         } else {
             String log = pncClient.getBuildLog(build.getId());
-            RenamedSources sources;
-            try (InputStream sourcesStream = pncClient.getSources(build.getId())) {
-                sources = translator.getSources(build, artifacts, sourcesStream);
-            } catch (IOException e) {
-                throw new CausewayException("Failed to read sources archive: " + e.getMessage(), e);
+
+            BuildType buildType = build.getBuildConfigRevision().getBuildType();
+            String sourcesDeployPath = translator.getSourcesDeployPath(build, artifacts);
+
+            Optional<BuildArtifacts.PncArtifact> any = artifacts.buildArtifacts.stream()
+                    .filter(a -> a.deployPath.equals(sourcesDeployPath))
+                    .findAny();
+
+            RenamedSources sources = null;
+            if (!any.isPresent()) {
+                try (InputStream sourcesStream = pncClient.getSources(build.getId())) {
+                    sources = translator.getSources(build, artifacts, sourcesStream);
+                } catch (IOException e) {
+                    throw new CausewayException("Failed to read sources archive: " + e.getMessage(), e);
+                }
             }
             KojiImport kojiImport = translator.translate(nvr, build, artifacts, sources, log, username);
             ImportFileGenerator importFiles = translator.getImportFiles(artifacts, sources, log);

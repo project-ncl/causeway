@@ -84,10 +84,11 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
     protected abstract class ImportFileIterator implements Iterator<Supplier<ImportFile>> {
 
         private Iterator<Artifact> it;
-        private boolean sourcesGiven = false;
+        private boolean sourcesGiven;
 
         protected ImportFileIterator(Iterator<Artifact> it) {
             this.it = it;
+            this.sourcesGiven = sources == null;
         }
 
         private ImportFileSupplier getNext() {

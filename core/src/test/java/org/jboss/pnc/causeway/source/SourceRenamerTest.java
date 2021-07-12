@@ -42,4 +42,27 @@ public class SourceRenamerTest {
         }
         assertEquals(5, count);
     }
+
+    @Test
+    public void shouldGetMavenDeployPath() {
+        String groupId = "org.foo.bar";
+        String artifactId = "foo-bar-utils";
+        String version = "1.0.0.Final-redhat-00001";
+
+        String path = renamer.getMavenDeployPath(groupId, artifactId, version);
+
+        String newName = artifactId + "-" + version;
+        assertEquals("/org/foo/bar/foo-bar-utils/1.0.0.Final-redhat-00001/" + newName + ARCHIVE_SUFFIX, path);
+    }
+
+    @Test
+    public void shouldGetNPMDeployPath() {
+        String project = "foo-bar";
+        String version = "1.0.0.Final-redhat-00001";
+
+        String path = renamer.getNPMDeployPath(project, version);
+
+        String newName = project + "-" + version;
+        assertEquals("/foo-bar/-/" + newName + ARCHIVE_SUFFIX, path);
+    }
 }
