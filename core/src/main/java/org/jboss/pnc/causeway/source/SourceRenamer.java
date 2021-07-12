@@ -34,10 +34,25 @@ public class SourceRenamer {
      */
     public RenamedSources repackMaven(InputStream input, String groupId, String artifactId, String version)
             throws CausewayException {
-        String gid = groupId.replace(".", "/");
-        String name = artifactId + "-" + version;
-        Path path = Paths.get(gid).resolve(artifactId).resolve(version);
+        String name = getMavenName(artifactId, version);
+        Path path = getMavenPath(groupId, artifactId, version);
         return repack(input, name, path);
+    }
+
+    private Path getMavenPath(String groupId, String artifactId, String version) {
+        String gid = groupId.replace(".", "/");
+        return Paths.get(gid).resolve(artifactId).resolve(version);
+    }
+
+    private String getMavenName(String artifactId, String version) {
+        return artifactId + "-" + version;
+    }
+
+    public String getMavenDeployPath(String groupId, String artifactId, String version) {
+        return Paths.get("/")
+                .resolve(getMavenPath(groupId, artifactId, version))
+                .resolve(getMavenName(artifactId, version) + ARCHIVE_SUFFIX)
+                .toString();
     }
 
     /**
@@ -45,8 +60,24 @@ public class SourceRenamer {
      * {@code <packageName>-<version>-project-sources.tar.gz}.
      */
     public RenamedSources repackNPM(InputStream input, String packageName, String version) throws CausewayException {
-        String name = packageName + "-" + version;
-        return repack(input, name, Paths.get(""));
+        String name = getNPMName(packageName, version);
+        Path path = getNPMPath(packageName);
+        return repack(input, name, path);
+    }
+
+    private Path getNPMPath(String packageName) {
+        return Paths.get(packageName).resolve("-");
+    }
+
+    private String getNPMName(String packageName, String version) {
+        return packageName + "-" + version;
+    }
+
+    public String getNPMDeployPath(String packageName, String version) {
+        return Paths.get("/")
+                .resolve(getNPMPath(packageName))
+                .resolve(getNPMName(packageName, version) + ARCHIVE_SUFFIX)
+                .toString();
     }
 
     private RenamedSources repack(InputStream input, String name, Path path) throws CausewayException {

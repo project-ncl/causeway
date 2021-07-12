@@ -18,10 +18,7 @@ package org.jboss.pnc.causeway.brewclient;
 import com.redhat.red.build.koji.model.json.KojiImport;
 
 import org.jboss.pnc.api.causeway.dto.push.Build;
-import org.jboss.pnc.api.causeway.dto.push.BuildRoot;
 import org.jboss.pnc.api.causeway.dto.push.BuiltArtifact;
-import org.jboss.pnc.api.causeway.dto.push.Dependency;
-import org.jboss.pnc.api.causeway.dto.push.Logfile;
 import org.jboss.pnc.api.causeway.dto.push.MavenBuild;
 import org.jboss.pnc.api.causeway.dto.push.MavenBuiltArtifact;
 import org.jboss.pnc.api.causeway.dto.push.NpmBuild;
@@ -33,13 +30,9 @@ import org.jboss.pnc.causeway.source.RenamedSources;
 import org.jboss.pnc.enums.BuildType;
 
 import java.io.InputStream;
-import java.util.Date;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
-import lombok.NonNull;
 
 /**
  *
@@ -62,6 +55,8 @@ public interface BuildTranslator {
 
     RenamedSources getSources(org.jboss.pnc.dto.Build build, BuildArtifacts artifacts, InputStream sourcesStream)
             throws CausewayException;
+
+    String getSourcesDeployPath(org.jboss.pnc.dto.Build build, BuildArtifacts artifacts) throws CausewayException;
 
     RenamedSources getSources(Build build) throws CausewayException;
 

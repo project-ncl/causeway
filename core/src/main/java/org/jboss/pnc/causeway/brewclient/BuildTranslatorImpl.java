@@ -63,6 +63,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.jboss.pnc.constants.Attributes.BUILD_BREW_NAME;
@@ -202,12 +203,14 @@ public class BuildTranslatorImpl implements BuildTranslator {
             KojiImport.Builder builder,
             BuildDescription.Builder descriptionBuilder,
             int buildRootId) {
-        descriptionBuilder.withRemoteSourceFile(null);
-        builder.withNewOutput(buildRootId, sources.getName())
-                .withRemoteSourceFileInfoAndType(sources.getMd5())
-                .withFileSize(sources.getSize())
-                .withArch(StandardArchitecture.noarch)
-                .withChecksum(MD5, sources.getMd5());
+        if (sources != null) {
+            descriptionBuilder.withRemoteSourceFile(null);
+            builder.withNewOutput(buildRootId, sources.getName())
+                    .withRemoteSourceFileInfoAndType(sources.getMd5())
+                    .withFileSize(sources.getSize())
+                    .withArch(StandardArchitecture.noarch)
+                    .withChecksum(MD5, sources.getMd5());
+        }
     }
 
     private void addLogs(Build build, KojiImport.Builder builder, int buildRootId) {
@@ -352,42 +355,66 @@ public class BuildTranslatorImpl implements BuildTranslator {
     @Override
     public RenamedSources getSources(org.jboss.pnc.dto.Build build, BuildArtifacts artifacts, InputStream sources)
             throws CausewayException {
-        BuildType buildType = build.getBuildConfigRevision().getBuildType();
-        switch (buildType) {
-            case MVN:
-            case GRADLE:
-                ProjectVersionRef gav = buildRootToGAV(build, artifacts);
-                return renamer.repackMaven(sources, gav.getGroupId(), gav.getArtifactId(), gav.getVersionString());
-            case NPM:
-                NpmPackageRef npmPackage = buildRootToNV(build, artifacts);
-                return renamer.repackNPM(sources, npmPackage.getName(), npmPackage.getVersionString());
-            default:
-                throw new IllegalArgumentException("Unsupported build type " + buildType);
-        }
+        return buildTypeSwitch(
+                build,
+                artifacts,
+                (gav) -> renamer.repackMaven(sources, gav.getGroupId(), gav.getArtifactId(), gav.getVersionString()),
+                (npmPackage) -> renamer.repackNPM(sources, npmPackage.getName(), npmPackage.getVersionString()));
+    }
+
+    @Override
+    public String getSourcesDeployPath(org.jboss.pnc.dto.Build build, BuildArtifacts artifacts)
+            throws CausewayException {
+        return buildTypeSwitch(
+                build,
+                artifacts,
+                (gav) -> renamer.getMavenDeployPath(gav.getGroupId(), gav.getArtifactId(), gav.getVersionString()),
+                (npmPackage) -> renamer.getNPMDeployPath(npmPackage.getName(), npmPackage.getVersionString()));
     }
 
     @Override
     public RenamedSources getSources(Build build) throws CausewayException {
         try {
-            URL sourcesUrl = new URL(build.getSourcesURL());
-            try (InputStream input = sourcesUrl.openStream()) {
-                if (build.getClass().equals(MavenBuild.class)) {
-                    MavenBuild mavenBuild = (MavenBuild) build;
-                    return renamer.repackMaven(
-                            input,
-                            mavenBuild.getGroupId(),
-                            mavenBuild.getArtifactId(),
-                            mavenBuild.getVersion());
-                } else if (build.getClass().equals(NpmBuild.class)) {
-                    NpmBuild npmBuild = (NpmBuild) build;
-                    return renamer.repackNPM(input, npmBuild.getName(), npmBuild.getVersion());
-                } else {
-                    throw new IllegalArgumentException("Unsupported build type " + build.getClass());
+            if (build.getClass().equals(MavenBuild.class)) {
+                MavenBuild mavenBuild = (MavenBuild) build;
+                String deployPath = renamer.getMavenDeployPath(
+                        mavenBuild.getGroupId(),
+                        mavenBuild.getArtifactId(),
+                        mavenBuild.getVersion());
+                Optional<BuiltArtifact> any = mavenBuild.getBuiltArtifacts()
+                        .stream()
+                        .filter(a -> a.getArtifactPath().equals(deployPath))
+                        .findAny();
+                if (!any.isPresent()) {
+                    URL sourcesUrl = new URL(build.getSourcesURL());
+                    try (InputStream input = sourcesUrl.openStream()) {
+                        return renamer.repackMaven(
+                                input,
+                                mavenBuild.getGroupId(),
+                                mavenBuild.getArtifactId(),
+                                mavenBuild.getVersion());
+                    }
                 }
+            } else if (build.getClass().equals(NpmBuild.class)) {
+                NpmBuild npmBuild = (NpmBuild) build;
+                String deployPath = renamer.getNPMDeployPath(npmBuild.getName(), npmBuild.getVersion());
+                Optional<BuiltArtifact> any = npmBuild.getBuiltArtifacts()
+                        .stream()
+                        .filter(a -> a.getArtifactPath().equals(deployPath))
+                        .findAny();
+                if (!any.isPresent()) {
+                    URL sourcesUrl = new URL(build.getSourcesURL());
+                    try (InputStream input = sourcesUrl.openStream()) {
+                        return renamer.repackNPM(input, npmBuild.getName(), npmBuild.getVersion());
+                    }
+                }
+            } else {
+                throw new IllegalArgumentException("Unsupported build type " + build.getClass());
             }
         } catch (IOException ex) {
             throw new CausewayException("Failed to read sources url: " + ex.getMessage(), ex);
         }
+        return null;
     }
 
     private KojiImport buildTranslatedBuild(KojiImport.Builder builder) throws CausewayException {
@@ -458,19 +485,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             BuildDescription.Builder buildDescription,
             org.jboss.pnc.dto.Build build,
             BuildArtifacts artifacts) throws CausewayException {
-        BuildType buildType = build.getBuildConfigRevision().getBuildType();
-        switch (buildType) {
-            case MVN:
-            case SBT:
-            case GRADLE:
-                buildDescription.withMavenInfoAndType(buildRootToGAV(build, artifacts));
-                break;
-            case NPM:
-                buildDescription.withNpmInfoAndType(buildRootToNV(build, artifacts));
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported build type.");
-        }
+        buildTypeSwitch(build, artifacts, buildDescription::withMavenInfoAndType, buildDescription::withNpmInfoAndType);
     }
 
     private void addTool(BuildRoot.Builder buildRootBuilder, BuildType buildType, Map<String, String> tools)
@@ -536,5 +551,30 @@ public class BuildTranslatorImpl implements BuildTranslator {
 
     private NpmPackageRef npmArtifactToNV(NpmBuiltArtifact npmBuiltArtifact) {
         return new NpmPackageRef(npmBuiltArtifact.getName(), NpmVersionUtils.valueOf(npmBuiltArtifact.getVersion()));
+    }
+
+    private <T> T buildTypeSwitch(
+            org.jboss.pnc.dto.Build build,
+            BuildArtifacts artifacts,
+            CausewayFunction<ProjectVersionRef, T> mavenConsumer,
+            CausewayFunction<NpmPackageRef, T> npmConsumer) throws CausewayException {
+        BuildType buildType = build.getBuildConfigRevision().getBuildType();
+        switch (buildType) {
+            case MVN:
+            case SBT:
+            case GRADLE:
+                ProjectVersionRef gav = buildRootToGAV(build, artifacts);
+                return mavenConsumer.apply(gav);
+            case NPM:
+                NpmPackageRef npmPackage = buildRootToNV(build, artifacts);
+                return npmConsumer.apply(npmPackage);
+            default:
+                throw new IllegalArgumentException("Unsupported build type " + buildType);
+        }
+    }
+
+    @FunctionalInterface
+    private interface CausewayFunction<T, R> {
+        R apply(T o) throws CausewayException;
     }
 }
