@@ -374,13 +374,18 @@ public class BuildTranslatorImpl implements BuildTranslator {
 
     @Override
     public RenamedSources getSources(Build build) throws CausewayException {
+        String version = build.getBuildVersion();
+        if (version == null) {
+            version = BuildTranslator.guessVersion(build);
+        }
         try {
             if (build.getClass().equals(MavenBuild.class)) {
                 MavenBuild mavenBuild = (MavenBuild) build;
-                String deployPath = renamer.getMavenDeployPath(
-                        mavenBuild.getGroupId(),
-                        mavenBuild.getArtifactId(),
-                        mavenBuild.getVersion());
+                if (mavenBuild.getVersion() != null) {
+                    version = mavenBuild.getVersion();
+                }
+                String deployPath = renamer
+                        .getMavenDeployPath(mavenBuild.getGroupId(), mavenBuild.getArtifactId(), version);
                 Optional<BuiltArtifact> any = mavenBuild.getBuiltArtifacts()
                         .stream()
                         .filter(a -> a.getArtifactPath().equals(deployPath))
@@ -388,16 +393,15 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 if (!any.isPresent()) {
                     URL sourcesUrl = new URL(build.getSourcesURL());
                     try (InputStream input = sourcesUrl.openStream()) {
-                        return renamer.repackMaven(
-                                input,
-                                mavenBuild.getGroupId(),
-                                mavenBuild.getArtifactId(),
-                                mavenBuild.getVersion());
+                        return renamer.repackMaven(input, mavenBuild.getGroupId(), mavenBuild.getArtifactId(), version);
                     }
                 }
             } else if (build.getClass().equals(NpmBuild.class)) {
                 NpmBuild npmBuild = (NpmBuild) build;
-                String deployPath = renamer.getNPMDeployPath(npmBuild.getName(), npmBuild.getVersion());
+                if (npmBuild.getVersion() != null) {
+                    version = npmBuild.getVersion();
+                }
+                String deployPath = renamer.getNPMDeployPath(npmBuild.getName(), version);
                 Optional<BuiltArtifact> any = npmBuild.getBuiltArtifacts()
                         .stream()
                         .filter(a -> a.getArtifactPath().equals(deployPath))
@@ -405,7 +409,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 if (!any.isPresent()) {
                     URL sourcesUrl = new URL(build.getSourcesURL());
                     try (InputStream input = sourcesUrl.openStream()) {
-                        return renamer.repackNPM(input, npmBuild.getName(), npmBuild.getVersion());
+                        return renamer.repackNPM(input, npmBuild.getName(), version);
                     }
                 }
             } else {
