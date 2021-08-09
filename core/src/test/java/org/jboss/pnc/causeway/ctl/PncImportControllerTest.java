@@ -206,6 +206,7 @@ public class PncImportControllerTest {
     private void mockTranslator() throws CausewayException {
         doReturn(KOJI_IMPORT).when(translator).translate(eq(NVR), any(), any(), any(), anyString(), any());
         doReturn(IMPORT_FILE_GENERATOR).when(translator).getImportFiles(any(), any(), anyString());
+        doReturn("/path/to/sources.tar.gz").when(translator).getSourcesDeployPath(any(), any());
     }
 
     @Test

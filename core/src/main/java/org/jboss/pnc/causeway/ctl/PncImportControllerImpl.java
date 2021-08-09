@@ -248,10 +248,10 @@ public class PncImportControllerImpl implements PncImportController {
             buildResult.setErrorMessage("Build doesn't contain any artifacts to import, skipping.");
             log.info("PNC build {} doesn't contain any artifacts to import, skipping.", build.getId());
         } else {
-            String log = pncClient.getBuildLog(build.getId());
+            String buildLog = pncClient.getBuildLog(build.getId());
 
             BuildType buildType = build.getBuildConfigRevision().getBuildType();
-            String sourcesDeployPath = translator.getSourcesDeployPath(build, artifacts);
+            String sourcesDeployPath = getSourcesDeployPath(build, artifacts);
 
             Optional<BuildArtifacts.PncArtifact> any = artifacts.buildArtifacts.stream()
                     .filter(a -> a.deployPath.equals(sourcesDeployPath))
@@ -259,21 +259,22 @@ public class PncImportControllerImpl implements PncImportController {
 
             RenamedSources sources = null;
             if (!any.isPresent()) {
+                log.info("Sources at '{}' not present, generating sources file.", sourcesDeployPath);
                 try (InputStream sourcesStream = pncClient.getSources(build.getId())) {
                     sources = translator.getSources(build, artifacts, sourcesStream);
                 } catch (IOException e) {
                     throw new CausewayException("Failed to read sources archive: " + e.getMessage(), e);
                 }
             }
-            KojiImport kojiImport = translator.translate(nvr, build, artifacts, sources, log, username);
-            ImportFileGenerator importFiles = translator.getImportFiles(artifacts, sources, log);
+            KojiImport kojiImport = translator.translate(nvr, build, artifacts, sources, buildLog, username);
+            ImportFileGenerator importFiles = translator.getImportFiles(artifacts, sources, buildLog);
             buildResult = brewClient.importBuild(nvr, build.getId(), kojiImport, importFiles);
 
             long artifactSize = artifacts.buildArtifacts.stream().mapToLong(pncArtifact -> pncArtifact.size).sum();
             int artifactNumber = artifacts.buildArtifacts.size();
-            int logLenght = log.length();
+            int logLenght = buildLog.length();
             try {
-                logLenght = log.getBytes("UTF-8").length;
+                logLenght = buildLog.getBytes("UTF-8").length;
             } catch (UnsupportedEncodingException e) {
             }
 
@@ -290,6 +291,14 @@ public class PncImportControllerImpl implements PncImportController {
                     "This artifact is blacklisted or deleted, so it was not imported.");
         }
         return buildResult;
+    }
+
+    private String getSourcesDeployPath(Build build, BuildArtifacts artifacts) throws CausewayException {
+        String sourcesDeployPath = translator.getSourcesDeployPath(build, artifacts);
+        if (sourcesDeployPath.startsWith("/")) {
+            sourcesDeployPath = sourcesDeployPath.substring(1); // PncClientImpl.toPncArtifact strips leading "/"
+        }
+        return sourcesDeployPath;
     }
 
     private void updateHistogram(MetricsConfiguration metricsConfiguration, String name, long value) {
