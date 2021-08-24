@@ -233,6 +233,7 @@ public class BrewClientImpl implements BrewClient {
             for (Map.Entry<String, KojijiErrorInfo> e : kojiErrors.entrySet()) {
                 String artifactId = importFiles.getId(e.getKey());
                 log.warn("Failed to import artifact {} ({}): {}", artifactId, e.getKey(), e.getValue());
+                log.debug("Artifact import error:", e);
                 errorsPresent = true;
             }
         }
