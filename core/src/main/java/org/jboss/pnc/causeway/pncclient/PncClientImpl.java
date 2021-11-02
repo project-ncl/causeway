@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Scanner;
 
+import lombok.extern.slf4j.Slf4j;
 import static org.jboss.pnc.rest.configuration.SwaggerConstants.NOT_FOUND_CODE;
 
 /**
@@ -47,6 +48,7 @@ import static org.jboss.pnc.rest.configuration.SwaggerConstants.NOT_FOUND_CODE;
  */
 @ApplicationScoped
 @Deprecated
+@Slf4j
 public class PncClientImpl implements PncClient {
 
     private final ProductMilestoneClient milestoneClient;
@@ -124,6 +126,13 @@ public class PncClientImpl implements PncClient {
         try {
             Response response = buildClient.getInternalScmArchiveLink(id);
             try {
+                if (response.getStatus() >= 400) {
+                    log.warn(
+                            "Got status " + response.getStatus() + " from sources endpoint. Message: "
+                                    + response.readEntity(String.class));
+                    throw new CausewayException(
+                            "Can not read sources of build " + id + ", received status " + response.getStatus());
+                }
                 return response.readEntity(InputStream.class);
             } catch (RuntimeException e) {
                 response.close();
