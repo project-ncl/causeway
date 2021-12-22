@@ -21,6 +21,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.redhat.red.build.koji.model.json.BuildOutput;
 import com.redhat.red.build.koji.model.json.BuildTool;
 import com.redhat.red.build.koji.model.json.KojiImport;
+import com.redhat.red.build.koji.model.json.NpmTypeInfoExtraInfo;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.assertj.core.api.Condition;
@@ -44,8 +46,11 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.anyOf;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,6 +66,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
+@SuppressWarnings("deprecation")
 public class TranslatorTest {
     private static final CausewayConfig config = new CausewayConfig();
     private static final SourceRenamer renamer = new SourceRenamer();
@@ -153,6 +159,66 @@ public class TranslatorTest {
                 .areExactly(3, buildArtifact)
                 .areExactly(4, mavenArtifact)
                 .areExactly(1, buildLog);
+    }
+
+    @Test
+    public void testReadNpmBuildArtifacts() throws Exception {
+        // given
+        String scope = "@redhat";
+        String packageName = "opossum";
+        String version = "0.5.0";
+
+        String json = readResponseBodyFromTemplate("build-dto-npm.json");
+        org.jboss.pnc.dto.Build build = mapper.readValue(json, org.jboss.pnc.dto.Build.class);
+
+        BuildArtifacts artifacts = new BuildArtifacts();
+        artifacts.buildArtifacts.add(newNpmArtifact("1800", scope, packageName, version));
+
+        artifacts.dependencies.add(newNpmArtifact("7777", null, "once", "1.4.0"));
+        artifacts.dependencies.add(newNpmArtifact("9999", null, "inflight", "1.0.6"));
+        artifacts.dependencies.add(newNpmArtifact("10101", "@babel", "core", "7.11.0"));
+
+        RenamedSources sources = prepareSourcesFile(
+                new RenamedSources.ArtifactType(scope + "/" + packageName, version));
+
+        // when
+        KojiImport out = bt.translate(
+                new BrewNVR(scope + ":" + packageName, version, "1"),
+                build,
+                artifacts,
+                sources,
+                "foo-bar-logs",
+                "joe");
+
+        // Then
+        Condition<BuildOutput> buildArtifact = new Condition<>(
+                bo -> artifacts.buildArtifacts.stream().anyMatch(a -> a.deployPath.equals(bo.getFilename())),
+                "build artifact");
+        Condition<BuildOutput> buildLog = new Condition<>(bo -> bo.getOutputType().equals("log"), "build log");
+        Condition<BuildOutput> npmArtifact = new Condition<>(bo -> bo.getOutputType().equals("npm"), "npm artifact");
+
+        assertThat(out.getBuild()).hasFieldOrPropertyWithValue("name", scope + "-" + packageName)
+                .hasFieldOrPropertyWithValue("version", version)
+                .hasFieldOrPropertyWithValue("release", "1")
+                .hasFieldOrPropertyWithValue("startTime", Date.from(Instant.parse("2021-07-23T15:54:18.259Z")));
+        assertThat(out.getBuild().getSource())
+                .hasFieldOrPropertyWithValue("revision", "647daeb088cd49354f8831d3e3dab440e039b11a");
+        assertThat(out.getBuild().getSource().getUrl()).contains("http://github.com/nodeshift/opossum.git");
+        assertThat(out.getBuild().getExtraInfo().getNpmExtraInfo())
+                .hasFieldOrPropertyWithValue("name", scope + "-" + packageName)
+                .hasFieldOrPropertyWithValue("version", version);
+        assertThat(out.getBuild().getExtraInfo().getTypeInfo())
+                .hasFieldOrPropertyWithValue("npmTypeInfoExtraInfo", NpmTypeInfoExtraInfo.getInstance());
+        assertThat(out.getBuildRoots()).hasSize(1);
+        assertThat(out.getBuildRoots().get(0).getBuildTools()).hasSize(3)
+                .extracting(BuildTool::getName)
+                .containsExactly("NPM", "OS", "Nodejs");
+        assertThat(out.getOutputs()).hasSize(3) // 1 artifact + build log + sources
+                .areExactly(1, buildArtifact)
+                .areExactly(2, npmArtifact)
+                .areExactly(1, buildLog);
+
+        // System.out.println(mapper.writeValueAsString(out));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -316,6 +382,29 @@ public class TranslatorTest {
                 filename,
                 "bedf8af1b107b36c72f52009e6fcc768",
                 "http://ulozto.cz/api/hosted/build_geronimo-annotation_1-0_spec-1-1-1_20160804.0721/" + path,
+                13245,
+                ArtifactQuality.NEW);
+    }
+
+    private static BuildArtifacts.PncArtifact newNpmArtifact(
+            String id,
+            String scope,
+            String packageName,
+            String version) {
+        final String identifier;
+        if (scope == null) {
+            identifier = packageName + ":" + version;
+        } else {
+            identifier = scope + "/" + packageName + ":" + version;
+        }
+        final String path = (scope == null ? "" : scope + "/") + packageName + "/-/" + packageName + "-" + version
+                + ".tgz";
+        return new BuildArtifacts.PncArtifact(
+                id,
+                identifier,
+                path,
+                "bedf8af1b107b36c72f52009e6fcc768",
+                "http://repository.com/build-repo/" + path,
                 13245,
                 ArtifactQuality.NEW);
     }

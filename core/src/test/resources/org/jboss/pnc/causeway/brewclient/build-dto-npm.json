@@ -1,0 +1,76 @@
+{
+  "id": "ALOWWC2CGEAAA",
+  "submitTime": "2021-07-23T15:54:18.247Z",
+  "startTime": "2021-07-23T15:54:18.259Z",
+  "endTime": "2021-07-23T15:56:57.929Z",
+  "progress": "FINISHED",
+  "status": "SUCCESS",
+  "buildContentId": "build-ALOWWC2CGEAAA",
+  "temporaryBuild": false,
+  "alignmentPreference": null,
+  "scmUrl": "http://github.com/nodeshift/opossum.git",
+  "scmRevision": "647daeb088cd49354f8831d3e3dab440e039b11a",
+  "scmTag": "0.5.0-647daeb0",
+  "buildOutputChecksum": "ffd79e11f67fa536ef9ca272e68451ef",
+  "lastUpdateTime": "2021-07-23T15:56:57.929Z",
+  "project": {
+    "id": "222",
+    "name": "Opossum",
+    "description": "Node.js Circuit Breaker - fails fast",
+    "issueTrackerUrl": null,
+    "projectUrl": null,
+    "engineeringTeam": null,
+    "technicalLeader": null
+  },
+  "scmRepository": {
+    "id": "666",
+    "internalUrl": "git+ssh://internal.github.com/nodeshift/opossum.git",
+    "externalUrl": "https://github.com/nodeshift/opossum.git",
+    "preBuildSyncEnabled": true
+  },
+  "environment": {
+    "id": "123",
+    "name": "Nodejs 12",
+    "description": "Basice Nodejs 12 build environment",
+    "systemImageRepositoryUrl": "my.registry/newcastle",
+    "systemImageId": "builder-rhel-7-nodejs12:1.0.3",
+    "attributes": {
+      "NPM": "6",
+      "OS": "Linux",
+      "Nodejs": "12"
+    },
+    "systemImageType": "DOCKER_IMAGE",
+    "deprecated": true,
+    "hidden": false
+  },
+  "attributes": {
+    "BREW_BUILD_NAME": "@redhat-opossum",
+    "BREW_BUILD_VERSION": "0.5.0",
+    "BUILD_OUTPUT_OK": "false"
+  },
+  "user": {
+    "id": "234",
+    "username": "demo-user"
+  },
+  "buildConfigRevision": {
+    "id": "2345",
+    "rev": 333333,
+    "name": "Opossum-BC",
+    "buildScript": "npm install\nnpm run build\nnpm publish",
+    "scmRevision": "5.0.5-8b2685dd",
+    "creationTime": "2020-08-13T14:11:10.627Z",
+    "modificationTime": "2021-07-23T15:54:15.990Z",
+    "buildType": "NPM",
+    "defaultAlignmentParams": "-DversioningStrategy=HYPHENED -DversionIncrementalSuffix=redhat",
+    "brewPullActive": false
+  },
+  "productMilestone": {
+    "id": "777",
+    "version": "1.0.ER.1",
+    "endDate": null,
+    "startingDate": "2020-08-13T12:00:00Z",
+    "plannedEndDate": "2020-08-20T12:00:00Z"
+  },
+  "groupBuild": null,
+  "noRebuildCause": null
+}
