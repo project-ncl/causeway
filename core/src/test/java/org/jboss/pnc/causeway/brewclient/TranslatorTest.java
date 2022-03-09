@@ -115,7 +115,7 @@ public class TranslatorTest {
         artifacts.dependencies.add(newArtifact("9", "org.apache.maven.shared", "maven-shared-io", "1.1", "jar"));
         artifacts.dependencies.add(newArtifact("10", "xml-apis", "xml-apis", "1.0.b2", "jar"));
 
-        RenamedSources sources = prepareSourcesFile();
+        RenamedSources sources = prepareSourcesFile(new RenamedSources.ArtifactType(groupId, artifactId, version));
 
         // when
         KojiImport out = bt.translate(
@@ -131,9 +131,9 @@ public class TranslatorTest {
                 bo -> artifacts.buildArtifacts.stream().anyMatch(a -> a.deployPath.equals(bo.getFilename())),
                 "build artifact");
         Condition<BuildOutput> buildLog = new Condition<>(bo -> bo.getOutputType().equals("log"), "build log");
-        Condition<BuildOutput> sourceFile = new Condition<>(
-                bo -> bo.getOutputType().equals("remote-source-file"),
-                "source file");
+        Condition<BuildOutput> mavenArtifact = new Condition<>(
+                bo -> bo.getOutputType().equals("maven"),
+                "maven artifact");
 
         assertThat(out.getBuild()).hasFieldOrPropertyWithValue("name", groupId + "-" + artifactId)
                 .hasFieldOrPropertyWithValue("version", version)
@@ -151,7 +151,8 @@ public class TranslatorTest {
                 .containsExactly("JDK", "MAVEN", "OS");
         assertThat(out.getOutputs()).hasSize(3 + 2) // 3 artifacts + build log + sources
                 .areExactly(3, buildArtifact)
-                .areExactly(2, anyOf(buildLog, sourceFile));
+                .areExactly(4, mavenArtifact)
+                .areExactly(1, buildLog);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -172,7 +173,7 @@ public class TranslatorTest {
                         "geronimo-annotation_1.0_spec",
                         "1.1.1.redhat-1",
                         "pom"));
-        RenamedSources sources = prepareSourcesFile();
+        RenamedSources sources = prepareSourcesFile(new RenamedSources.ArtifactType(groupId, artifactId, version));
 
         // throw exception when
         KojiImport out = bt.translate(
@@ -193,7 +194,7 @@ public class TranslatorTest {
         String json = readResponseBodyFromTemplate("build.json");
 
         Build build = mapper.readValue(json, Build.class);
-        RenamedSources sources = prepareSourcesFile();
+        RenamedSources sources = prepareSourcesFile(new RenamedSources.ArtifactType(groupId, artifactId, version));
 
         // when
         KojiImport out = bt.translate(new BrewNVR(groupId + ":" + artifactId, version, "1"), build, sources, "joe");
@@ -223,9 +224,9 @@ public class TranslatorTest {
                 .extracting(BuildTool::getName)
                 .containsExactly("JDK", "MAVEN", "OS");
         assertThat(out.getOutputs()).hasSize(3 + 2 + 1) // 3 artifacts + 2 logs + sources
-                .areExactly(3, buildArtifact)
+                .areExactly(4, buildArtifact)
                 .areExactly(2, logFile)
-                .areExactly(1, sourceFile);
+                .areExactly(0, sourceFile);
 
         mapper.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
         String jsonOut = mapper.writeValueAsString(out);
@@ -277,10 +278,10 @@ public class TranslatorTest {
                 importArtifacts.iterator().next().getUrl().toString());
     }
 
-    private RenamedSources prepareSourcesFile() throws IOException {
+    private RenamedSources prepareSourcesFile(RenamedSources.ArtifactType artifactType) throws IOException {
         Path tempFile = Files.createTempFile("burn", "me");
         Files.write(tempFile, Collections.singleton(SOURCES));
-        return new RenamedSources(tempFile, SOURCES_PATH, "01234");
+        return new RenamedSources(tempFile, SOURCES_PATH, "01234", artifactType);
     }
 
     private static org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact newArtifact(

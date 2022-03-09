@@ -133,7 +133,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 buildRootId,
                 build.getBuildConfigRevision().getBuildType());
         addLog(log, builder, buildRootId);
-        addSources(sources, builder, descriptionBuilder, buildRootId);
+        addSources(sources, builder, buildRootId);
 
         KojiImport translatedBuild = buildTranslatedBuild(builder);
         translatedBuild.getBuild().getExtraInfo().setImportInitiator(username);
@@ -168,7 +168,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
         addDependencies(build.getDependencies(), buildRootBuilder);
         addBuiltArtifacts(build.getBuiltArtifacts(), builder, buildRootId);
         addLogs(build, builder, buildRootId);
-        addSources(sources, builder, descriptionBuilder, buildRootId);
+        addSources(sources, builder, buildRootId);
 
         KojiImport translatedBuild = buildTranslatedBuild(builder);
         translatedBuild.getBuild().getExtraInfo().setImportInitiator(username);
@@ -198,18 +198,20 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }
     }
 
-    private void addSources(
-            RenamedSources sources,
-            KojiImport.Builder builder,
-            BuildDescription.Builder descriptionBuilder,
-            int buildRootId) {
+    private void addSources(RenamedSources sources, KojiImport.Builder builder, int buildRootId) {
         if (sources != null) {
-            descriptionBuilder.withRemoteSourceFile(null);
-            builder.withNewOutput(buildRootId, sources.getName())
-                    .withRemoteSourceFileInfoAndType(sources.getMd5())
+            BuildOutput.Builder outputBuilder = builder.withNewOutput(buildRootId, sources.getName())
                     .withFileSize(sources.getSize())
                     .withArch(StandardArchitecture.noarch)
                     .withChecksum(MD5, sources.getMd5());
+            RenamedSources.ArtifactType artifactType = sources.getArtifactType();
+            if (artifactType.isMavenType()) {
+                outputBuilder.withMavenInfoAndType(artifactType.getMavenInfoAndType());
+            } else if (artifactType.isNPMType()) {
+                outputBuilder.withNpmInfoAndType(artifactType.getNpmInfoAndType());
+            } else {
+                throw new IllegalArgumentException("Unknown artifact type.");
+            }
         }
     }
 

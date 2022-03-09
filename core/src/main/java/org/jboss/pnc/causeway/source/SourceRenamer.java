@@ -25,7 +25,9 @@ import org.jboss.pnc.causeway.CausewayException;
 @ApplicationScoped
 public class SourceRenamer {
 
-    public static final String ARCHIVE_SUFFIX = "-project-sources.tar.gz";
+    public static final String ARTIFACT_CLASSIFIER = "project-sources";
+    public static final String ARTIFACT_TYPE = "tar.gz";
+    public static final String ARCHIVE_SUFFIX = "-" + ARTIFACT_CLASSIFIER + "." + ARTIFACT_TYPE;
     private CompressorStreamFactory compressor = new CompressorStreamFactory();
 
     /**
@@ -36,7 +38,7 @@ public class SourceRenamer {
             throws CausewayException {
         String name = getMavenName(artifactId, version);
         Path path = getMavenPath(groupId, artifactId, version);
-        return repack(input, name, path);
+        return repack(input, name, path, new RenamedSources.ArtifactType(groupId, artifactId, version));
     }
 
     private Path getMavenPath(String groupId, String artifactId, String version) {
@@ -62,7 +64,7 @@ public class SourceRenamer {
     public RenamedSources repackNPM(InputStream input, String packageName, String version) throws CausewayException {
         String name = getNPMName(packageName, version);
         Path path = getNPMPath(packageName);
-        return repack(input, name, path);
+        return repack(input, name, path, new RenamedSources.ArtifactType(packageName, version));
     }
 
     private Path getNPMPath(String packageName) {
@@ -80,7 +82,8 @@ public class SourceRenamer {
                 .toString();
     }
 
-    private RenamedSources repack(InputStream input, String name, Path path) throws CausewayException {
+    private RenamedSources repack(InputStream input, String name, Path path, RenamedSources.ArtifactType artifacType)
+            throws CausewayException {
         try {
             Path tempFile = Files.createTempFile("renamer-", ".tar.gz");
 
@@ -93,7 +96,7 @@ public class SourceRenamer {
 
             String archiveName = name + ARCHIVE_SUFFIX;
 
-            return new RenamedSources(tempFile, path.resolve(archiveName).toString(), md5Hash);
+            return new RenamedSources(tempFile, path.resolve(archiveName).toString(), md5Hash, artifacType);
         } catch (IOException | CompressorException e) {
             throw new CausewayException("Error while repacking archive with changed root directory name", e);
         } catch (NoSuchAlgorithmException e) {

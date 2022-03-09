@@ -83,7 +83,7 @@ public class ImportFileGeneratorTest {
     private RenamedSources prepareSourcesFile() throws IOException {
         Path tempFile = Files.createTempFile("burn", "me");
         Files.write(tempFile, Collections.singleton(SOURCES));
-        return new RenamedSources(tempFile, SOURCES_PATH, "01234");
+        return new RenamedSources(tempFile, SOURCES_PATH, "01234", null);
     }
 
     @Test
