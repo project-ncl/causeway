@@ -32,7 +32,7 @@ import org.jboss.pnc.pncmetrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.PncClient;
 import org.jboss.pnc.causeway.rest.BrewBuild;
-import org.jboss.pnc.causeway.rest.BrewNVR;;
+import org.jboss.pnc.causeway.rest.BrewNVR;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportResultRest;
 import org.jboss.pnc.causeway.rest.pnc.BuildImportStatus;
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;

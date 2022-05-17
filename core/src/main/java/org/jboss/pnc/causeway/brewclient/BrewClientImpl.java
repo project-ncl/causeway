@@ -97,7 +97,7 @@ public class BrewClientImpl implements BrewClient {
 
     /**
      * Checks if the brew build is imported by PNC. If not, throws an exception.
-     * 
+     *
      * @throws CausewayException when the brew build is not imporeted by PNC.
      */
     private void checkPNCImportedBuild(KojiBuildInfo bi) throws CausewayException {
@@ -232,8 +232,12 @@ public class BrewClientImpl implements BrewClient {
         if (kojiErrors != null) {
             for (Map.Entry<String, KojijiErrorInfo> e : kojiErrors.entrySet()) {
                 String artifactId = importFiles.getId(e.getKey());
-                log.warn("Failed to import artifact {} ({}): {}", artifactId, e.getKey(), e.getValue());
-                log.debug("Artifact import error:", e);
+                if (log.isWarnEnabled()) {
+                    KojijiErrorInfo errorInfo = e.getValue();
+                    String message = String
+                            .format("Failed to import artifact %s (%s): %s", artifactId, e.getKey(), errorInfo);
+                    log.warn(message, errorInfo.getError());
+                }
                 errorsPresent = true;
             }
         }
