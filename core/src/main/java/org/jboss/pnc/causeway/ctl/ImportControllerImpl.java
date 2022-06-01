@@ -48,6 +48,8 @@ import lombok.extern.slf4j.Slf4j;
 import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageMissingTag;
 import org.jboss.pnc.constants.MDCKeys;
 import org.slf4j.MDC;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 /**
  *
@@ -73,6 +75,8 @@ public class ImportControllerImpl implements ImportController {
     private static final String BUILD_NOT_TAGGED = " but not previously tagged. Tagged now.";
     private static final String BUILD_ALREADY_IMPORTED = "Build was already imported with id ";
 
+    private static final Marker USER_LOG = MarkerFactory.getMarker("USER_LOG");
+
     @Inject
     private BrewClient brewClient;
     @Inject
@@ -93,7 +97,7 @@ public class ImportControllerImpl implements ImportController {
     @Asynchronous
     public void importBuild(Build build, Request callback, String username, boolean reimport) {
         MDC.put(MDCKeys.BUILD_ID_KEY, String.valueOf(build.getExternalBuildID()));
-        log.info("Importing external build {} to tag {}.", build.getExternalBuildID(), build.getTagPrefix());
+        log.info(USER_LOG, "Importing external build {} to tag {}.", build.getExternalBuildID(), build.getTagPrefix());
 
         MetricRegistry registry = metricsConfiguration.getMetricRegistry();
         Meter meter = registry.meter(METRICS_IMPORT_BASE + METRICS_METER);
@@ -131,7 +135,7 @@ public class ImportControllerImpl implements ImportController {
     @Override
     @Asynchronous
     public void untagBuild(TaggedBuild build, Request callback) {
-        log.info("Untaging build {} from tag {}.", build.getBrewBuildId(), build.getTagPrefix());
+        log.info(USER_LOG, "Untaging build {} from tag {}.", build.getBrewBuildId(), build.getTagPrefix());
 
         MetricRegistry registry = metricsConfiguration.getMetricRegistry();
         Meter meter = registry.meter(METRICS_UNTAG_BASE + METRICS_METER);
@@ -267,10 +271,10 @@ public class ImportControllerImpl implements ImportController {
 
     private <T> void respond(Request callback, T responseEntity) {
         if (callback == null) {
-            log.info("Not sending callback.");
+            log.info(USER_LOG, "Not sending callback.");
             return;
         }
-        log.info("Sending callback to {}.", callback.getUri());
+        log.info(USER_LOG, "Sending callback to {}.", callback.getUri());
         ResteasyWebTarget target = restClient.target(callback.getUri());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
         callback.getHeaders().forEach(h -> request.header(h.getName(), h.getValue()));
