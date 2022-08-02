@@ -52,7 +52,7 @@
   <properties>
     <projectOwner>Red Hat, Inc.</projectOwner>
     <projectEmail>jbrazdil@redhat.com</projectEmail>
-    <javaVersion>1.8</javaVersion>
+    <javaVersion>11</javaVersion>
     <configVersion>0.8</configVersion>
     <mockitoVersion>1.10.19</mockitoVersion>
     <kojijiVersion>2.16</kojijiVersion>
