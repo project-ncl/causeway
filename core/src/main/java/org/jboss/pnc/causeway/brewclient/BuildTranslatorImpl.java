@@ -40,6 +40,8 @@ import org.jboss.pnc.api.causeway.dto.push.MavenBuiltArtifact;
 import org.jboss.pnc.api.causeway.dto.push.NpmBuild;
 import org.jboss.pnc.api.causeway.dto.push.NpmBuiltArtifact;
 import org.jboss.pnc.causeway.CausewayException;
+import org.jboss.pnc.causeway.CausewayFailure;
+import org.jboss.pnc.causeway.ErrorMessages;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact;
@@ -76,7 +78,7 @@ import static org.jboss.pnc.constants.Attributes.BUILD_BREW_VERSION;
 @ApplicationScoped
 public class BuildTranslatorImpl implements BuildTranslator {
     private static final String CONTENT_GENERATOR_NAME = "Project Newcastle";
-    static final String PNC = "PNC";
+    public static final String PNC = "PNC";
     private static final String MD5 = "md5";
 
     private final CausewayConfig config;
@@ -124,7 +126,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 .withHost(build.getEnvironment().getAttributes().get("OS"), StandardArchitecture.noarch);
 
         Map<String, String> tools = new HashMap<>(build.getEnvironment().getAttributes());
-        addTool(buildRootBuilder, build.getBuildConfigRevision().getBuildType(), tools);
+        addTool(buildRootBuilder, build.getBuildConfigRevision().getBuildType(), tools, build.getEnvironment().getId());
         addTools(buildRootBuilder, tools);
         addDependencies(artifacts.dependencies, buildRootBuilder, build.getBuildConfigRevision().getBuildType());
         addBuiltArtifacts(
@@ -194,7 +196,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                     .withArch(StandardArchitecture.noarch)
                     .withChecksum(MD5, logHash);
         } catch (NoSuchAlgorithmException ex) {
-            throw new CausewayException("Failed to compute md5 sum of build log: " + ex.getMessage(), ex);
+            throw new CausewayException(ErrorMessages.failedToComputeBuildLogMD5(ex), ex);
         }
     }
 
@@ -210,7 +212,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             } else if (artifactType.isNPMType()) {
                 outputBuilder.withNpmInfoAndType(artifactType.getNpmInfoAndType());
             } else {
-                throw new IllegalArgumentException("Unknown artifact type.");
+                throw new IllegalArgumentException(ErrorMessages.unknownArtifactType());
             }
         }
     }
@@ -242,7 +244,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                     break;
                 }
                 default: {
-                    throw new IllegalArgumentException("Unknown artifact type");
+                    throw new IllegalArgumentException(ErrorMessages.unknownArtifactType());
                 }
             }
         }
@@ -283,7 +285,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                     break;
                 }
                 default: {
-                    throw new IllegalArgumentException("Unknown artifact type.");
+                    throw new IllegalArgumentException(ErrorMessages.unknownArtifactType());
                 }
             }
         }
@@ -303,7 +305,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             } else if (artifact.getClass().equals(NpmBuiltArtifact.class)) {
                 outputBuilder.withNpmInfoAndType(npmArtifactToNV((NpmBuiltArtifact) artifact));
             } else {
-                throw new IllegalArgumentException("Unknown artifact type.");
+                throw new IllegalArgumentException(ErrorMessages.unknownArtifactType());
             }
         }
     }
@@ -317,7 +319,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             case DOCKER_IMAGE:
                 return new BuildContainer("docker", "noarch");
             default:
-                throw new IllegalArgumentException("Unknown system image type.");
+                throw new IllegalArgumentException(ErrorMessages.unknownSystemImageType());
         }
     }
 
@@ -331,7 +333,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             }
             return ret;
         } catch (MalformedURLException ex) {
-            throw new CausewayException("Failed to parse artifact url: " + ex.getMessage(), ex);
+            throw new CausewayException(ErrorMessages.failedToParseArtifactURL(ex), ex);
         }
     }
 
@@ -350,7 +352,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             }
             return ret;
         } catch (MalformedURLException ex) {
-            throw new CausewayException("Failed to parse artifact url: " + ex.getMessage(), ex);
+            throw new CausewayException(ErrorMessages.failedToParseArtifactURL(ex), ex);
         }
     }
 
@@ -415,10 +417,10 @@ public class BuildTranslatorImpl implements BuildTranslator {
                     }
                 }
             } else {
-                throw new IllegalArgumentException("Unsupported build type " + build.getClass());
+                throw new IllegalArgumentException(ErrorMessages.unsupportedBuildClass(build.getClass()));
             }
         } catch (IOException ex) {
-            throw new CausewayException("Failed to read sources url: " + ex.getMessage(), ex);
+            throw new CausewayException(ErrorMessages.failedToDownloadSources(ex), ex);
         }
         return null;
     }
@@ -428,7 +430,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
         try {
             translatedBuild = builder.build();
         } catch (VerificationException ex) {
-            throw new CausewayException("Failure while building Koji Import JSON: " + ex.getMessage(), ex);
+            throw new CausewayException(ErrorMessages.failureWhileBuildingKojiImport(ex), ex);
         }
         return translatedBuild;
     }
@@ -443,13 +445,12 @@ public class BuildTranslatorImpl implements BuildTranslator {
     private ProjectVersionRef buildRootToGAV(org.jboss.pnc.dto.Build build, BuildArtifacts artifacts)
             throws CausewayException {
         if (!build.getAttributes().containsKey(BUILD_BREW_NAME)) {
-            throw new CausewayException("Build attribute " + BUILD_BREW_NAME + " can't be missing");
+            throw new CausewayFailure(ErrorMessages.missingBrewNameAttributeInMavenBuild());
         }
         String[] splittedName = build.getAttributes().get(BUILD_BREW_NAME).split(":");
         if (splittedName.length != 2) {
             throw new IllegalArgumentException(
-                    BUILD_BREW_NAME + " attribute '" + build.getAttributes().get(BUILD_BREW_NAME)
-                            + "' doesn't seem to be maven G:A.");
+                    ErrorMessages.illegalMavenBrewName(build.getAttributes().get(BUILD_BREW_NAME)));
         }
         String version = build.getAttributes().get(BUILD_BREW_VERSION);
         if (version == null) {
@@ -461,7 +462,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
     private NpmPackageRef buildRootToNV(org.jboss.pnc.dto.Build build, BuildArtifacts artifacts)
             throws CausewayException {
         if (!build.getAttributes().containsKey(BUILD_BREW_NAME)) {
-            throw new CausewayException("Build attribute " + BUILD_BREW_NAME + " can't be missing");
+            throw new CausewayFailure(ErrorMessages.missingBrewNameAttributeInBuild());
         }
         String name = build.getAttributes().get(BUILD_BREW_NAME);
         String version = build.getAttributes().get(BUILD_BREW_VERSION);
@@ -483,7 +484,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
         } else if (build.getClass().equals(NpmBuild.class)) {
             buildDescription.withNpmInfoAndType(npmBuildToNV((NpmBuild) build));
         } else {
-            throw new IllegalArgumentException("Unsupported build type.");
+            throw new IllegalArgumentException(ErrorMessages.unsupportedBuildClass(build.getClass()));
         }
     }
 
@@ -494,42 +495,45 @@ public class BuildTranslatorImpl implements BuildTranslator {
         buildTypeSwitch(build, artifacts, buildDescription::withMavenInfoAndType, buildDescription::withNpmInfoAndType);
     }
 
-    private void addTool(BuildRoot.Builder buildRootBuilder, BuildType buildType, Map<String, String> tools)
-            throws CausewayException {
+    private void addTool(
+            BuildRoot.Builder buildRootBuilder,
+            BuildType buildType,
+            Map<String, String> tools,
+            String envID) throws CausewayException {
         switch (buildType) {
             case MVN:
-                buildRootBuilder.withTool(getTool("JDK", tools));
-                buildRootBuilder.withTool(getTool("MAVEN", tools));
+                buildRootBuilder.withTool(getTool("JDK", tools, envID));
+                buildRootBuilder.withTool(getTool("MAVEN", tools, envID));
                 break;
             case SBT:
-                buildRootBuilder.withTool(getTool("SBT", tools));
+                buildRootBuilder.withTool(getTool("SBT", tools, envID));
                 break;
             case GRADLE:
-                buildRootBuilder.withTool(getTool("GRADLE", tools));
+                buildRootBuilder.withTool(getTool("GRADLE", tools, envID));
                 break;
             case NPM:
-                buildRootBuilder.withTool(getTool("NPM", tools));
+                buildRootBuilder.withTool(getTool("NPM", tools, envID));
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported build type.");
+                throw new IllegalArgumentException(ErrorMessages.unsupportedBuildType(buildType));
         }
     }
 
-    private BuildTool getTool(String name, Map<String, String> tools) {
+    private BuildTool getTool(String name, Map<String, String> tools, String envID) {
         String version = tools.remove(name);
         if (version == null) {
             for (Iterator<Map.Entry<String, String>> it = tools.entrySet().iterator(); it.hasNext();) {
                 Map.Entry<String, String> e = it.next();
                 if (e.getKey().equalsIgnoreCase(name)) {
                     if (version != null) {
-                        throw new IllegalArgumentException("Build environment has multiple versions for tool " + name);
+                        throw new IllegalArgumentException(ErrorMessages.environmentWithMultipleVersions(envID, name));
                     }
                     version = e.getValue();
                     it.remove();
                 }
             }
             if (version == null) {
-                throw new IllegalArgumentException("Build environment has no version for tool " + name);
+                throw new IllegalArgumentException(ErrorMessages.environmentWithoutVersion(envID, name));
             }
         }
         return new BuildTool(name, version);
@@ -575,7 +579,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 NpmPackageRef npmPackage = buildRootToNV(build, artifacts);
                 return npmConsumer.apply(npmPackage);
             default:
-                throw new IllegalArgumentException("Unsupported build type " + buildType);
+                throw new IllegalArgumentException(ErrorMessages.unsupportedBuildType(buildType));
         }
     }
 

@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.commonjava.atlas.maven.ident.ref.SimpleArtifactRef;
 import org.commonjava.atlas.maven.ident.version.VersionSpec;
 import org.commonjava.atlas.npm.ident.ref.NpmPackageRef;
+import org.jboss.pnc.causeway.ErrorMessages;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +37,7 @@ public class RenamedSources {
 
     public InputStream read() throws IOException {
         if (read) {
-            throw new IllegalStateException("File already read.");
+            throw new IllegalStateException(ErrorMessages.sourcesFileWasAlreadyRead());
         }
         read = true;
         return Files.newInputStream(file, StandardOpenOption.DELETE_ON_CLOSE);
@@ -72,14 +73,14 @@ public class RenamedSources {
 
         public SimpleArtifactRef getMavenInfoAndType() {
             if (!isMavenType()) {
-                throw new IllegalStateException("This is not an NPM type.");
+                throw new IllegalStateException(ErrorMessages.notMavenType());
             }
             return mavenInfoAndType;
         }
 
         public NpmPackageRef getNpmInfoAndType() {
             if (!isNPMType()) {
-                throw new IllegalStateException("This is not an NPM type.");
+                throw new IllegalStateException(ErrorMessages.notNPMType());
             }
             return npmInfoAndType;
         }

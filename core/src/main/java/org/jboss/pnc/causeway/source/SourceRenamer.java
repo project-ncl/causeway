@@ -21,6 +21,7 @@ import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.jboss.pnc.causeway.CausewayException;
+import org.jboss.pnc.causeway.ErrorMessages;
 
 @ApplicationScoped
 public class SourceRenamer {
@@ -97,10 +98,10 @@ public class SourceRenamer {
             String archiveName = name + ARCHIVE_SUFFIX;
 
             return new RenamedSources(tempFile, path.resolve(archiveName).toString(), md5Hash, artifacType);
-        } catch (IOException | CompressorException e) {
-            throw new CausewayException("Error while repacking archive with changed root directory name", e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("The JVM must support MD5 digest", e);
+        } catch (IOException | CompressorException ex) {
+            throw new CausewayException(ErrorMessages.errorRepackingArchive(ex), ex);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException(ErrorMessages.missingMD5Support(ex), ex);
         }
     }
 
@@ -117,10 +118,10 @@ public class SourceRenamer {
                 Path root = getTopmost(originalName);
                 if (root.equals(originalName)) { // validate only one directory exists in root of the archive
                     if (!entry.isDirectory()) {
-                        throw new IllegalArgumentException("There is non-directory file in root of the archive.");
+                        throw new IllegalArgumentException(ErrorMessages.nonDirectoryInArchiveRoot());
                     }
                     if (rootFound) {
-                        throw new IllegalArgumentException("Multiple directories in root of the archive.");
+                        throw new IllegalArgumentException(ErrorMessages.multipleDirectoriseInArchiveRoot());
                     }
                     rootFound = true;
                 }
