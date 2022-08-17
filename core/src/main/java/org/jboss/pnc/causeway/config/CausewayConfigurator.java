@@ -17,6 +17,7 @@ package org.jboss.pnc.causeway.config;
 
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
+import org.jboss.pnc.causeway.ErrorMessages;
 
 import javax.inject.Inject;
 
@@ -24,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import static org.apache.commons.lang.StringUtils.isNotEmpty;
 
@@ -74,18 +76,14 @@ public class CausewayConfigurator {
         try (InputStream in = new FileInputStream(configFile)) {
             new DotConfConfigurationReader(causewayConfig).loadConfiguration(in);
         } catch (ConfigurationException | IOException e) {
-            throw new ConfiguratorException(
-                    "Failed to read configuration: %s. Reason: %s",
-                    e,
-                    configFile,
-                    e.getMessage());
+            throw new ConfiguratorException(ErrorMessages.failedToReadConfigFile(configFile, e), e);
         }
 
         causewayConfig.configurationDone();
 
-        String validationErrors = causewayConfig.getValidationErrors();
-        if (isNotEmpty(validationErrors)) {
-            throw new ConfiguratorException("Causeway configuration is not complete!\n\n%s", validationErrors);
+        List<String> validationErrors = causewayConfig.getValidationErrors();
+        if (!validationErrors.isEmpty()) {
+            throw new ConfiguratorException(ErrorMessages.configIsNotComplete(validationErrors));
         }
     }
 }

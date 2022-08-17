@@ -26,6 +26,7 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiNVR;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.CausewayFailure;
+import org.jboss.pnc.causeway.ErrorMessages;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
@@ -42,8 +43,6 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 @ApplicationScoped
 @Slf4j
 public class BrewClientImpl implements BrewClient {
-
-    private static final String KOJI_COMMUNICATION_FAILURE = "Failure while communicating with Koji: ";
 
     public static final String BUILD_TAG_SUFIX = "-candidate";
 
@@ -72,7 +71,7 @@ public class BrewClientImpl implements BrewClient {
             checkPNCImportedBuild(bi);
             return toBrewBuild(bi, nvr);
         } catch (KojiClientException ex) {
-            throw new CausewayException(KOJI_COMMUNICATION_FAILURE + ex.getMessage(), ex);
+            throw new CausewayException(ErrorMessages.kojiCommunicationFailure(ex), ex);
         }
     }
 
@@ -84,7 +83,7 @@ public class BrewClientImpl implements BrewClient {
         try {
             buildInfo = koji.getBuildInfo(id, session);
         } catch (KojiClientException ex) {
-            throw new CausewayException(KOJI_COMMUNICATION_FAILURE + ex.getMessage(), ex);
+            throw new CausewayException(ErrorMessages.kojiCommunicationFailure(ex), ex);
         }
         koji.logout(session);
 
@@ -104,9 +103,7 @@ public class BrewClientImpl implements BrewClient {
         final Map<String, Object> extra = bi.getExtra();
         Object buildSystem = extra == null ? null : extra.get(KojiJsonConstants.BUILD_SYSTEM);
         if (buildSystem == null || !BuildTranslatorImpl.PNC.equals(buildSystem)) {
-            throw new CausewayFailure(
-                    "Found conflicting brew build " + bi.getId() + " (build doesn't have "
-                            + KojiJsonConstants.BUILD_SYSTEM + " set to " + BuildTranslatorImpl.PNC + ")");
+            throw new CausewayFailure(ErrorMessages.conflictingBrewBuild(bi.getId()));
         }
     }
 
@@ -119,21 +116,20 @@ public class BrewClientImpl implements BrewClient {
     }
 
     @Override
-    public void tagBuild(String tag, BrewBuild build) throws CausewayException {
-        log.info("Applying tag {} on build {}.", tag, build.getNVR());
+    public void tagBuild(String pkg, BrewBuild build) throws CausewayException {
+        String tag = pkg + BUILD_TAG_SUFIX;
+        log.info("Applying tag {} in package {} on build {}.", tag, pkg, build.getNVR());
         KojiSessionInfo session = login();
         try {
-            koji.addPackageToTag(tag, build.getKojiName(), session);
-            koji.tagBuild(tag + BUILD_TAG_SUFIX, build.getNVR(), session);
+            koji.addPackageToTag(pkg, build.getKojiName(), session);
+            koji.tagBuild(tag, build.getNVR(), session);
         } catch (KojiClientException ex) {
-            String msg = KOJI_COMMUNICATION_FAILURE;
             if (ex.getMessage().contains("policy violation")) {
                 String userName = session.getUserInfo().getUserName();
-                msg += "This is most probably because of missing permisions. Ask RCM to add " + "permisions for user '"
-                        + userName + "' to add packages to tag '" + tag + "' and to tag builds into tag '" + tag
-                        + BUILD_TAG_SUFIX + "'. Cause: ";
+                throw new CausewayFailure(ErrorMessages.missingTagPermissions(userName, pkg, tag, ex), ex);
+            } else {
+                throw new CausewayException(ErrorMessages.kojiCommunicationFailure(ex), ex);
             }
-            throw new CausewayFailure(msg + ex.getMessage(), ex);
         }
         koji.logout(session);
     }
@@ -146,7 +142,7 @@ public class BrewClientImpl implements BrewClient {
             List<KojiTagInfo> tags = koji.listTags(build.getId(), session);
             return tags.stream().map(KojiTagInfo::getName).anyMatch(n -> tagName.equals(n));
         } catch (KojiClientException ex) {
-            throw new CausewayException("Failure while getting tag information from build: " + ex.getMessage(), ex);
+            throw new CausewayException(ErrorMessages.failureWhileGettingTagInformation(ex), ex);
         } finally {
             koji.logout(session);
         }
@@ -154,12 +150,13 @@ public class BrewClientImpl implements BrewClient {
 
     @Override
     public void untagBuild(String tag, BrewNVR nvr) throws CausewayException {
-        log.info("Removing tag {} from build {}.", tag, nvr.getNVR());
+        String tagToRemove = tag + BUILD_TAG_SUFIX;
+        log.info("Removing tag {} from build {}.", tagToRemove, nvr.getNVR());
         KojiSessionInfo session = login();
         try {
-            koji.untagBuild(tag + BUILD_TAG_SUFIX, nvr.getNVR(), session);
+            koji.untagBuild(tagToRemove, nvr.getNVR(), session);
         } catch (KojiClientException ex) {
-            throw new CausewayFailure(KOJI_COMMUNICATION_FAILURE + ex.getMessage(), ex);
+            throw new CausewayFailure(ErrorMessages.kojiCommunicationFailure(ex), ex);
         }
         koji.logout(session);
     }
@@ -197,7 +194,7 @@ public class BrewClientImpl implements BrewClient {
             log.info("Build {} import status: {}.", nvr.getNVR(), ret.getStatus());
             return ret;
         } catch (KojiClientException ex) {
-            throw new CausewayException(KOJI_COMMUNICATION_FAILURE + ex.getMessage(), ex);
+            throw new CausewayException(ErrorMessages.kojiCommunicationFailure(ex), ex);
         }
     }
 
@@ -210,18 +207,17 @@ public class BrewClientImpl implements BrewClient {
             result = koji.importBuild(kojiImport, importFiles, session);
         } catch (KojiClientException ex) {
             checkImportErrors(null, importFiles); // to ensure errors are logged for users
-            throw new CausewayFailure("Failure while importing builds to Koji: " + ex.getMessage(), ex);
+            throw new CausewayFailure(ErrorMessages.failureWhileImportingBuilds(ex), ex);
         }
         koji.logout(session);
 
         if (checkImportErrors(result, importFiles)) {
-            throw new CausewayFailure("Failure while importing artifacts");
+            throw new CausewayFailure(ErrorMessages.failureWhileImportingArtifacts());
         }
 
         KojiBuildInfo bi = result.getBuildInfo();
-
         if (bi == null) {
-            throw new CausewayException("Import to koji failed for unknown reson. No build data.");
+            throw new CausewayException(ErrorMessages.noBuildInfo());
         }
         return toBrewBuild(bi, nvr);
     }
@@ -234,8 +230,7 @@ public class BrewClientImpl implements BrewClient {
                 String artifactId = importFiles.getId(e.getKey());
                 if (log.isWarnEnabled()) {
                     KojijiErrorInfo errorInfo = e.getValue();
-                    String message = String
-                            .format("Failed to import artifact %s (%s): %s", artifactId, e.getKey(), errorInfo);
+                    String message = ErrorMessages.failedToImportArtifact(artifactId, e.getKey(), errorInfo);
                     log.warn(message, errorInfo.getError());
                 }
                 errorsPresent = true;
@@ -260,7 +255,7 @@ public class BrewClientImpl implements BrewClient {
 
             koji.logout(session);
         } catch (KojiClientException ex) {
-            throw new CausewayException(KOJI_COMMUNICATION_FAILURE + ex.getMessage(), ex);
+            throw new CausewayException(ErrorMessages.kojiCommunicationFailure(ex), ex);
         }
         return packageTag && buildTag;
     }
@@ -269,7 +264,7 @@ public class BrewClientImpl implements BrewClient {
         try {
             return koji.login();
         } catch (KojiClientException ex) {
-            throw new CausewayException("Failure while loging to Koji: " + ex.getMessage(), ex);
+            throw new CausewayException(ErrorMessages.failureWhileLoggingToKoji(ex), ex);
         }
     }
 

@@ -18,6 +18,7 @@ package org.jboss.pnc.causeway.inject;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordType;
+import org.jboss.pnc.causeway.ErrorMessages;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 
 import javax.annotation.PreDestroy;
@@ -77,7 +78,7 @@ public class CausewayProducer implements Closeable {
         try {
             koji = new KojiClient(kc, passwords, executorService);
         } catch (KojiClientException ex) {
-            throw new RuntimeException("Couldn't connect to Koji.", ex);
+            throw new RuntimeException(ErrorMessages.canNotConnectToKoji(ex), ex);
         }
     }
 

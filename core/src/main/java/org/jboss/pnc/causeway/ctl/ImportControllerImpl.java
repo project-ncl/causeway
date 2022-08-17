@@ -15,6 +15,7 @@ import org.jboss.pnc.api.causeway.dto.untag.TaggedBuild;
 import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.CausewayFailure;
+import org.jboss.pnc.causeway.ErrorMessages;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
@@ -43,9 +44,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+
 import lombok.extern.slf4j.Slf4j;
 
-import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageMissingTag;
 import org.jboss.pnc.constants.MDCKeys;
 import org.slf4j.MDC;
 import org.slf4j.Marker;
@@ -115,13 +116,14 @@ public class ImportControllerImpl implements ImportController {
             response.brewBuildUrl(result.getBrewURL());
             response.status(BuildPushStatus.SUCCESS);
             response.message(result.getMessage());
+            log.info(result.getMessage());
         } catch (CausewayFailure ex) {
-            log.error("Failed to import build. " + ex.getMessage(), ex);
+            log.warn(ErrorMessages.failedToImportBuild(build.getExternalBuildID(), ex), ex);
             response.status(BuildPushStatus.FAILED);
             response.message(getMessageOrStacktrace(ex));
             errors.mark();
         } catch (CausewayException | RuntimeException ex) {
-            log.error("Error while importing build. " + ex.getMessage(), ex);
+            log.error(ErrorMessages.errorImportingBuild(build.getExternalBuildID(), ex), ex);
             response.status(BuildPushStatus.SYSTEM_ERROR);
             response.message(getMessageOrStacktrace(ex));
             errors.mark();
@@ -135,7 +137,7 @@ public class ImportControllerImpl implements ImportController {
     @Override
     @Asynchronous
     public void untagBuild(TaggedBuild build, Request callback) {
-        log.info(USER_LOG, "Untaging build {} from tag {}.", build.getBrewBuildId(), build.getTagPrefix());
+        log.info(USER_LOG, "Untagging build {} from tag {}.", build.getBrewBuildId(), build.getTagPrefix());
 
         MetricRegistry registry = metricsConfiguration.getMetricRegistry();
         Meter meter = registry.meter(METRICS_UNTAG_BASE + METRICS_METER);
@@ -150,15 +152,15 @@ public class ImportControllerImpl implements ImportController {
         response.brewBuildId(build.getBrewBuildId());
         try {
             untagBuild(build.getBrewBuildId(), build.getTagPrefix());
-            response.log("Brew build " + build.getBrewBuildId() + " untaged from tag " + build.getTagPrefix());
+            response.log("Brew build " + build.getBrewBuildId() + " untagged from tag " + build.getTagPrefix());
             response.status(OperationStatus.SUCCESS);
         } catch (CausewayFailure ex) {
-            log.error("Failed to untag build.", ex);
+            log.warn(ErrorMessages.failedToUntagBuild(ex), ex);
             response.status(OperationStatus.FAILED);
             response.log(getMessageOrStacktrace(ex));
             errors.mark();
         } catch (CausewayException | RuntimeException ex) {
-            log.error("Error while untaging build.", ex);
+            log.error(ErrorMessages.errorUntaggingBuild(ex), ex);
             response.status(OperationStatus.SYSTEM_ERROR);
             response.log(getMessageOrStacktrace(ex));
             errors.mark();
@@ -172,10 +174,10 @@ public class ImportControllerImpl implements ImportController {
     private BuildResult importBuild(Build build, String tagPrefix, String username, boolean reimport)
             throws CausewayException {
         if (build.getBuiltArtifacts().isEmpty()) {
-            throw new CausewayFailure("Build doesn't contain any artifacts");
+            throw new CausewayFailure(ErrorMessages.buildHasNoArtifacts());
         }
         if (!brewClient.tagsExists(tagPrefix)) {
-            throw new CausewayFailure(messageMissingTag(tagPrefix, config.getKojiURL()));
+            throw new CausewayFailure(ErrorMessages.tagsAreMissingInKoji(tagPrefix, config.getKojiURL()));
         }
 
         BrewNVR nvr = getNVR(build);
@@ -285,7 +287,7 @@ public class ImportControllerImpl implements ImportController {
     private void untagBuild(int brewBuildId, String tagPrefix) throws CausewayException {
         BrewBuild build = brewClient.findBrewBuild(brewBuildId);
         if (build == null) {
-            throw new CausewayFailure("Build with given id (" + brewBuildId + ") not found");
+            throw new CausewayFailure(ErrorMessages.brewBuildNotFound(brewBuildId));
         }
         brewClient.untagBuild(tagPrefix, build);
     }

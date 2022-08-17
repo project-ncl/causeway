@@ -22,6 +22,7 @@ import org.commonjava.util.jhttpc.model.SiteTrustType;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
+import org.jboss.pnc.causeway.ErrorMessages;
 import org.jboss.pnc.client.Configuration;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -34,7 +35,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.commons.lang.StringUtils.isEmpty;
-import static org.apache.commons.lang.StringUtils.join;
 
 /**
  * Created by jdcasey on 11/10/15.
@@ -240,9 +240,7 @@ public class CausewayConfig {
 
     private void checkConfigured() {
         if (!configured) {
-            throw new IllegalStateException(
-                    "The causeway system has not been configured! "
-                            + "This is a sign that something is in the wrong order in the boot sequence!!");
+            throw new IllegalStateException(ErrorMessages.causewayNotConfigured());
         }
     }
 
@@ -298,9 +296,7 @@ public class CausewayConfig {
                         .addDefaultMdcToHeadersMappings()
                         .port((url.getPort() != -1) ? url.getPort() : url.getDefaultPort());
             } catch (MalformedURLException e) {
-                throw new IllegalStateException(
-                        "Value of the '" + PNCL_URL_OPTION + "' field in Causeway configuration is not parsable URL",
-                        e);
+                throw new IllegalStateException(ErrorMessages.configurationValueIsNotURL(PNCL_URL_OPTION), e);
             }
 
             configuration = builder.build();
@@ -362,7 +358,7 @@ public class CausewayConfig {
         this.pnclTimeout = pnclTimeout;
     }
 
-    public String getValidationErrors() {
+    public List<String> getValidationErrors() {
         List<String> errors = new ArrayList<>();
         if (isEmpty(getKojiClientCertificatePassword())) {
             errors.add(String.format("Koji SSL password '%s' is required.", CLIENT_CERT_PEM_PASSWORD_OPTION));
@@ -379,11 +375,6 @@ public class CausewayConfig {
         if (isEmpty(getKojiWebURL())) {
             errors.add(String.format("Koji Web URL '%s' is required.", KOJI_WEBURL_OPTION));
         }
-
-        if (!errors.isEmpty()) {
-            return join(errors, "\n");
-        }
-
-        return null;
+        return errors;
     }
 }
