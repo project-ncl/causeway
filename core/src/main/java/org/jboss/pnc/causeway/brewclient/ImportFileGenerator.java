@@ -33,6 +33,7 @@ import java.util.function.Supplier;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.jboss.pnc.causeway.ErrorMessages;
 import org.jboss.pnc.causeway.source.RenamedSources;
 import org.jboss.pnc.causeway.util.MDCUtils;
 
@@ -140,8 +141,7 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
                     if (responseCode != 200) {
                         String responseMessage = connection.getResponseMessage();
                         connection.disconnect();
-                        throw new RuntimeException(
-                                "Failed to obtain artifact (status " + responseCode + " " + responseMessage + ")");
+                        throw new RuntimeException(ErrorMessages.failedToObtainArtifact(responseCode, responseMessage));
                     }
                     InputStream stream = connection.getInputStream();
                     return new ImportFile(artifact.getFilePath(), stream, artifact.getSize());

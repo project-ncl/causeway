@@ -54,7 +54,6 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -62,7 +61,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static org.jboss.pnc.causeway.ctl.PncImportControllerImpl.messageMissingTag;
+import static org.jboss.pnc.causeway.ErrorMessages.tagsAreMissingInKoji;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
@@ -273,7 +272,7 @@ public class ImportControllerTest {
         importController.importBuild(build, CALLBACK_TARGET, USERNAME, false);
 
         // Verify
-        verifyFailure("Build doesn't contain any artifacts");
+        verifyFailure("Build doesn't contain any artifacts.");
     }
 
     @Test
@@ -322,7 +321,7 @@ public class ImportControllerTest {
         importController.importBuild(getMavenBuild(), CALLBACK_TARGET, USERNAME, true);
 
         // Verify
-        verifyFailure(messageMissingTag(TAG_PREFIX, KOJI_URL).replace("\n", "\\n"));
+        verifyFailure(tagsAreMissingInKoji(TAG_PREFIX, KOJI_URL).replace("\n", "\\n"));
     }
 
     @Test

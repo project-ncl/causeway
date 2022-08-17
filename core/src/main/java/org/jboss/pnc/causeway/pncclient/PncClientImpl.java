@@ -16,6 +16,8 @@
 package org.jboss.pnc.causeway.pncclient;
 
 import org.jboss.pnc.causeway.CausewayException;
+import org.jboss.pnc.causeway.CausewayFailure;
+import org.jboss.pnc.causeway.ErrorMessages;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts.PncArtifact;
 import org.jboss.pnc.client.BuildClient;
@@ -41,7 +43,6 @@ import java.util.Optional;
 import java.util.Scanner;
 
 import lombok.extern.slf4j.Slf4j;
-import static org.jboss.pnc.rest.configuration.SwaggerConstants.NOT_FOUND_CODE;
 
 /**
  * Created by jdcasey on 2/9/16.
@@ -65,18 +66,12 @@ public class PncClientImpl implements PncClient {
         ProductMilestone milestone;
         try {
             milestone = milestoneClient.getSpecific(String.valueOf(milestoneId));
-        } catch (RemoteResourceNotFoundException e) {
-            throw new CausewayException(
-                    "Can not read tag because PNC haven't managed to find product milestone with id " + milestoneId
-                            + " - response " + e.getStatus(),
-                    e);
-        } catch (RemoteResourceException e) {
-            throw new CausewayException(
-                    "Can not read tag because PNC responded with an error when getting product milestone " + milestoneId
-                            + " - response " + e.getStatus(),
-                    e);
-        } catch (ClientException e) {
-            throw new CausewayException("Unknown error - message = " + e.getMessage(), e);
+        } catch (RemoteResourceNotFoundException ex) {
+            throw new CausewayFailure(ErrorMessages.milestoneNotFoundWhenGettingTag(milestoneId, ex), ex);
+        } catch (RemoteResourceException ex) {
+            throw new CausewayException(ErrorMessages.errorReadingTagFromMilestone(milestoneId, ex), ex);
+        } catch (ClientException ex) {
+            throw new CausewayException(ErrorMessages.errorCommunicatingWhenGettingTag(milestoneId, ex), ex);
         }
         return milestone.getProductVersion().getAttributes().get(Attributes.BREW_TAG_PREFIX);
     }
@@ -91,14 +86,12 @@ public class PncClientImpl implements PncClient {
                     Optional.empty(),
                     Optional.of("status==SUCCESS"));
             for (Build build : buildPages) {
-                if (build.getStatus().equals(BuildStatus.SUCCESS))
-                    ;
-                builds.add(build);
+                if (build.getStatus().equals(BuildStatus.SUCCESS)) {
+                    builds.add(build);
+                }
             }
-        } catch (RemoteResourceException e) {
-            throw new CausewayException(
-                    "Can not read builds for product milestone " + milestoneId + " - response " + e.getStatus(),
-                    e);
+        } catch (RemoteResourceException ex) {
+            throw new CausewayException(ErrorMessages.errorReadingBuildsFromMilestone(milestoneId, ex), ex);
         }
         return builds;
     }
@@ -108,16 +101,11 @@ public class PncClientImpl implements PncClient {
         Optional<InputStream> log;
         try {
             log = buildClient.getBuildLogs(String.valueOf(buildId));
-            InputStream logInput = log.orElseThrow(
-                    () -> new CausewayException(
-                            "Build log for Build " + buildId + " is empty - response " + NOT_FOUND_CODE));
+            InputStream logInput = log.orElseThrow(() -> new CausewayException(ErrorMessages.buildLogIsEmpty(buildId)));
             Scanner s = new Scanner(logInput).useDelimiter("\\A");
             return s.hasNext() ? s.next() : "";
-        } catch (RemoteResourceException e) {
-            throw new CausewayException(
-                    "Can not read build log of build " + buildId + " because PNC responded with an error - response "
-                            + e.getStatus(),
-                    e);
+        } catch (RemoteResourceException ex) {
+            throw new CausewayException(ErrorMessages.errorReadingBuildLog(buildId, ex), ex);
         }
     }
 
@@ -127,22 +115,19 @@ public class PncClientImpl implements PncClient {
             Response response = buildClient.getInternalScmArchiveLink(id);
             try {
                 if (response.getStatus() >= 400) {
-                    log.warn(
-                            "Got status " + response.getStatus() + " from sources endpoint. Message: "
-                                    + response.readEntity(String.class));
                     throw new CausewayException(
-                            "Can not read sources of build " + id + ", received status " + response.getStatus());
+                            ErrorMessages.errorReadingBuildSources(
+                                    id,
+                                    response.getStatus(),
+                                    response.readEntity(String.class)));
                 }
                 return response.readEntity(InputStream.class);
-            } catch (RuntimeException e) {
+            } catch (RuntimeException ex) {
                 response.close();
-                throw new CausewayException("Can not read sources of build " + id + ": " + e.getMessage(), e);
+                throw new CausewayException(ErrorMessages.errorReadingBuildSources(id, ex), ex);
             }
-        } catch (RemoteResourceException e) {
-            throw new CausewayException(
-                    "Can not read sources of build " + id + " because PNC responded with an error - response "
-                            + e.getStatus(),
-                    e);
+        } catch (RemoteResourceException ex) {
+            throw new CausewayException(ErrorMessages.errorReadingBuildSources(id, ex), ex);
         }
     }
 
@@ -183,10 +168,8 @@ public class PncClientImpl implements PncClient {
             for (Artifact artifact : artifacts) {
                 pncArtifacts.add(toPncArtifact(artifact));
             }
-        } catch (RemoteResourceException e) {
-            throw new CausewayException(
-                    "Can't get info for build with id " + buildId + " - response " + e.getStatus(),
-                    e);
+        } catch (RemoteResourceException ex) {
+            throw new CausewayException(ErrorMessages.errorReadingBuildArtifacts(buildId, ex), ex);
         }
         return pncArtifacts;
     }

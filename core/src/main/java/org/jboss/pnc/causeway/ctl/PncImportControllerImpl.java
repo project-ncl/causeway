@@ -27,13 +27,11 @@ import com.codahale.metrics.Timer;
 import com.codahale.metrics.UniformReservoir;
 import com.redhat.red.build.koji.model.json.KojiImport;
 
-import org.commonjava.atlas.maven.ident.ref.ProjectVersionRef;
-import org.commonjava.atlas.npm.ident.ref.NpmPackageRef;
 import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.causeway.CausewayException;
+import org.jboss.pnc.causeway.ErrorMessages;
 import org.jboss.pnc.causeway.bpmclient.BPMClient;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
-import org.jboss.pnc.causeway.brewclient.BrewClientImpl;
 import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
@@ -61,8 +59,6 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -150,13 +146,13 @@ public class PncImportControllerImpl implements PncImportController {
                 bpmClient.success(callback, callbackId, result);
             }
         } catch (CausewayFailure ex) {
-            log.warn("Failed to import milestone. " + ex.getMessage(), ex);
+            log.warn(ErrorMessages.failedToImportMilestone(milestoneId, ex), ex);
             result.setErrorMessage(ex.getMessage());
             result.setReleaseStatus(ReleaseStatus.FAILURE);
             bpmClient.failure(callback, callbackId, result);
             errors.mark();
         } catch (CausewayException | RuntimeException ex) {
-            log.error("Failed to import milestone. " + ex.getMessage(), ex);
+            log.error(ErrorMessages.errorImportingMilestone(milestoneId, ex), ex);
             result.setErrorMessage(ex.getMessage());
             result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
             bpmClient.error(callback, callbackId, result);
@@ -171,7 +167,7 @@ public class PncImportControllerImpl implements PncImportController {
             throws CausewayException {
         String tagPrefix = pncClient.getTagForMilestone(milestoneId);
         if (!brewClient.tagsExists(tagPrefix)) {
-            throw new CausewayFailure(messageMissingTag(tagPrefix, config.getKojiURL()));
+            throw new CausewayFailure(ErrorMessages.tagsAreMissingInKoji(tagPrefix, config.getKojiURL()));
         }
 
         Collection<Build> builds = findAndAssertBuilds(milestoneId);
@@ -188,11 +184,16 @@ public class PncImportControllerImpl implements PncImportController {
                             new BrewBuild(importResult.getBrewBuildId(), getNVR(build, artifacts)));
                 }
             } catch (CausewayException ex) {
-                log.error("Failed to import build " + build.getId() + ".", ex);
                 importResult = new BuildImportResultRest();
+                if (ex instanceof CausewayFailure) {
+                    log.warn(ErrorMessages.failedToImportBuild(build.getId(), (CausewayFailure) ex));
+                    importResult.setStatus(BuildImportStatus.FAILED);
+                } else {
+                    log.error(ErrorMessages.errorImportingBuild(build.getId(), ex));
+                    importResult.setStatus(BuildImportStatus.ERROR);
+                }
                 importResult.setBuildRecordId(build.getId());
                 importResult.setErrorMessage(ex.getMessage());
-                importResult.setStatus(BuildImportStatus.ERROR);
             }
             results.add(importResult);
         }
@@ -201,14 +202,9 @@ public class PncImportControllerImpl implements PncImportController {
     }
 
     private Collection<Build> findAndAssertBuilds(int milestoneId) throws CausewayException {
-        Collection<Build> builds;
-        try {
-            builds = pncClient.findBuildsOfProductMilestone(milestoneId);
-        } catch (Exception e) {
-            throw new CausewayException(messagePncReleaseNotFound(milestoneId, e), e);
-        }
+        Collection<Build> builds = pncClient.findBuildsOfProductMilestone(milestoneId);
         if (builds == null || builds.isEmpty()) {
-            throw new CausewayException(messageMilestoneWithoutBuilds(milestoneId));
+            throw new CausewayFailure(ErrorMessages.messageMilestoneWithoutBuilds(milestoneId));
         }
         return builds;
     }
@@ -262,8 +258,8 @@ public class PncImportControllerImpl implements PncImportController {
                 log.info("Sources at '{}' not present, generating sources file.", sourcesDeployPath);
                 try (InputStream sourcesStream = pncClient.getSources(build.getId())) {
                     sources = translator.getSources(build, artifacts, sourcesStream);
-                } catch (IOException e) {
-                    throw new CausewayException("Failed to read sources archive: " + e.getMessage(), e);
+                } catch (IOException ex) {
+                    throw new CausewayException(ErrorMessages.failedToDownloadSources(ex), ex);
                 }
             }
             KojiImport kojiImport = translator.translate(nvr, build, artifacts, sources, buildLog, username);
@@ -285,10 +281,7 @@ public class PncImportControllerImpl implements PncImportController {
         }
 
         for (BuildArtifacts.PncArtifact artifact : badArtifacts) {
-            log.warn(
-                    "Failed to import artifact {}: {}",
-                    artifact.id,
-                    "This artifact is blacklisted or deleted, so it was not imported.");
+            log.warn(ErrorMessages.badArtifactNotImported(artifact.id));
         }
         return buildResult;
     }
@@ -316,26 +309,9 @@ public class PncImportControllerImpl implements PncImportController {
         }
     }
 
-    static String messagePncReleaseNotFound(long releaseId, Exception e) {
-        return "Can not find PNC release " + releaseId + " - " + e.getMessage();
-    }
-
-    private static String messageMilestoneWithoutBuilds(long milestoneId) {
-        return "Milestone " + milestoneId + " does not contain any build";
-    }
-
-    public static String messageMissingTag(String tagPrefix, String kojiURL) {
-        final String parent = tagPrefix;
-        final String child = tagPrefix + BrewClientImpl.BUILD_TAG_SUFIX;
-        return "Proper brew tags don't exist. Create them before importing builds.\n" + "Tag prefix: " + tagPrefix
-                + "\n" + "You should ask RCM to create at least following tags:\n" + " * " + child + "\n" + "   * "
-                + parent + "\n" + "in " + kojiURL + "\n" + "(Note that tag " + child + " should inherit from tag "
-                + parent + ")";
-    }
-
     BrewNVR getNVR(Build build, BuildArtifacts artifacts) throws CausewayException {
         if (!build.getAttributes().containsKey(BUILD_BREW_NAME)) {
-            throw new CausewayException("Build attribute " + BUILD_BREW_NAME + " can't be missing");
+            throw new CausewayFailure(ErrorMessages.missingBrewNameAttributeInBuild());
         }
         String version = build.getAttributes().get(BUILD_BREW_VERSION);
         if (version == null) {

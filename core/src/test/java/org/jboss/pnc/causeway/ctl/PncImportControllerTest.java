@@ -293,7 +293,7 @@ public class PncImportControllerTest {
         importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
-        verifyError(true);
+        verifyFailure();
         // TODO verify the error message somehow?
     }
 
