@@ -165,7 +165,10 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 .withContentGenerator(CONTENT_GENERATOR_NAME, config.getPNCSystemVersion())
                 .withContainer(getContainer(build.getBuildRoot()))
                 .withHost(build.getBuildRoot().getHost(), build.getBuildRoot().getHostArchitecture());
-        addTools(buildRootBuilder, build.getBuildRoot().getTools());
+
+        Map<String, String> tools = new HashMap<>(build.getBuildRoot().getTools());
+        addTool(buildRootBuilder, guessBuildType(build), tools, "?");
+        addTools(buildRootBuilder, tools);
 
         addDependencies(build.getDependencies(), buildRootBuilder);
         addBuiltArtifacts(build.getBuiltArtifacts(), builder, buildRootId);
@@ -175,6 +178,22 @@ public class BuildTranslatorImpl implements BuildTranslator {
         KojiImport translatedBuild = buildTranslatedBuild(builder);
         translatedBuild.getBuild().getExtraInfo().setImportInitiator(username);
         return translatedBuild;
+    }
+
+    private BuildType guessBuildType(Build build) {
+        if (build.getClass().equals(MavenBuild.class)) {
+            if (build.getBuildRoot().getTools().containsKey("GRADLE")) {
+                return BuildType.GRADLE;
+            } else if (build.getBuildRoot().getTools().containsKey("SBT")) {
+                return BuildType.SBT;
+            } else {
+                return BuildType.MVN;
+            }
+        } else if (build.getClass().equals(NpmBuild.class)) {
+            return BuildType.NPM;
+        } else {
+            throw new IllegalArgumentException(ErrorMessages.unsupportedBuildClass(build.getClass()));
+        }
     }
 
     private String normalizeScmUrl(final String url) {
