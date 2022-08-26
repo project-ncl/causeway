@@ -56,7 +56,7 @@
     <configVersion>0.8</configVersion>
     <mockitoVersion>1.10.19</mockitoVersion>
     <kojijiVersion>2.16</kojijiVersion>
-    <pncmetrics.version>1.1.3</pncmetrics.version>
+    <pncmetrics.version>1.1.12</pncmetrics.version>
     <semverVersion>0.9.0</semverVersion>
     <atlasVersion>1.0.1</atlasVersion>
     <pncVersion>2.3.2</pncVersion>
@@ -253,7 +253,7 @@
       <dependency>
         <groupId>org.assertj</groupId>
         <artifactId>assertj-core</artifactId>
-        <version>3.19.0</version>
+        <version>3.23.1</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -329,7 +329,7 @@
       <plugin>
           <groupId>org.sonatype.plugins</groupId>
           <artifactId>nexus-staging-maven-plugin</artifactId>
-          <version>1.6.8</version>
+          <version>1.6.13</version>
           <extensions>true</extensions>
           <configuration>
               <serverId>ossrh</serverId>
