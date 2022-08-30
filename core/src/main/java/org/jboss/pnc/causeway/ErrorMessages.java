@@ -89,35 +89,35 @@ public class ErrorMessages {
      * {@value KOJI_COMMUNICATION_FAILURE}
      */
     public static String kojiCommunicationFailure(KojiClientException ex) {
-        return MessageFormat.format(KOJI_COMMUNICATION_FAILURE, ex.getMessage());
+        return MessageFormat.format(KOJI_COMMUNICATION_FAILURE, ex);
     }
 
     /**
      * {@value FAILURE_GETTING_TAG_INFORMATION}
      */
     public static String failureWhileGettingTagInformation(KojiClientException ex) {
-        return MessageFormat.format(FAILURE_GETTING_TAG_INFORMATION, ex.getMessage());
+        return MessageFormat.format(FAILURE_GETTING_TAG_INFORMATION, ex);
     }
 
     /**
      * {@value FAILURE_IMPORTING_BUILDS}
      */
     public static String failureWhileImportingBuilds(KojiClientException ex) {
-        return MessageFormat.format(FAILURE_IMPORTING_BUILDS, ex.getMessage());
+        return MessageFormat.format(FAILURE_IMPORTING_BUILDS, ex);
     }
 
     /**
      * {@value FAILURE_LOGGING_TO_KOJI}
      */
     public static String failureWhileLoggingToKoji(KojiClientException ex) {
-        return MessageFormat.format(FAILURE_LOGGING_TO_KOJI, ex.getMessage());
+        return MessageFormat.format(FAILURE_LOGGING_TO_KOJI, ex);
     }
 
     /**
      * {@value MISSING_TAG_PERMISSIONS}
      */
     public static String missingTagPermissions(String userName, String pkg, String tag, KojiClientException ex) {
-        return MessageFormat.format(MISSING_TAG_PERMISSIONS, userName, pkg, tag, ex.getMessage());
+        return MessageFormat.format(MISSING_TAG_PERMISSIONS, userName, pkg, tag, ex);
 
     }
 
@@ -153,28 +153,28 @@ public class ErrorMessages {
      * {@value FAILED_TO_COMPUTE_BUILD_LOG_MD5}
      */
     public static String failedToComputeBuildLogMD5(NoSuchAlgorithmException ex) {
-        return MessageFormat.format(FAILED_TO_COMPUTE_BUILD_LOG_MD5, ex.getMessage());
+        return MessageFormat.format(FAILED_TO_COMPUTE_BUILD_LOG_MD5, ex);
     }
 
     /**
      * {@value FAILED_TO_PARSE_ARTIFACT_URL}
      */
     public static String failedToParseArtifactURL(MalformedURLException ex) {
-        return MessageFormat.format(FAILED_TO_PARSE_ARTIFACT_URL, ex.getMessage());
+        return MessageFormat.format(FAILED_TO_PARSE_ARTIFACT_URL, ex);
     }
 
     /**
      * {@value FAILED_TO_DOWNLOAD_SOURCES}
      */
     public static String failedToDownloadSources(IOException ex) {
-        return MessageFormat.format(FAILED_TO_DOWNLOAD_SOURCES, ex.getMessage());
+        return MessageFormat.format(FAILED_TO_DOWNLOAD_SOURCES, ex);
     }
 
     /**
      * {@value FAILURE_WHILE_BUILDING_KOJI_IMPORT}
      */
     public static String failureWhileBuildingKojiImport(VerificationException ex) {
-        return MessageFormat.format(FAILURE_WHILE_BUILDING_KOJI_IMPORT, ex.getMessage());
+        return MessageFormat.format(FAILURE_WHILE_BUILDING_KOJI_IMPORT, ex);
     }
 
     /**
@@ -265,7 +265,7 @@ public class ErrorMessages {
      * {@value FAILED_TO_READ_CONFIG_FILE}
      */
     public static String failedToReadConfigFile(File configFile, Exception ex) {
-        return MessageFormat.format(FAILED_TO_READ_CONFIG_FILE, configFile, ex.getMessage());
+        return MessageFormat.format(FAILED_TO_READ_CONFIG_FILE, configFile, ex);
     }
 
     /**
@@ -280,42 +280,42 @@ public class ErrorMessages {
      * {@value FAILED_TO_IMPORT_BUILD}
      */
     public static String failedToImportBuild(String buildId, CausewayFailure ex) {
-        return MessageFormat.format(FAILED_TO_IMPORT_BUILD, buildId, ex.getMessage());
+        return MessageFormat.format(FAILED_TO_IMPORT_BUILD, buildId, ex);
     }
 
     /**
      * {@value ERROR_WHILE_IMPORTING_BUILD}
      */
     public static String errorImportingBuild(String buildId, Exception ex) {
-        return MessageFormat.format(ERROR_WHILE_IMPORTING_BUILD, buildId, ex.getMessage());
+        return MessageFormat.format(ERROR_WHILE_IMPORTING_BUILD, buildId, ex);
     }
 
     /**
      * {@value FAILED_TO_IMPORT_MILESTONE}
      */
     public static String failedToImportMilestone(int milestoneId, CausewayFailure ex) {
-        return MessageFormat.format(FAILED_TO_IMPORT_MILESTONE, milestoneId, ex.getMessage());
+        return MessageFormat.format(FAILED_TO_IMPORT_MILESTONE, milestoneId, ex);
     }
 
     /**
      * {@value ERROR_WHILE_IMPORTING_MILESTONE}
      */
     public static String errorImportingMilestone(int milestoneId, Exception ex) {
-        return MessageFormat.format(ERROR_WHILE_IMPORTING_MILESTONE, milestoneId, ex.getMessage());
+        return MessageFormat.format(ERROR_WHILE_IMPORTING_MILESTONE, milestoneId, ex);
     }
 
     /**
      * {@value FAILED_TO_UNTAG_BUILD}
      */
     public static String failedToUntagBuild(CausewayFailure ex) {
-        return MessageFormat.format(FAILED_TO_UNTAG_BUILD, ex.getMessage());
+        return MessageFormat.format(FAILED_TO_UNTAG_BUILD, ex);
     }
 
     /**
      * {@value ERROR_WHILE_UNTAGGING_BUILD}
      */
     public static String errorUntaggingBuild(Exception ex) {
-        return MessageFormat.format(ERROR_WHILE_UNTAGGING_BUILD, ex.getMessage());
+        return MessageFormat.format(ERROR_WHILE_UNTAGGING_BUILD, ex);
     }
 
     /**
@@ -359,35 +359,35 @@ public class ErrorMessages {
      * {@value COULD_NOT_CONNECT_TO_KOJI}
      */
     public static String canNotConnectToKoji(KojiClientException ex) {
-        return MessageFormat.format(COULD_NOT_CONNECT_TO_KOJI, ex.getMessage());
+        return MessageFormat.format(COULD_NOT_CONNECT_TO_KOJI, ex);
     }
 
     /**
      * {@value MILESTONE_NOT_FOUND_WHEN_GETTING_TAG}
      */
     public static String milestoneNotFoundWhenGettingTag(int milestoneId, RemoteResourceNotFoundException ex) {
-        return MessageFormat.format(MILESTONE_NOT_FOUND_WHEN_GETTING_TAG, milestoneId, ex.getMessage());
+        return MessageFormat.format(MILESTONE_NOT_FOUND_WHEN_GETTING_TAG, milestoneId, ex);
     }
 
     /**
      * {@value ERROR_READING_TAG_FROM_MILESTONE}
      */
     public static String errorReadingTagFromMilestone(int milestoneId, RemoteResourceException ex) {
-        return MessageFormat.format(ERROR_READING_TAG_FROM_MILESTONE, milestoneId, ex.getStatus(), ex.getMessage());
+        return MessageFormat.format(ERROR_READING_TAG_FROM_MILESTONE, milestoneId, ex.getStatus(), ex);
     }
 
     /**
      * {@value ERROR_COMMUNICATING_WHEN_GETTING_TAG}
      */
     public static String errorCommunicatingWhenGettingTag(int milestoneId, ClientException ex) {
-        return MessageFormat.format(ERROR_COMMUNICATING_WHEN_GETTING_TAG, milestoneId, ex.getMessage());
+        return MessageFormat.format(ERROR_COMMUNICATING_WHEN_GETTING_TAG, milestoneId, ex);
     }
 
     /**
      * {@value ERROR_READING_BUILDS_FROM_MILESTONE}
      */
     public static String errorReadingBuildsFromMilestone(int milestoneId, RemoteResourceException ex) {
-        return MessageFormat.format(ERROR_READING_BUILDS_FROM_MILESTONE, milestoneId, ex.getStatus(), ex.getMessage());
+        return MessageFormat.format(ERROR_READING_BUILDS_FROM_MILESTONE, milestoneId, ex.getStatus(), ex);
     }
 
     /**
@@ -401,14 +401,14 @@ public class ErrorMessages {
      * {@value ERROR_READING_BUILD_LOG}
      */
     public static String errorReadingBuildLog(String buildId, RemoteResourceException ex) {
-        return MessageFormat.format(ERROR_READING_BUILD_LOG, buildId, ex.getStatus(), ex.getMessage());
+        return MessageFormat.format(ERROR_READING_BUILD_LOG, buildId, ex.getStatus(), ex);
     }
 
     /**
      * {@value ERROR_READING_BUILD_SOURCES}
      */
     public static String errorReadingBuildSources(String buildId, RemoteResourceException ex) {
-        return MessageFormat.format(ERROR_READING_BUILD_SOURCES, buildId, ex.getStatus(), ex.getMessage());
+        return MessageFormat.format(ERROR_READING_BUILD_SOURCES, buildId, ex.getStatus(), ex);
     }
 
     /**
@@ -422,14 +422,14 @@ public class ErrorMessages {
      * {@value ERROR_READING_BUILD_SOURCES_NO_STATUS}
      */
     public static String errorReadingBuildSources(String buildId, RuntimeException ex) {
-        return MessageFormat.format(ERROR_READING_BUILD_SOURCES_NO_STATUS, buildId, ex.getMessage());
+        return MessageFormat.format(ERROR_READING_BUILD_SOURCES_NO_STATUS, buildId, ex);
     }
 
     /**
      * {@value ERROR_READING_BUILD_ARTIFACTS}
      */
     public static String errorReadingBuildArtifacts(String buildId, RemoteResourceException ex) {
-        return MessageFormat.format(ERROR_READING_BUILD_ARTIFACTS, buildId, ex.getStatus(), ex.getMessage());
+        return MessageFormat.format(ERROR_READING_BUILD_ARTIFACTS, buildId, ex.getStatus(), ex);
     }
 
     /**
@@ -457,14 +457,14 @@ public class ErrorMessages {
      * {@value ERROR_REPACKING_ARCHIVE}
      */
     public static String errorRepackingArchive(Exception ex) {
-        return MessageFormat.format(ERROR_REPACKING_ARCHIVE, ex.getMessage());
+        return MessageFormat.format(ERROR_REPACKING_ARCHIVE, ex);
     }
 
     /**
      * {@value MISSING_MD5_SUPPORT}
      */
     public static String missingMD5Support(Exception ex) {
-        return MessageFormat.format(MISSING_MD5_SUPPORT, ex.getMessage());
+        return MessageFormat.format(MISSING_MD5_SUPPORT, ex);
     }
 
     /**
