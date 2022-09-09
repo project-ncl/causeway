@@ -62,9 +62,10 @@ public class BrewClientImpl implements BrewClient {
             KojiSessionInfo session = login();
 
             KojiNVR knvr = new KojiNVR(nvr.getKojiName(), nvr.getVersion(), nvr.getRelease());
+            log.debug("Get build info of build {} from user '{}'.", knvr, session.getUserInfo().getUserName());
             KojiBuildInfo bi = koji.getBuildInfo(knvr, session); // returns null if missing
 
-            koji.logout(session);
+            logout(session);
             if (bi == null) {
                 return null;
             }
@@ -81,11 +82,12 @@ public class BrewClientImpl implements BrewClient {
 
         KojiSessionInfo session = login();
         try {
+            log.debug("Get build info of build id {} from user '{}'.", id, session.getUserInfo().getUserName());
             buildInfo = koji.getBuildInfo(id, session);
         } catch (KojiClientException ex) {
             throw new CausewayException(ErrorMessages.kojiCommunicationFailure(ex), ex);
         }
-        koji.logout(session);
+        logout(session);
 
         if (buildInfo == null) {
             return null;
@@ -118,8 +120,14 @@ public class BrewClientImpl implements BrewClient {
     @Override
     public void tagBuild(String pkg, BrewBuild build) throws CausewayException {
         String tag = pkg + BUILD_TAG_SUFIX;
-        log.info("Applying tag {} in package {} on build {}.", tag, pkg, build.getNVR());
         KojiSessionInfo session = login();
+        log.info(
+                "Applying tag {} in package {} on build {} from user '{}'.",
+                tag,
+                pkg,
+                build.getNVR(),
+                session.getUserInfo().getUserName());
+
         try {
             koji.addPackageToTag(pkg, build.getKojiName(), session);
             koji.tagBuild(tag, build.getNVR(), session);
@@ -131,7 +139,7 @@ public class BrewClientImpl implements BrewClient {
                 throw new CausewayException(ErrorMessages.kojiCommunicationFailure(ex), ex);
             }
         }
-        koji.logout(session);
+        logout(session);
     }
 
     @Override
@@ -139,26 +147,31 @@ public class BrewClientImpl implements BrewClient {
         KojiSessionInfo session = login();
         String tagName = tag + BUILD_TAG_SUFIX;
         try {
+            log.info("Listing tags of build id {} from user '{}'.", build.getId(), session.getUserInfo().getUserName());
             List<KojiTagInfo> tags = koji.listTags(build.getId(), session);
             return tags.stream().map(KojiTagInfo::getName).anyMatch(n -> tagName.equals(n));
         } catch (KojiClientException ex) {
             throw new CausewayException(ErrorMessages.failureWhileGettingTagInformation(ex), ex);
         } finally {
-            koji.logout(session);
+            logout(session);
         }
     }
 
     @Override
     public void untagBuild(String tag, BrewNVR nvr) throws CausewayException {
         String tagToRemove = tag + BUILD_TAG_SUFIX;
-        log.info("Removing tag {} from build {}.", tagToRemove, nvr.getNVR());
         KojiSessionInfo session = login();
+        log.info(
+                "Removing tag {} from build {} from user '{}'.",
+                tagToRemove,
+                nvr.getNVR(),
+                session.getUserInfo().getUserName());
         try {
             koji.untagBuild(tagToRemove, nvr.getNVR(), session);
         } catch (KojiClientException ex) {
             throw new CausewayFailure(ErrorMessages.kojiCommunicationFailure(ex), ex);
         }
-        koji.logout(session);
+        logout(session);
     }
 
     @Override
@@ -167,15 +180,17 @@ public class BrewClientImpl implements BrewClient {
             String buildRecordId,
             KojiImport kojiImport,
             ImportFileGenerator importFiles) throws CausewayException {
-        log.info("Importing build {}.", nvr.getNVR());
         BuildImportResultRest ret = new BuildImportResultRest();
         ret.setBuildRecordId(buildRecordId);
         ret.setStatus(BuildImportStatus.SUCCESSFUL);
         try {
             KojiSessionInfo session = login();
-
+            log.info(
+                    "Importing build {} from user '{}'.",
+                    kojiImport.getBuildNVR(),
+                    session.getUserInfo().getUserName());
             KojiImportResult result = koji.importBuild(kojiImport, importFiles, session);
-            koji.logout(session);
+            logout(session);
 
             if (checkImportErrors(result, importFiles)) {
                 ret.setStatus(BuildImportStatus.FAILED);
@@ -204,12 +219,16 @@ public class BrewClientImpl implements BrewClient {
         KojiSessionInfo session = login();
         KojiImportResult result;
         try {
+            log.info(
+                    "Importing build {} from user '{}'.",
+                    kojiImport.getBuildNVR(),
+                    session.getUserInfo().getUserName());
             result = koji.importBuild(kojiImport, importFiles, session);
         } catch (KojiClientException ex) {
             checkImportErrors(null, importFiles); // to ensure errors are logged for users
             throw new CausewayFailure(ErrorMessages.failureWhileImportingBuilds(ex), ex);
         }
-        koji.logout(session);
+        logout(session);
 
         if (checkImportErrors(result, importFiles)) {
             throw new CausewayFailure(ErrorMessages.failureWhileImportingArtifacts());
@@ -249,11 +268,12 @@ public class BrewClientImpl implements BrewClient {
         boolean packageTag, buildTag;
         try {
             KojiSessionInfo session = login();
+            log.info("Checking if tag {} exists from user '{}'.", tag, session.getUserInfo().getUserName());
 
             packageTag = koji.getTag(tag, session) != null;
             buildTag = koji.getTag(tag + BUILD_TAG_SUFIX, session) != null;
 
-            koji.logout(session);
+            logout(session);
         } catch (KojiClientException ex) {
             throw new CausewayException(ErrorMessages.kojiCommunicationFailure(ex), ex);
         }
@@ -262,10 +282,18 @@ public class BrewClientImpl implements BrewClient {
 
     private KojiSessionInfo login() throws CausewayException {
         try {
-            return koji.login();
+            KojiSessionInfo session = koji.login();
+            log.info("Login to koji done successfully from user '{}'.", session.getUserInfo().getUserName());
+            return session;
         } catch (KojiClientException ex) {
             throw new CausewayException(ErrorMessages.failureWhileLoggingToKoji(ex), ex);
         }
+    }
+
+    private void logout(KojiSessionInfo session) {
+        String username = session.getUserInfo().getUserName();
+        koji.logout(session);
+        log.info("Logout from to koji done successfully from user '{}'.", username);
     }
 
 }

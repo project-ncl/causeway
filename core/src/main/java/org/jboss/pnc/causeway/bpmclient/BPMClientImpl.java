@@ -27,6 +27,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,7 +51,14 @@ public class BPMClientImpl implements BPMClient {
         ResteasyWebTarget target = client.target(callback.getUri());
         Invocation.Builder requestBuilder = target.request(MediaType.APPLICATION_JSON);
         callback.getHeaders().forEach(h -> requestBuilder.header(h.getName(), h.getValue()));
-        requestBuilder.method(callback.getMethod().toString(), Entity.entity(result, MediaType.APPLICATION_JSON_TYPE));
+        Response response = requestBuilder
+                .method(callback.getMethod().toString(), Entity.entity(result, MediaType.APPLICATION_JSON_TYPE));
+        log.info(
+                "Callback sent to {} using http method: {}, received status: {} from location: {}",
+                callback.getUri(),
+                callback.getMethod(),
+                response.getStatus(),
+                response.getLocation());
     }
 
     @Override
