@@ -62,7 +62,7 @@ public class BrewClientImpl implements BrewClient {
             KojiSessionInfo session = login();
 
             KojiNVR knvr = new KojiNVR(nvr.getKojiName(), nvr.getVersion(), nvr.getRelease());
-            log.debug("Get build info of build {} from user '{}'.", knvr, session.getUserInfo().getUserName());
+            log.info("Get build info of build {} from user '{}'.", knvr, session.getUserInfo().getUserName());
             KojiBuildInfo bi = koji.getBuildInfo(knvr, session); // returns null if missing
 
             logout(session);
@@ -82,7 +82,7 @@ public class BrewClientImpl implements BrewClient {
 
         KojiSessionInfo session = login();
         try {
-            log.debug("Get build info of build id {} from user '{}'.", id, session.getUserInfo().getUserName());
+            log.info("Get build info of build id {} from user '{}'.", id, session.getUserInfo().getUserName());
             buildInfo = koji.getBuildInfo(id, session);
         } catch (KojiClientException ex) {
             throw new CausewayException(ErrorMessages.kojiCommunicationFailure(ex), ex);
