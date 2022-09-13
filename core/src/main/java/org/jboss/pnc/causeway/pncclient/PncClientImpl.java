@@ -65,6 +65,7 @@ public class PncClientImpl implements PncClient {
     public String getTagForMilestone(int milestoneId) throws CausewayException {
         ProductMilestone milestone;
         try {
+            log.debug("Getting milestone with id {} from PNC", milestoneId);
             milestone = milestoneClient.getSpecific(String.valueOf(milestoneId));
         } catch (RemoteResourceNotFoundException ex) {
             throw new CausewayFailure(ErrorMessages.milestoneNotFoundWhenGettingTag(milestoneId, ex), ex);
@@ -80,6 +81,7 @@ public class PncClientImpl implements PncClient {
     public Collection<Build> findBuildsOfProductMilestone(int milestoneId) throws CausewayException {
         Collection<Build> builds = new HashSet<>();
         try {
+            log.debug("Getting successful builds of milestone with id {} from PNC", milestoneId);
             RemoteCollection<Build> buildPages = milestoneClient.getBuilds(
                     String.valueOf(milestoneId),
                     new BuildsFilterParameters(),
@@ -98,10 +100,12 @@ public class PncClientImpl implements PncClient {
 
     @Override
     public String getBuildLog(String buildId) throws CausewayException {
-        Optional<InputStream> log;
+        Optional<InputStream> buildLog;
         try {
-            log = buildClient.getBuildLogs(String.valueOf(buildId));
-            InputStream logInput = log.orElseThrow(() -> new CausewayException(ErrorMessages.buildLogIsEmpty(buildId)));
+            log.debug("Getting build logs of build with id {} from PNC", buildId);
+            buildLog = buildClient.getBuildLogs(String.valueOf(buildId));
+            InputStream logInput = buildLog
+                    .orElseThrow(() -> new CausewayException(ErrorMessages.buildLogIsEmpty(buildId)));
             Scanner s = new Scanner(logInput).useDelimiter("\\A");
             return s.hasNext() ? s.next() : "";
         } catch (RemoteResourceException ex) {
@@ -112,6 +116,7 @@ public class PncClientImpl implements PncClient {
     @Override
     public InputStream getSources(String id) throws CausewayException {
         try {
+            log.debug("Getting sources of build with id {} from PNC", id);
             Response response = buildClient.getInternalScmArchiveLink(id);
             try {
                 if (response.getStatus() >= 400) {
