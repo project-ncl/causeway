@@ -4,7 +4,6 @@ import com.redhat.red.build.koji.KojiClientException;
 import com.redhat.red.build.koji.KojijiErrorInfo;
 import com.redhat.red.build.koji.model.json.KojiJsonConstants;
 import com.redhat.red.build.koji.model.json.VerificationException;
-import jdk.internal.joptsimple.internal.Strings;
 import org.jboss.pnc.api.causeway.dto.push.Build;
 import org.jboss.pnc.causeway.brewclient.BrewClientImpl;
 import org.jboss.pnc.causeway.brewclient.BuildTranslatorImpl;
@@ -272,7 +271,7 @@ public class ErrorMessages {
      * {@value CONFIG_IS_NOT_COMPLETE}
      */
     public static String configIsNotComplete(List<String> validationErrors) {
-        String formattedValidationErrors = Strings.join(validationErrors, "\n");
+        String formattedValidationErrors = String.join("\n", validationErrors);
         return MessageFormat.format(CONFIG_IS_NOT_COMPLETE, formattedValidationErrors);
     }
 
