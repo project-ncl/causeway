@@ -129,7 +129,7 @@ public class PncImportControllerImpl implements PncImportController {
         // Create a parent child span with values from MDC
         SpanBuilder spanBuilder = OtelUtils.buildChildSpan(
                 GlobalOpenTelemetry.get().getTracer(""),
-                "ImportControllerImpl.importBuild",
+                "PncImportControllerImpl.importMilestone",
                 SpanKind.CLIENT,
                 MDC.get(MDCKeys.SLF4J_TRACE_ID_KEY),
                 MDC.get(MDCKeys.SLF4J_SPAN_ID_KEY),
