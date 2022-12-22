@@ -1,6 +1,5 @@
 package org.jboss.pnc.causeway.rest;
 
-import org.jboss.pnc.causeway.CausewayException;
 import org.keycloak.KeycloakSecurityContext;
 
 import javax.inject.Inject;

@@ -18,9 +18,6 @@ package org.jboss.pnc.causeway.bpmclient;
 import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
 
-import java.net.URI;
-import java.util.Map;
-
 /**
  *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
