@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.jboss.pnc.causeway.ErrorMessages;
 import org.jboss.pnc.causeway.source.RenamedSources;
-import org.jboss.pnc.causeway.util.MDCUtils;
+import org.jboss.pnc.common.log.MDCUtils;
 
 /**
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
@@ -135,7 +135,7 @@ public abstract class ImportFileGenerator implements Iterable<Supplier<ImportFil
             try {
                 HttpURLConnection connection = (HttpURLConnection) artifact.getUrl().openConnection();
                 try {
-                    MDCUtils.headersFromContext().forEach(connection::addRequestProperty);
+                    MDCUtils.getHeadersFromMDC().forEach(connection::addRequestProperty);
                     connection.setRequestMethod("GET");
                     int responseCode = connection.getResponseCode();
                     if (responseCode != 200) {

@@ -6,12 +6,20 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.UniformReservoir;
 import com.redhat.red.build.koji.model.json.KojiImport;
+
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Scope;
 import lombok.Data;
 
 import org.jboss.pnc.api.causeway.dto.push.Build;
 import org.jboss.pnc.api.causeway.dto.push.BuiltArtifact;
 import org.jboss.pnc.api.causeway.dto.push.Logfile;
 import org.jboss.pnc.api.causeway.dto.untag.TaggedBuild;
+import org.jboss.pnc.api.constants.MDCHeaderKeys;
+import org.jboss.pnc.api.constants.MDCKeys;
 import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.CausewayFailure;
@@ -21,6 +29,8 @@ import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.source.RenamedSources;
+import org.jboss.pnc.common.log.MDCUtils;
+import org.jboss.pnc.common.otel.OtelUtils;
 import org.jboss.pnc.pncmetrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.rest.BrewBuild;
 import org.jboss.pnc.causeway.rest.BrewNVR;
@@ -44,10 +54,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.jboss.pnc.constants.MDCKeys;
 import org.slf4j.MDC;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
@@ -97,6 +107,29 @@ public class ImportControllerImpl implements ImportController {
     @Override
     @Asynchronous
     public void importBuild(Build build, Request callback, String username, boolean reimport) {
+
+        // Create a parent child span with values from MDC
+        SpanBuilder spanBuilder = OtelUtils.buildChildSpan(
+                GlobalOpenTelemetry.get().getTracer(""),
+                "ImportControllerImpl.importBuild",
+                SpanKind.CLIENT,
+                MDC.get(MDCKeys.SLF4J_TRACE_ID_KEY),
+                MDC.get(MDCKeys.SLF4J_SPAN_ID_KEY),
+                MDC.get(MDCKeys.SLF4J_TRACE_FLAGS_KEY),
+                MDC.get(MDCKeys.SLF4J_TRACE_STATE_KEY),
+                Span.current().getSpanContext(),
+                Map.of(
+                        MDCKeys.BUILD_ID_KEY,
+                        String.valueOf(build.getExternalBuildID()),
+                        "tag",
+                        build.getTagPrefix(),
+                        "username",
+                        username,
+                        "reimport",
+                        String.valueOf(reimport)));
+        Span span = spanBuilder.startSpan();
+        log.debug("Started a new span :{}", span);
+
         MDC.put(MDCKeys.BUILD_ID_KEY, String.valueOf(build.getExternalBuildID()));
         log.info(USER_LOG, "Importing external build {} to tag {}.", build.getExternalBuildID(), build.getTagPrefix());
 
@@ -108,35 +141,56 @@ public class ImportControllerImpl implements ImportController {
         Timer.Context context = timer.time();
 
         Meter errors = registry.meter(METRICS_IMPORT_BASE + METRICS_ERRORS);
-        BuildPushResult.Builder response = BuildPushResult.builder();
-        response.buildId(String.valueOf(build.getExternalBuildID()));
-        try {
-            BuildResult result = importBuild(build, build.getTagPrefix(), username, reimport);
-            response.brewBuildId(result.getBrewID());
-            response.brewBuildUrl(result.getBrewURL());
-            response.status(BuildPushStatus.SUCCESS);
-            response.message(result.getMessage());
-            log.info(result.getMessage());
-        } catch (CausewayFailure ex) {
-            log.warn(ErrorMessages.failedToImportBuild(build.getExternalBuildID(), ex), ex);
-            response.status(BuildPushStatus.FAILED);
-            response.message(getMessageOrStacktrace(ex));
-            errors.mark();
-        } catch (CausewayException | RuntimeException ex) {
-            log.error(ErrorMessages.errorImportingBuild(build.getExternalBuildID(), ex), ex);
-            response.status(BuildPushStatus.SYSTEM_ERROR);
-            response.message(getMessageOrStacktrace(ex));
-            errors.mark();
-        }
-        respond(callback, response.build());
 
-        // stop the timer
-        context.stop();
+        // put the span into the current Context
+        try (Scope scope = span.makeCurrent()) {
+            BuildPushResult.Builder response = BuildPushResult.builder();
+            response.buildId(String.valueOf(build.getExternalBuildID()));
+            try {
+                BuildResult result = importBuild(build, build.getTagPrefix(), username, reimport);
+                response.brewBuildId(result.getBrewID());
+                response.brewBuildUrl(result.getBrewURL());
+                response.status(BuildPushStatus.SUCCESS);
+                response.message(result.getMessage());
+                log.info(result.getMessage());
+            } catch (CausewayFailure ex) {
+                log.warn(ErrorMessages.failedToImportBuild(build.getExternalBuildID(), ex), ex);
+                response.status(BuildPushStatus.FAILED);
+                response.message(getMessageOrStacktrace(ex));
+                errors.mark();
+            } catch (CausewayException | RuntimeException ex) {
+                log.error(ErrorMessages.errorImportingBuild(build.getExternalBuildID(), ex), ex);
+                response.status(BuildPushStatus.SYSTEM_ERROR);
+                response.message(getMessageOrStacktrace(ex));
+                errors.mark();
+            }
+            respond(callback, response.build());
+
+            // stop the timer
+            context.stop();
+        } finally {
+            span.end(); // closing the scope does not end the span, this has to be done manually
+        }
     }
 
     @Override
     @Asynchronous
     public void untagBuild(TaggedBuild build, Request callback) {
+
+        // Create a parent child span with values from MDC
+        SpanBuilder spanBuilder = OtelUtils.buildChildSpan(
+                GlobalOpenTelemetry.get().getTracer(""),
+                "ImportControllerImpl.untagBuild",
+                SpanKind.CLIENT,
+                MDC.get(MDCKeys.SLF4J_TRACE_ID_KEY),
+                MDC.get(MDCKeys.SLF4J_SPAN_ID_KEY),
+                MDC.get(MDCKeys.SLF4J_TRACE_FLAGS_KEY),
+                MDC.get(MDCKeys.SLF4J_TRACE_STATE_KEY),
+                Span.current().getSpanContext(),
+                Map.of("build", String.valueOf(build.getBrewBuildId()), "tag", build.getTagPrefix()));
+        Span span = spanBuilder.startSpan();
+        log.debug("Started a new span :{}", span);
+
         log.info(USER_LOG, "Untagging build {} from tag {}.", build.getBrewBuildId(), build.getTagPrefix());
 
         MetricRegistry registry = metricsConfiguration.getMetricRegistry();
@@ -148,27 +202,32 @@ public class ImportControllerImpl implements ImportController {
 
         Meter errors = registry.meter(METRICS_UNTAG_BASE + METRICS_ERRORS);
 
-        UntagResultRestBuilder response = UntagResultRest.builder();
-        response.brewBuildId(build.getBrewBuildId());
-        try {
-            untagBuild(build.getBrewBuildId(), build.getTagPrefix());
-            response.log("Brew build " + build.getBrewBuildId() + " untagged from tag " + build.getTagPrefix());
-            response.status(OperationStatus.SUCCESS);
-        } catch (CausewayFailure ex) {
-            log.warn(ErrorMessages.failedToUntagBuild(ex), ex);
-            response.status(OperationStatus.FAILED);
-            response.log(getMessageOrStacktrace(ex));
-            errors.mark();
-        } catch (CausewayException | RuntimeException ex) {
-            log.error(ErrorMessages.errorUntaggingBuild(ex), ex);
-            response.status(OperationStatus.SYSTEM_ERROR);
-            response.log(getMessageOrStacktrace(ex));
-            errors.mark();
-        }
-        respond(callback, response.build());
+        // put the span into the current Context
+        try (Scope scope = span.makeCurrent()) {
+            UntagResultRestBuilder response = UntagResultRest.builder();
+            response.brewBuildId(build.getBrewBuildId());
+            try {
+                untagBuild(build.getBrewBuildId(), build.getTagPrefix());
+                response.log("Brew build " + build.getBrewBuildId() + " untagged from tag " + build.getTagPrefix());
+                response.status(OperationStatus.SUCCESS);
+            } catch (CausewayFailure ex) {
+                log.warn(ErrorMessages.failedToUntagBuild(ex), ex);
+                response.status(OperationStatus.FAILED);
+                response.log(getMessageOrStacktrace(ex));
+                errors.mark();
+            } catch (CausewayException | RuntimeException ex) {
+                log.error(ErrorMessages.errorUntaggingBuild(ex), ex);
+                response.status(OperationStatus.SYSTEM_ERROR);
+                response.log(getMessageOrStacktrace(ex));
+                errors.mark();
+            }
+            respond(callback, response.build());
 
-        // stop the timer
-        context.stop();
+            // stop the timer
+            context.stop();
+        } finally {
+            span.end(); // closing the scope does not end the span, this has to be done manually
+        }
     }
 
     private BuildResult importBuild(Build build, String tagPrefix, String username, boolean reimport)
@@ -280,8 +339,26 @@ public class ImportControllerImpl implements ImportController {
         ResteasyWebTarget target = restClient.target(callback.getUri());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
         callback.getHeaders().forEach(h -> request.header(h.getName(), h.getValue()));
+
+        // Add OTEL headers from MDC context
+        addOtelMDCHeaders(request);
+
         Response response = request.post(Entity.entity(responseEntity, MediaType.APPLICATION_JSON_TYPE));
         log.debug("Callback response: {} - {}.", response.getStatusInfo(), response.readEntity(String.class));
+    }
+
+    private void addOtelMDCHeaders(Invocation.Builder request) {
+        headersFromMdc(request, MDCHeaderKeys.SLF4J_TRACE_ID);
+        headersFromMdc(request, MDCHeaderKeys.SLF4J_SPAN_ID);
+        Map<String, String> otelHeaders = MDCUtils.getOtelHeadersFromMDC();
+        otelHeaders.forEach((k, v) -> request.header(k, v));
+    }
+
+    private void headersFromMdc(Invocation.Builder request, MDCHeaderKeys headerKey) {
+        String mdcValue = MDC.get(headerKey.getMdcKey());
+        if (mdcValue != null && mdcValue.isEmpty()) {
+            request.header(headerKey.getHeaderName(), mdcValue.trim());
+        }
     }
 
     private void untagBuild(int brewBuildId, String tagPrefix) throws CausewayException {

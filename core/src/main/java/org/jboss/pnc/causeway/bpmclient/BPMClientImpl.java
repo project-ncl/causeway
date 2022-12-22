@@ -15,13 +15,18 @@
  */
 package org.jboss.pnc.causeway.bpmclient;
 
+import org.jboss.pnc.api.constants.MDCHeaderKeys;
 import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.causeway.rest.BrewPushMilestoneResult;
 import org.jboss.pnc.causeway.rest.Callback;
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
+import org.jboss.pnc.common.log.MDCUtils;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+import org.slf4j.MDC;
+
+import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.client.Entity;
@@ -51,6 +56,10 @@ public class BPMClientImpl implements BPMClient {
         ResteasyWebTarget target = client.target(callback.getUri());
         Invocation.Builder requestBuilder = target.request(MediaType.APPLICATION_JSON);
         callback.getHeaders().forEach(h -> requestBuilder.header(h.getName(), h.getValue()));
+
+        // Add OTEL headers from MDC context
+        addOtelMDCHeaders(requestBuilder);
+
         Response response = requestBuilder
                 .method(callback.getMethod().toString(), Entity.entity(result, MediaType.APPLICATION_JSON_TYPE));
         log.info(
@@ -59,6 +68,20 @@ public class BPMClientImpl implements BPMClient {
                 callback.getMethod(),
                 response.getStatus(),
                 response.getLocation());
+    }
+
+    private void addOtelMDCHeaders(Invocation.Builder request) {
+        headersFromMdc(request, MDCHeaderKeys.SLF4J_TRACE_ID);
+        headersFromMdc(request, MDCHeaderKeys.SLF4J_SPAN_ID);
+        Map<String, String> otelHeaders = MDCUtils.getOtelHeadersFromMDC();
+        otelHeaders.forEach((k, v) -> request.header(k, v));
+    }
+
+    private void headersFromMdc(Invocation.Builder request, MDCHeaderKeys headerKey) {
+        String mdcValue = MDC.get(headerKey.getMdcKey());
+        if (mdcValue != null && mdcValue.isEmpty()) {
+            request.header(headerKey.getHeaderName(), mdcValue.trim());
+        }
     }
 
     @Override
