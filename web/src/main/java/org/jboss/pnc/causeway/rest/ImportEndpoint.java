@@ -19,6 +19,9 @@ import org.jboss.pnc.api.causeway.dto.push.BuildImportRequest;
 import org.jboss.pnc.causeway.ctl.ImportController;
 import org.jboss.pnc.causeway.rest.spi.Import;
 
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
+
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
@@ -38,7 +41,8 @@ public class ImportEndpoint implements Import {
     }
 
     @Override
-    public Response importBuild(BuildImportRequest request) {
+    @WithSpan
+    public Response importBuild(@SpanAttribute(value = "request") BuildImportRequest request) {
         controller.importBuild(
                 request.getBuild(),
                 request.getCallback(),

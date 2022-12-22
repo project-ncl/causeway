@@ -19,6 +19,9 @@ import org.jboss.pnc.api.causeway.dto.untag.UntagRequest;
 import org.jboss.pnc.causeway.ctl.ImportController;
 import org.jboss.pnc.causeway.rest.spi.Untag;
 
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
+
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
@@ -30,7 +33,8 @@ public class UntagEndpoint implements Untag {
     private ImportController controller;
 
     @Override
-    public Response untagBuild(UntagRequest request) {
+    @WithSpan
+    public Response untagBuild(@SpanAttribute(value = "request") UntagRequest request) {
         controller.untagBuild(request.getBuild(), request.getCallback());
         return Response.accepted().build();
     }
