@@ -62,7 +62,7 @@
     <pncVersion>2.5.0-SNAPSHOT</pncVersion>
     <pncApiVersion>2.4.5-SNAPSHOT</pncApiVersion>
     <!-- OTEL Dependencies for Instrumentation -->
-    <version.io.opentelemetry.instrumentation>1.19.2</version.io.opentelemetry.instrumentation>
+    <version.io.opentelemetry.instrumentation>1.19.0</version.io.opentelemetry.instrumentation>
     <version.com.redhat.resilience.otel>1.1.0</version.com.redhat.resilience.otel>
     <version.pnc-common>2.2.1-SNAPSHOT</version.pnc-common>
     <tagSuffix />
@@ -254,14 +254,6 @@
 
       <!-- OTEL Dependencies for Instrumentation -->
       <!-- BOMs -->
-      <dependency>
-        <groupId>io.opentelemetry.instrumentation</groupId>
-        <artifactId>opentelemetry-instrumentation-bom</artifactId>
-        <version>${version.io.opentelemetry.instrumentation}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-
       <dependency>
         <groupId>io.opentelemetry.instrumentation</groupId>
         <artifactId>opentelemetry-instrumentation-annotations</artifactId>
