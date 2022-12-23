@@ -27,8 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import static org.apache.commons.lang.StringUtils.isNotEmpty;
-
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;

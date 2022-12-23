@@ -17,6 +17,9 @@ package org.jboss.pnc.causeway.rest;
 
 import org.jboss.pnc.causeway.ctl.PncImportController;
 
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
+
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 
@@ -33,7 +36,9 @@ public class PncImportResourceEndpoint implements PncImportResource {
     private UserService userSerivce;
 
     @Override
-    public BrewPushMilestoneResponse importProductMilestone(BrewPushMilestone request) {
+    @WithSpan
+    public BrewPushMilestoneResponse importProductMilestone(
+            @SpanAttribute(value = "request") BrewPushMilestone request) {
         String id = UUID.randomUUID().toString();
 
         pncController.importMilestone(

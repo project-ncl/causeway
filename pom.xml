@@ -59,8 +59,12 @@
     <pncmetrics.version>1.1.12</pncmetrics.version>
     <semverVersion>0.9.0</semverVersion>
     <atlasVersion>1.1.2</atlasVersion>
-    <pncVersion>2.3.2</pncVersion>
-    <pncApiVersion>2.4.0</pncApiVersion>
+    <pncVersion>2.5.0-SNAPSHOT</pncVersion>
+    <pncApiVersion>2.4.5-SNAPSHOT</pncApiVersion>
+    <!-- OTEL Dependencies for Instrumentation -->
+    <version.io.opentelemetry.instrumentation>1.19.2</version.io.opentelemetry.instrumentation>
+    <version.com.redhat.resilience.otel>1.1.0</version.com.redhat.resilience.otel>
+    <version.pnc-common>2.2.1-SNAPSHOT</version.pnc-common>
     <tagSuffix />
   </properties>
 
@@ -190,6 +194,11 @@
         <artifactId>pnc-api</artifactId>
         <version>${pncApiVersion}</version>
       </dependency>
+      <dependency>
+        <groupId>org.jboss.pnc</groupId>
+        <artifactId>pnc-common</artifactId>
+        <version>${version.pnc-common}</version>
+      </dependency>
 
       <!-- Other dependencies -->
       <dependency>
@@ -242,6 +251,28 @@
         <artifactId>jetty-servlets</artifactId>
         <version>9.3.11.v20160721</version>
       </dependency-->
+
+      <!-- OTEL Dependencies for Instrumentation -->
+      <!-- BOMs -->
+      <dependency>
+        <groupId>io.opentelemetry.instrumentation</groupId>
+        <artifactId>opentelemetry-instrumentation-bom</artifactId>
+        <version>${version.io.opentelemetry.instrumentation}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>io.opentelemetry.instrumentation</groupId>
+        <artifactId>opentelemetry-instrumentation-annotations</artifactId>
+        <version>${version.io.opentelemetry.instrumentation}-alpha</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.redhat.resilience.otel</groupId>
+        <artifactId>opentelemetry-ext-cli-java</artifactId>
+        <version>${version.com.redhat.resilience.otel}</version>
+      </dependency>
 
       <!-- Test dependencies -->
       <dependency>

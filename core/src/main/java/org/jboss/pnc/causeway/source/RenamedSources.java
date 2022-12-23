@@ -2,7 +2,6 @@ package org.jboss.pnc.causeway.source;
 
 import lombok.Getter;
 import org.commonjava.atlas.maven.ident.ref.SimpleArtifactRef;
-import org.commonjava.atlas.maven.ident.version.VersionSpec;
 import org.commonjava.atlas.npm.ident.ref.NpmPackageRef;
 import org.jboss.pnc.causeway.ErrorMessages;
 

@@ -27,6 +27,13 @@ import com.codahale.metrics.Timer;
 import com.codahale.metrics.UniformReservoir;
 import com.redhat.red.build.koji.model.json.KojiImport;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Scope;
+
+import org.jboss.pnc.api.constants.MDCKeys;
 import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.ErrorMessages;
@@ -37,6 +44,7 @@ import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.causeway.source.RenamedSources;
 import org.jboss.pnc.causeway.source.SourceRenamer;
+import org.jboss.pnc.common.otel.OtelUtils;
 import org.jboss.pnc.enums.BuildType;
 import org.jboss.pnc.pncmetrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
@@ -63,6 +71,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
@@ -72,7 +81,6 @@ import org.jboss.pnc.causeway.CausewayFailure;
 import static org.jboss.pnc.constants.Attributes.BUILD_BREW_NAME;
 import static org.jboss.pnc.constants.Attributes.BUILD_BREW_VERSION;
 
-import org.jboss.pnc.constants.MDCKeys;
 import org.slf4j.MDC;
 
 @Deprecated
@@ -118,6 +126,20 @@ public class PncImportControllerImpl implements PncImportController {
     public void importMilestone(int milestoneId, Request callback, String callbackId, String username) {
         log.info("Importing PNC milestone {}.", milestoneId);
 
+        // Create a parent child span with values from MDC
+        SpanBuilder spanBuilder = OtelUtils.buildChildSpan(
+                GlobalOpenTelemetry.get().getTracer(""),
+                "PncImportControllerImpl.importMilestone",
+                SpanKind.CLIENT,
+                MDC.get(MDCKeys.SLF4J_TRACE_ID_KEY),
+                MDC.get(MDCKeys.SLF4J_SPAN_ID_KEY),
+                MDC.get(MDCKeys.SLF4J_TRACE_FLAGS_KEY),
+                MDC.get(MDCKeys.SLF4J_TRACE_STATE_KEY),
+                Span.current().getSpanContext(),
+                Map.of("milestoneId", String.valueOf(milestoneId), "callbackId", callbackId, "username", username));
+        Span span = spanBuilder.startSpan();
+        log.debug("Started a new span :{}", span);
+
         MetricRegistry registry = metricsConfiguration.getMetricRegistry();
         Meter meter = registry.meter(METRICS_BASE + METRICS_METER);
         meter.mark();
@@ -127,40 +149,45 @@ public class PncImportControllerImpl implements PncImportController {
 
         Meter errors = registry.meter(METRICS_BASE + METRICS_ERRORS);
 
-        MilestoneReleaseResultRest result = new MilestoneReleaseResultRest();
-        result.setMilestoneId(milestoneId);
-        try {
-            List<BuildImportResultRest> results = importProductMilestone(milestoneId, username);
-            result.setBuilds(results);
+        // put the span into the current Context
+        try (Scope scope = span.makeCurrent()) {
+            MilestoneReleaseResultRest result = new MilestoneReleaseResultRest();
+            result.setMilestoneId(milestoneId);
+            try {
+                List<BuildImportResultRest> results = importProductMilestone(milestoneId, username);
+                result.setBuilds(results);
 
-            if (results.stream().anyMatch(r -> r.getStatus() == BuildImportStatus.ERROR)) {
+                if (results.stream().anyMatch(r -> r.getStatus() == BuildImportStatus.ERROR)) {
+                    result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
+                    bpmClient.failure(callback, callbackId, result);
+                    errors.mark();
+                } else if (results.stream().anyMatch(r -> r.getStatus() == BuildImportStatus.FAILED)) {
+                    result.setReleaseStatus(ReleaseStatus.IMPORT_ERROR);
+                    bpmClient.failure(callback, callbackId, result);
+                    errors.mark();
+                } else {
+                    result.setReleaseStatus(ReleaseStatus.SUCCESS);
+                    bpmClient.success(callback, callbackId, result);
+                }
+            } catch (CausewayFailure ex) {
+                log.warn(ErrorMessages.failedToImportMilestone(milestoneId, ex), ex);
+                result.setErrorMessage(ex.getMessage());
+                result.setReleaseStatus(ReleaseStatus.FAILURE);
+                bpmClient.failure(callback, callbackId, result);
+                errors.mark();
+            } catch (CausewayException | RuntimeException ex) {
+                log.error(ErrorMessages.errorImportingMilestone(milestoneId, ex), ex);
+                result.setErrorMessage(ex.getMessage());
                 result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
-                bpmClient.failure(callback, callbackId, result);
+                bpmClient.error(callback, callbackId, result);
                 errors.mark();
-            } else if (results.stream().anyMatch(r -> r.getStatus() == BuildImportStatus.FAILED)) {
-                result.setReleaseStatus(ReleaseStatus.IMPORT_ERROR);
-                bpmClient.failure(callback, callbackId, result);
-                errors.mark();
-            } else {
-                result.setReleaseStatus(ReleaseStatus.SUCCESS);
-                bpmClient.success(callback, callbackId, result);
             }
-        } catch (CausewayFailure ex) {
-            log.warn(ErrorMessages.failedToImportMilestone(milestoneId, ex), ex);
-            result.setErrorMessage(ex.getMessage());
-            result.setReleaseStatus(ReleaseStatus.FAILURE);
-            bpmClient.failure(callback, callbackId, result);
-            errors.mark();
-        } catch (CausewayException | RuntimeException ex) {
-            log.error(ErrorMessages.errorImportingMilestone(milestoneId, ex), ex);
-            result.setErrorMessage(ex.getMessage());
-            result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
-            bpmClient.error(callback, callbackId, result);
-            errors.mark();
-        }
 
-        // stop the timer
-        context.stop();
+            // stop the timer
+            context.stop();
+        } finally {
+            span.end(); // closing the scope does not end the span, this has to be done manually
+        }
     }
 
     private List<BuildImportResultRest> importProductMilestone(int milestoneId, String username)
@@ -318,10 +345,6 @@ public class PncImportControllerImpl implements PncImportController {
             version = BuildTranslator.guessVersion(build, artifacts);
         }
         return new BrewNVR(build.getAttributes().get(BUILD_BREW_NAME), version, "1");
-    }
-
-    private boolean isNotEmpty(Collection<?> collection) {
-        return collection != null && !collection.isEmpty();
     }
 
 }
