@@ -258,6 +258,12 @@
         <groupId>io.opentelemetry.instrumentation</groupId>
         <artifactId>opentelemetry-instrumentation-annotations</artifactId>
         <version>${version.io.opentelemetry.instrumentation}-alpha</version>
+        <exclusions>
+          <exclusion>
+           <groupId>io.opentelemetry</groupId>
+           <artifactId>opentelemetry-api</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <dependency>
