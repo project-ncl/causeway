@@ -17,6 +17,7 @@
  */
 package org.jboss.pnc.causeway.rest.filter;
 
+import org.jboss.pnc.common.log.MDCUtils;
 import org.slf4j.MDC;
 
 import io.opentelemetry.api.trace.Span;
@@ -24,7 +25,6 @@ import io.opentelemetry.api.trace.Span;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import java.io.IOException;
-import org.jboss.pnc.causeway.util.MDCUtils;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
@@ -34,16 +34,8 @@ public class MDCLoggingFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext containerRequestContext) throws IOException {
         MDC.clear();
-        for (String key : MDCUtils.headerKeys()) {
-            String mdcContext = containerRequestContext.getHeaderString(key);
-            if (mdcContext != null) {
-                MDCUtils.contextFromHeader(key, mdcContext);
-            }
-        }
-
-        org.jboss.pnc.common.log.MDCUtils.setMDCFromRequestContext(containerRequestContext);
-        org.jboss.pnc.common.log.MDCUtils
-                .addMDCFromOtelHeadersWithFallback(containerRequestContext, Span.current().getSpanContext(), true);
+        MDCUtils.setMDCFromRequestContext(containerRequestContext);
+        MDCUtils.addMDCFromOtelHeadersWithFallback(containerRequestContext, Span.current().getSpanContext(), true);
 
     }
 }
