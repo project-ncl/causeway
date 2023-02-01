@@ -22,14 +22,14 @@ import org.jboss.pnc.causeway.ErrorMessages;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 
 import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
-import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
 import java.io.Closeable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
@@ -44,8 +44,7 @@ public class CausewayProducer implements Closeable {
 
     private final CausewayConfig config;
 
-    @Resource
-    private ManagedExecutorService executorService;
+    private ExecutorService executorService;
 
     private KojiClient koji;
 
@@ -55,6 +54,7 @@ public class CausewayProducer implements Closeable {
     public CausewayProducer(CausewayConfig config) {
         this.config = config;
         passwords.bind(config.getKojiClientCertificatePassword(), CausewayConfig.KOJI_SITE_ID, PasswordType.KEY);
+        executorService = Executors.newSingleThreadExecutor();
     }
 
     private synchronized void setupKoji(PasswordManager passwords) {
