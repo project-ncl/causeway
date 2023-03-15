@@ -32,7 +32,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
@@ -113,6 +117,8 @@ public class CausewayConfig {
     private Integer kojiConnectionPoolTimeout;
 
     private Integer kojiConnections;
+
+    private Set<String> ignoredTools;
 
     private Integer pnclTimeout;
 
@@ -356,6 +362,15 @@ public class CausewayConfig {
     @ConfigName("pncl.timeout.secs")
     public void setPnclTimeout(Integer pnclTimeout) {
         this.pnclTimeout = pnclTimeout;
+    }
+
+    public Set<String> getIgnoredTools() {
+        return ignoredTools == null ? Collections.emptySet() : ignoredTools;
+    }
+
+    @ConfigName("pnc.tools.ignored")
+    public void setIgnoredTools(String ignoredTools) {
+        this.ignoredTools = ignoredTools == null ? null : new HashSet<>(Arrays.asList(ignoredTools.split(",")));
     }
 
     public List<String> getValidationErrors() {
