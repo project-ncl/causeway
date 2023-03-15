@@ -493,7 +493,9 @@ public class BuildTranslatorImpl implements BuildTranslator {
 
     private void addTools(BuildRoot.Builder buildRootBuilder, Map<String, String> tools) {
         for (Map.Entry<String, String> e : tools.entrySet()) {
-            buildRootBuilder.withTool(e.getKey(), e.getValue());
+            if (!config.getIgnoredTools().contains(e.getKey())) {
+                buildRootBuilder.withTool(e.getKey(), e.getValue());
+            }
         }
     }
 
