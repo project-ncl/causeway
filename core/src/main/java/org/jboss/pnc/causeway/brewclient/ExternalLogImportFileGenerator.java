@@ -17,6 +17,7 @@ package org.jboss.pnc.causeway.brewclient;
 
 import com.redhat.red.build.koji.model.ImportFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -71,10 +72,12 @@ public class ExternalLogImportFileGenerator extends ImportFileGenerator {
 
     private class ExternalLogImportFileIterator extends ImportFileIterator {
         private final Iterator<Log> logIt;
+        HttpClient client;
 
         public ExternalLogImportFileIterator(Iterator<Artifact> it, Iterator<Log> logIt) {
             super(it);
             this.logIt = logIt;
+            client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
         }
 
         @Override
@@ -92,12 +95,8 @@ public class ExternalLogImportFileGenerator extends ImportFileGenerator {
                 return () -> {
                     try {
                         HttpRequest request = HttpRequest.newBuilder(next1.getUrl().toURI()).build();
-                        InputStream inputStream = HttpClient.newBuilder()
-                                .followRedirects(HttpClient.Redirect.ALWAYS)
-                                .build()
-                                .send(request, HttpResponse.BodyHandlers.ofInputStream())
-                                .body();
-                        return new ImportFile(next1.filePath, inputStream, next1.size);
+                        byte[] log = client.send(request, HttpResponse.BodyHandlers.ofByteArray()).body();
+                        return new ImportFile(next1.filePath, new ByteArrayInputStream(log), log.length);
                     } catch (IOException | URISyntaxException | InterruptedException ex) {
                         throw new RuntimeException(ex);
                     }
