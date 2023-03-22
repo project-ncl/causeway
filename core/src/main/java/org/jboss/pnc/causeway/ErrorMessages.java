@@ -36,6 +36,7 @@ public class ErrorMessages {
     private static final String UNKNOWN_ARTIFACT_TYPE = "Unknown artifact type.";
     private static final String UNKNOWN_SYSTEM_IMAGE_TYPE = "Unknown system image type.";
     private static final String FAILED_TO_PARSE_ARTIFACT_URL = "Failed to parse artifact URL: {0}";
+    private static final String FAILED_TO_READ_LOG_FILE = "Failed to read log file: {0}";
     private static final String UNSUPPORTED_BUILD_CLASS = "Unsupported type of build ''{0}''";
     private static final String UNSUPPORTED_BUILD_TYPE = "Unsupported build type ''{0}''.";
     private static final String FAILED_TO_DOWNLOAD_SOURCES = "Failed to download sources: {0}";
@@ -160,6 +161,13 @@ public class ErrorMessages {
      */
     public static String failedToParseArtifactURL(MalformedURLException ex) {
         return MessageFormat.format(FAILED_TO_PARSE_ARTIFACT_URL, ex);
+    }
+
+    /**
+     * {@value FAILED_TO_PARSE_ARTIFACT_URL}
+     */
+    public static String failedToReadLogFile(Exception ex) {
+        return MessageFormat.format(FAILED_TO_READ_LOG_FILE, ex);
     }
 
     /**

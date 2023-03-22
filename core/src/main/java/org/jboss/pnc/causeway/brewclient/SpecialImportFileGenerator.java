@@ -19,10 +19,7 @@ import com.redhat.red.build.koji.model.ImportFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -31,6 +28,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import lombok.Getter;
 import org.jboss.pnc.causeway.source.RenamedSources;
 
 import lombok.Data;
@@ -39,11 +37,14 @@ import lombok.Data;
  *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
  */
-public class ExternalLogImportFileGenerator extends ImportFileGenerator {
+public class SpecialImportFileGenerator extends ImportFileGenerator {
+    @Getter
     private final Set<Log> logs = new HashSet<>();
+    private HttpClient client;
 
-    public ExternalLogImportFileGenerator(RenamedSources sources) {
+    public SpecialImportFileGenerator(RenamedSources sources) {
         super(sources);
+        client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
     }
 
     /**
@@ -51,11 +52,13 @@ public class ExternalLogImportFileGenerator extends ImportFileGenerator {
      * 
      * @param url Url of the log.
      * @param filePath Deploy path for the log.
-     * @param size Size of the log file.
      */
-    public void addLog(String url, String filePath, long size) throws MalformedURLException {
-        URL artifactUrl = new URL(url);
-        logs.add(new Log(artifactUrl, filePath, size));
+    public void addLog(String url, String filePath) throws IOException, InterruptedException {
+        URI artifactUrl = URI.create(url);
+        HttpRequest request = HttpRequest.newBuilder(artifactUrl).build();
+        byte[] log = client.send(request, HttpResponse.BodyHandlers.ofByteArray()).body();
+
+        logs.add(new Log(filePath, log));
     }
 
     @Override
@@ -64,20 +67,17 @@ public class ExternalLogImportFileGenerator extends ImportFileGenerator {
     }
 
     @Data
-    private static class Log {
-        private final URL url;
+    public static class Log {
         private final String filePath;
-        private final long size;
+        private final byte[] log;
     }
 
     private class ExternalLogImportFileIterator extends ImportFileIterator {
         private final Iterator<Log> logIt;
-        HttpClient client;
 
         public ExternalLogImportFileIterator(Iterator<Artifact> it, Iterator<Log> logIt) {
             super(it);
             this.logIt = logIt;
-            client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
         }
 
         @Override
@@ -92,15 +92,7 @@ public class ExternalLogImportFileGenerator extends ImportFileGenerator {
         public Supplier<ImportFile> next() {
             if (logIt.hasNext()) {
                 Log next1 = logIt.next();
-                return () -> {
-                    try {
-                        HttpRequest request = HttpRequest.newBuilder(next1.getUrl().toURI()).build();
-                        byte[] log = client.send(request, HttpResponse.BodyHandlers.ofByteArray()).body();
-                        return new ImportFile(next1.filePath, new ByteArrayInputStream(log), log.length);
-                    } catch (IOException | URISyntaxException | InterruptedException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                };
+                return () -> new ImportFile(next1.filePath, new ByteArrayInputStream(next1.log), next1.log.length);
             }
             return super.next();
         }

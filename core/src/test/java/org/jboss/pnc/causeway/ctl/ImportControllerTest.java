@@ -36,7 +36,7 @@ import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.CausewayFailure;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.brewclient.BuildTranslatorImpl;
-import org.jboss.pnc.causeway.brewclient.ExternalLogImportFileGenerator;
+import org.jboss.pnc.causeway.brewclient.SpecialImportFileGenerator;
 import org.jboss.pnc.causeway.config.CausewayConfig;
 import org.jboss.pnc.pncmetrics.MetricsConfiguration;
 import org.jboss.pnc.causeway.rest.BrewBuild;
@@ -97,8 +97,7 @@ public class ImportControllerTest {
     private static final BrewNVR NVR = new BrewNVR(BUILD_NAME, BUILD_VERSION, "1");
     private static final BrewNVR NVR2 = new BrewNVR(BUILD_NAME, BUILD_VERSION, "2");
 
-    private static final ExternalLogImportFileGenerator IMPORT_FILE_GENERATOR = mock(
-            ExternalLogImportFileGenerator.class);
+    private static final SpecialImportFileGenerator IMPORT_FILE_GENERATOR = mock(SpecialImportFileGenerator.class);
     private static final KojiImport KOJI_IMPORT = mock(KojiImport.class);
 
     private static final ObjectMapper mapper = new KojiObjectMapper();
@@ -160,7 +159,7 @@ public class ImportControllerTest {
     }
 
     private void mockTranslator() throws CausewayException {
-        doReturn(KOJI_IMPORT).when(translator).translate(eq(NVR), any(), any(), any());
+        doReturn(KOJI_IMPORT).when(translator).translate(eq(NVR), any(), any(), any(), any());
         doReturn(IMPORT_FILE_GENERATOR).when(translator).getImportFiles(any(), any());
     }
 
@@ -198,7 +197,7 @@ public class ImportControllerTest {
         mockExistingBuild(11, NVR, true);
         // Mock Brew import
         KojiImport kojiImport = mock(KojiImport.class);
-        doReturn(kojiImport).when(translator).translate(eq(NVR2), any(), any(), any());
+        doReturn(kojiImport).when(translator).translate(eq(NVR2), any(), any(), any(), any());
         BrewBuild brewBuild = new BrewBuild(12, NVR2);
         doReturn(brewBuild).when(brewClient).importBuild(eq(NVR2), same(kojiImport), same(IMPORT_FILE_GENERATOR));
 

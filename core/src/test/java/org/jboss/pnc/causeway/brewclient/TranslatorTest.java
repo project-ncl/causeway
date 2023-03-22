@@ -29,6 +29,7 @@ import org.assertj.core.api.Condition;
 import org.jboss.pnc.api.causeway.dto.push.Build;
 import org.jboss.pnc.api.causeway.dto.push.BuildRoot;
 import org.jboss.pnc.api.causeway.dto.push.BuiltArtifact;
+import org.jboss.pnc.api.causeway.dto.push.Logfile;
 import org.jboss.pnc.api.causeway.dto.push.MavenBuild;
 import org.jboss.pnc.api.causeway.dto.push.MavenBuiltArtifact;
 import org.jboss.pnc.api.causeway.dto.push.NpmBuild;
@@ -46,11 +47,8 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.anyOf;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -262,8 +260,14 @@ public class TranslatorTest {
         Build build = mapper.readValue(json, Build.class);
         RenamedSources sources = prepareSourcesFile(new RenamedSources.ArtifactType(groupId, artifactId, version));
 
+        SpecialImportFileGenerator importFiles = new SpecialImportFileGenerator(sources);
+        for (Logfile log : build.getLogs()) {
+            importFiles.getLogs().add(new SpecialImportFileGenerator.Log(log.getFilename(), new byte[1]));
+        }
+
         // when
-        KojiImport out = bt.translate(new BrewNVR(groupId + ":" + artifactId, version, "1"), build, sources, "joe");
+        KojiImport out = bt
+                .translate(new BrewNVR(groupId + ":" + artifactId, version, "1"), build, sources, "joe", importFiles);
 
         // Then
         Condition<BuildOutput> buildArtifact = new Condition<>(

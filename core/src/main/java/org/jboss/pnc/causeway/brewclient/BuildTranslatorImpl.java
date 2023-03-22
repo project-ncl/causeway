@@ -143,8 +143,12 @@ public class BuildTranslatorImpl implements BuildTranslator {
     }
 
     @Override
-    public KojiImport translate(BrewNVR nvr, Build build, RenamedSources sources, String username)
-            throws CausewayException {
+    public KojiImport translate(
+            BrewNVR nvr,
+            Build build,
+            RenamedSources sources,
+            String username,
+            SpecialImportFileGenerator importFiles) throws CausewayException {
         KojiImport.Builder builder = new KojiImport.Builder();
 
         BuildDescription.Builder descriptionBuilder = builder
@@ -172,7 +176,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
 
         addDependencies(build.getDependencies(), buildRootBuilder);
         addBuiltArtifacts(build.getBuiltArtifacts(), builder, buildRootId);
-        addLogs(build, builder, buildRootId);
+        addLogs(importFiles, builder, buildRootId);
         addSources(sources, builder, buildRootId);
 
         KojiImport translatedBuild = buildTranslatedBuild(builder);
@@ -236,13 +240,24 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }
     }
 
-    private void addLogs(Build build, KojiImport.Builder builder, int buildRootId) {
-        for (Logfile logfile : build.getLogs()) {
-            builder.withNewOutput(buildRootId, logfile.getFilename())
+    private void addLogs(SpecialImportFileGenerator importFiles, KojiImport.Builder builder, int buildRootId)
+            throws CausewayException {
+        MessageDigest md;
+        try {
+            md = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            throw new CausewayException(ErrorMessages.missingMD5Support(e));
+        }
+        for (SpecialImportFileGenerator.Log log : importFiles.getLogs()) {
+            byte[] logData = log.getLog();
+            byte[] md5Digest = md.digest(logData);
+            BigInteger bi = new BigInteger(1, md5Digest);
+            String md5Hash = String.format("%032x", bi);
+            builder.withNewOutput(buildRootId, log.getFilePath())
                     .withOutputType(StandardOutputType.log)
-                    .withFileSize(logfile.getSize())
+                    .withFileSize(logData.length)
                     .withArch(StandardArchitecture.noarch)
-                    .withChecksum(MD5, logfile.getMd5());
+                    .withChecksum(MD5, md5Hash);
         }
     }
 
@@ -357,12 +372,12 @@ public class BuildTranslatorImpl implements BuildTranslator {
     }
 
     @Override
-    public ImportFileGenerator getImportFiles(Build build, RenamedSources sources) throws CausewayException {
+    public SpecialImportFileGenerator getImportFiles(Build build, RenamedSources sources) throws CausewayException {
         try {
-            ExternalLogImportFileGenerator ret = new ExternalLogImportFileGenerator(sources);
+            SpecialImportFileGenerator ret = new SpecialImportFileGenerator(sources);
             for (Logfile logfile : build.getLogs()) {
                 String url = config.getLogStorage() + stripSlash(logfile.getDeployPath());
-                ret.addLog(url, logfile.getFilename(), logfile.getSize());
+                ret.addLog(url, logfile.getFilename());
             }
             for (BuiltArtifact artifact : build.getBuiltArtifacts()) {
                 String url = config.getArtifactStorage()
@@ -370,8 +385,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 ret.addUrl(artifact.getId(), url, stripSlash(artifact.getArtifactPath()), artifact.getSize());
             }
             return ret;
-        } catch (MalformedURLException ex) {
-            throw new CausewayException(ErrorMessages.failedToParseArtifactURL(ex), ex);
+        } catch (IOException | InterruptedException ex) {
+            throw new CausewayException(ErrorMessages.failedToReadLogFile(ex), ex);
         }
     }
 

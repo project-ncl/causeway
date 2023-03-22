@@ -18,8 +18,6 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -93,9 +91,9 @@ public class ImportFileGeneratorTest {
     }
 
     @Test
-    public void testExternalLongImportFileGenerator() throws MalformedURLException, IOException {
-        final ExternalLogImportFileGenerator ifg = new ExternalLogImportFileGenerator(prepareSourcesFile());
-        ifg.addLog(HOST + LOG_LOCATION, LOG_PATH, 6);
+    public void testExternalLongImportFileGenerator() throws IOException, InterruptedException {
+        final SpecialImportFileGenerator ifg = new SpecialImportFileGenerator(prepareSourcesFile());
+        ifg.addLog(HOST + LOG_LOCATION, LOG_PATH);
         doTestImportFileGenerator(ifg);
     }
 
@@ -142,9 +140,9 @@ public class ImportFileGeneratorTest {
     }
 
     @Test
-    public void testExternalLongImportFileGeneratorFail() throws MalformedURLException, IOException {
-        final ExternalLogImportFileGenerator ifg = new ExternalLogImportFileGenerator(prepareSourcesFile());
-        ifg.addLog(HOST + LOG_LOCATION, LOG_PATH, 6);
+    public void testExternalLongImportFileGeneratorFail() throws IOException, InterruptedException {
+        final SpecialImportFileGenerator ifg = new SpecialImportFileGenerator(prepareSourcesFile());
+        ifg.addLog(HOST + LOG_LOCATION, LOG_PATH);
         doTestImportFileGeneratorFail(ifg);
     }
 
