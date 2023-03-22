@@ -60,9 +60,14 @@ public interface BuildTranslator {
 
     RenamedSources getSources(Build build) throws CausewayException;
 
-    ImportFileGenerator getImportFiles(Build build, RenamedSources sources) throws CausewayException;
+    SpecialImportFileGenerator getImportFiles(Build build, RenamedSources sources) throws CausewayException;
 
-    KojiImport translate(BrewNVR nvr, Build build, RenamedSources sources, String username) throws CausewayException;
+    KojiImport translate(
+            BrewNVR nvr,
+            Build build,
+            RenamedSources sources,
+            String username,
+            SpecialImportFileGenerator importFiles) throws CausewayException;
 
     public static String guessVersion(Build build) throws CausewayException {
         final Predicate<BuiltArtifact> filter;
