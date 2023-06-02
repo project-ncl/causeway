@@ -55,7 +55,7 @@
     <javaVersion>11</javaVersion>
     <configVersion>0.8</configVersion>
     <mockitoVersion>1.10.19</mockitoVersion>
-    <kojijiVersion>2.16</kojijiVersion>
+    <kojijiVersion>2.19</kojijiVersion>
     <pncmetrics.version>1.1.12</pncmetrics.version>
     <semverVersion>0.9.0</semverVersion>
     <atlasVersion>1.1.2</atlasVersion>
