@@ -110,7 +110,7 @@
       <dependency>
         <groupId>org.jboss.bom</groupId>
         <artifactId>jboss-eap-jakartaee8-with-tools</artifactId>
-        <version>7.4.5.GA</version>
+        <version>7.4.11.GA</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
