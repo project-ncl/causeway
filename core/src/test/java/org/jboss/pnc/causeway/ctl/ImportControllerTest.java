@@ -34,6 +34,7 @@ import org.jboss.pnc.api.causeway.dto.push.NpmBuiltArtifact;
 import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.CausewayFailure;
+import org.jboss.pnc.causeway.authentication.KeycloakClient;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.brewclient.BuildTranslatorImpl;
 import org.jboss.pnc.causeway.brewclient.SpecialImportFileGenerator;
@@ -116,6 +117,9 @@ public class ImportControllerTest {
     @Mock
     public MetricRegistry metricRegistry;
 
+    @Mock
+    public KeycloakClient keycloakClient;
+
     @InjectMocks
     private ImportControllerImpl importController;
 
@@ -133,6 +137,8 @@ public class ImportControllerTest {
         Histogram histogram = mock(Histogram.class);
         when(metricRegistry.register(anyString(), any(Histogram.class))).thenReturn(histogram);
         when(metricRegistry.histogram(anyString())).thenReturn(histogram);
+
+        when(keycloakClient.getAccessToken()).thenReturn("hahaha");
 
         mapper.registerSubtypes(MavenBuild.class, NpmBuild.class, MavenBuiltArtifact.class, NpmBuiltArtifact.class);
 
