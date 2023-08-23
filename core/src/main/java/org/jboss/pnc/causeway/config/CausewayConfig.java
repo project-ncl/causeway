@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,6 +54,11 @@ public class CausewayConfig {
     public static final String PNCL_URL_OPTION = "pncl.url";
 
     public static final String PNCL_BUILDS_URL_OPTION = "pncl.builds.url";
+
+    public static final String OIDC_CLIENT_URL = "oidc-client.url";
+    public static final String OIDC_CLIENT_REALM = "oidc-client.realm";
+    public static final String OIDC_CLIENT_CLIENT_ID = "oidc-client.client-id";
+    public static final String OIDC_CLIENT_SECRET_FILE = "oidc-client.secret-file";
 
     public static final String PNC_SYSTEM_VERSION = "pnc.system.version";
 
@@ -121,6 +127,19 @@ public class CausewayConfig {
     private Set<String> ignoredTools;
 
     private Integer pnclTimeout;
+
+    private String oidcClientUrl;
+
+    private String oidcClientRealm;
+
+    private String oidcClientClientId;
+
+    private String oidcClientSecretFile;
+
+    /**
+     * Cache the content of the oidcClientSecretFile
+     */
+    private String cachedSecretFileContent;
 
     private SiteConfig kojiSiteConfig;
 
@@ -371,6 +390,51 @@ public class CausewayConfig {
     @ConfigName("pnc.tools.ignored")
     public void setIgnoredTools(String ignoredTools) {
         this.ignoredTools = ignoredTools == null ? null : new HashSet<>(Arrays.asList(ignoredTools.split(",")));
+    }
+
+    public String getOidcClientUrl() {
+        return oidcClientUrl;
+    }
+
+    @ConfigName(CausewayConfig.OIDC_CLIENT_URL)
+    public void setOidcClientUrl(String clientUrl) {
+        this.oidcClientUrl = clientUrl;
+    }
+
+    public String getOidcClientRealm() {
+        return oidcClientRealm;
+    }
+
+    @ConfigName(CausewayConfig.OIDC_CLIENT_REALM)
+    public void setOidcClientRealm(String clientRealm) {
+        this.oidcClientRealm = clientRealm;
+    }
+
+    public String getOidcClientClientId() {
+        return oidcClientClientId;
+    }
+
+    @ConfigName(CausewayConfig.OIDC_CLIENT_CLIENT_ID)
+    public void setOidcClientClientId(String clientId) {
+        this.oidcClientClientId = clientId;
+    }
+
+    public String getOidcClientSecretFile() {
+        return oidcClientSecretFile;
+    }
+
+    @ConfigName(CausewayConfig.OIDC_CLIENT_SECRET_FILE)
+    public void setOidcClientSecretFile(String secretFile) {
+        this.oidcClientSecretFile = secretFile;
+    }
+
+    public String getOidcClientSecret() throws IOException {
+        if (cachedSecretFileContent == null) {
+            List<String> lines = Files.readAllLines(Paths.get(oidcClientSecretFile));
+            cachedSecretFileContent = String.join("\n", lines).trim();
+        }
+
+        return cachedSecretFileContent;
     }
 
     public List<String> getValidationErrors() {
