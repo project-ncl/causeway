@@ -275,7 +275,8 @@
       <dependency>
         <groupId>org.keycloak</groupId>
         <artifactId>keycloak-authz-client</artifactId>
-        <version>19.0.1</version>
+        <version>18.0.1</version>
+        <scope>provided</scope>
       </dependency>
 
       <!-- Test dependencies -->
