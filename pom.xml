@@ -279,7 +279,7 @@
       </dependency>
       <dependency>
           <groupId>org.apache.httpcomponents</groupId>
-          <version>4.5.13.redhat-00001</version>
+          <version>4.5.14.redhat-00002</version>
           <artifactId>httpclient</artifactId>
           <scope>provided</scope>
       </dependency>
