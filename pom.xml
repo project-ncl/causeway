@@ -27,7 +27,7 @@
 
   <groupId>org.jboss.pnc.causeway</groupId>
   <artifactId>causeway</artifactId>
-  <version>2.5.3-SNAPSHOT</version>
+  <version>2.6.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Causeway PNCL-to-Koji Bridge</name>
