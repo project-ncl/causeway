@@ -18,15 +18,12 @@ import org.jboss.pnc.api.causeway.dto.push.Build;
 import org.jboss.pnc.api.causeway.dto.push.BuiltArtifact;
 import org.jboss.pnc.api.causeway.dto.push.Logfile;
 import org.jboss.pnc.api.causeway.dto.untag.TaggedBuild;
-import org.jboss.pnc.api.constants.HttpHeaders;
 import org.jboss.pnc.api.constants.MDCHeaderKeys;
 import org.jboss.pnc.api.constants.MDCKeys;
 import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.CausewayFailure;
 import org.jboss.pnc.causeway.ErrorMessages;
-import org.jboss.pnc.causeway.authentication.KeycloakClient;
-import org.jboss.pnc.causeway.authentication.KeycloakClientException;
 import org.jboss.pnc.causeway.brewclient.BrewClient;
 import org.jboss.pnc.causeway.brewclient.BuildTranslator;
 import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
@@ -102,9 +99,6 @@ public class ImportControllerImpl implements ImportController {
 
     @Inject
     private MetricsConfiguration metricsConfiguration;
-
-    @Inject
-    private KeycloakClient keycloakClient;
 
     @Inject
     public ImportControllerImpl() {
@@ -346,12 +340,6 @@ public class ImportControllerImpl implements ImportController {
         ResteasyWebTarget target = restClient.target(callback.getUri());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
         callback.getHeaders().forEach(h -> request.header(h.getName(), h.getValue()));
-
-        try {
-            request.header(HttpHeaders.AUTHORIZATION_STRING, "Bearer " + keycloakClient.getAccessToken());
-        } catch (KeycloakClientException e) {
-            log.error("Couldn't obtain the access token from the OIDC server", e);
-        }
 
         // Add OTEL headers from MDC context
         addOtelMDCHeaders(request);
