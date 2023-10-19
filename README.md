@@ -24,13 +24,3 @@ PNC tracks metrics of JVM and its internals via Dropwizard Metrics. The metrics 
 If the `metrics_graphite_interval` variable (interval specified in seconds) is not specified, we'll use the default value of 60 seconds to report data to Graphite.
 
 The graphite reporter is configured to report rates per second and durations in terms of milliseconds.
-
-## OIDC Client Support
-We need to setup an OIDC Client to send back callback information. This is done by defining in the main.conf the following values:
-
-- `oidc-client.url`: Base URL of the Keycloak server
-- `oidc-client.realm`: Realm used with Keycloak
-- `oidc-client.client-id`: the client id name
-- `oidc-client.secret-file`: the location of the file that contains the secret
-
-Only client credentials flow is supported for now.

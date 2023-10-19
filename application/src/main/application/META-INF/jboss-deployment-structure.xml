@@ -26,9 +26,6 @@
         <dependencies>
             <module name="deployment.causeway.ear.causeway-rest.jar"/>
             <module name="deployment.causeway.ear.pncmetrics.jar"/>
-            <module name="org.keycloak.keycloak-common" export="true"/>
-            <module name="org.keycloak.keycloak-core" export="true"/>
-            <module name="org.keycloak.keycloak-authz-client" export="true"/>
         </dependencies>
     </sub-deployment>
     <sub-deployment name="pncmetrics.jar">

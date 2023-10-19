@@ -272,19 +272,6 @@
         <version>${version.com.redhat.resilience.otel}</version>
       </dependency>
 
-      <dependency>
-        <groupId>org.keycloak</groupId>
-        <artifactId>keycloak-authz-client</artifactId>
-        <version>19.0.1</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-          <groupId>org.apache.httpcomponents</groupId>
-          <version>4.5.13.redhat-00001</version>
-          <artifactId>httpclient</artifactId>
-          <scope>provided</scope>
-      </dependency>
-
       <!-- Test dependencies -->
       <dependency>
         <groupId>org.mockito</groupId>
