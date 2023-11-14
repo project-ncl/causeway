@@ -35,6 +35,14 @@ public class BrewPushMilestone {
     @JsonUnwrapped
     @NonNull
     private MilestoneReleaseRest content;
-    @NonNull
+
+    /**
+     * Prefer using positiveCallback or negativeCallback if specified when sending back the results. Otherwise use the
+     * callback request.
+     */
     private Request callback;
+
+    private Request positiveCallback;
+
+    private Request negativeCallback;
 }

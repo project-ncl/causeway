@@ -123,7 +123,13 @@ public class PncImportControllerImpl implements PncImportController {
 
     @Override
     @Asynchronous
-    public void importMilestone(int milestoneId, Request callback, String callbackId, String username) {
+    public void importMilestone(
+            int milestoneId,
+            Request positiveCallback,
+            Request negativeCallback,
+            Request callback,
+            String callbackId,
+            String username) {
         log.info("Importing PNC milestone {}.", milestoneId);
 
         // Create a parent child span with values from MDC
@@ -149,6 +155,9 @@ public class PncImportControllerImpl implements PncImportController {
 
         Meter errors = registry.meter(METRICS_BASE + METRICS_ERRORS);
 
+        Request successCallback = positiveCallback != null ? positiveCallback : callback;
+        Request failedCallback = negativeCallback != null ? negativeCallback : callback;
+
         // put the span into the current Context
         try (Scope scope = span.makeCurrent()) {
             MilestoneReleaseResultRest result = new MilestoneReleaseResultRest();
@@ -159,27 +168,27 @@ public class PncImportControllerImpl implements PncImportController {
 
                 if (results.stream().anyMatch(r -> r.getStatus() == BuildImportStatus.ERROR)) {
                     result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
-                    bpmClient.failure(callback, callbackId, result);
+                    bpmClient.failure(failedCallback, callbackId, result);
                     errors.mark();
                 } else if (results.stream().anyMatch(r -> r.getStatus() == BuildImportStatus.FAILED)) {
                     result.setReleaseStatus(ReleaseStatus.IMPORT_ERROR);
-                    bpmClient.failure(callback, callbackId, result);
+                    bpmClient.failure(failedCallback, callbackId, result);
                     errors.mark();
                 } else {
                     result.setReleaseStatus(ReleaseStatus.SUCCESS);
-                    bpmClient.success(callback, callbackId, result);
+                    bpmClient.success(successCallback, callbackId, result);
                 }
             } catch (CausewayFailure ex) {
                 log.warn(ErrorMessages.failedToImportMilestone(milestoneId, ex), ex);
                 result.setErrorMessage(ex.getMessage());
                 result.setReleaseStatus(ReleaseStatus.FAILURE);
-                bpmClient.failure(callback, callbackId, result);
+                bpmClient.failure(failedCallback, callbackId, result);
                 errors.mark();
             } catch (CausewayException | RuntimeException ex) {
                 log.error(ErrorMessages.errorImportingMilestone(milestoneId, ex), ex);
                 result.setErrorMessage(ex.getMessage());
                 result.setReleaseStatus(ReleaseStatus.SET_UP_ERROR);
-                bpmClient.error(callback, callbackId, result);
+                bpmClient.error(failedCallback, callbackId, result);
                 errors.mark();
             }
 
