@@ -15,8 +15,11 @@
  */
 package org.jboss.pnc.causeway.bpmclient;
 
+import org.jboss.pnc.api.constants.HttpHeaders;
 import org.jboss.pnc.api.constants.MDCHeaderKeys;
 import org.jboss.pnc.api.dto.Request;
+import org.jboss.pnc.causeway.authentication.KeycloakClient;
+import org.jboss.pnc.causeway.authentication.KeycloakClientException;
 import org.jboss.pnc.causeway.rest.BrewPushMilestoneResult;
 import org.jboss.pnc.causeway.rest.Callback;
 import org.jboss.pnc.causeway.rest.pnc.MilestoneReleaseResultRest;
@@ -29,6 +32,7 @@ import org.slf4j.MDC;
 import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
@@ -46,6 +50,9 @@ import lombok.extern.slf4j.Slf4j;
 public class BPMClientImpl implements BPMClient {
     private final ResteasyClient client;
 
+    @Inject
+    private KeycloakClient keycloakClient;
+
     public BPMClientImpl() {
         client = new ResteasyClientBuilder().connectionPoolSize(4).build();
     }
@@ -56,6 +63,12 @@ public class BPMClientImpl implements BPMClient {
         ResteasyWebTarget target = client.target(callback.getUri());
         Invocation.Builder requestBuilder = target.request(MediaType.APPLICATION_JSON);
         callback.getHeaders().forEach(h -> requestBuilder.header(h.getName(), h.getValue()));
+
+        try {
+            requestBuilder.header(HttpHeaders.AUTHORIZATION_STRING, "Bearer " + keycloakClient.getAccessToken());
+        } catch (KeycloakClientException e) {
+            log.error("Couldn't obtain the access token from the OIDC server", e);
+        }
 
         // Add OTEL headers from MDC context
         addOtelMDCHeaders(requestBuilder);
