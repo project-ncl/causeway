@@ -45,12 +45,12 @@
             <http-method>POST</http-method>
         </web-resource-collection>
         <auth-constraint>
-            <role-name>pnc-users-causeway-admin</role-name>
+            <role-name>pnc-app-causeway-user</role-name>
         </auth-constraint>
     </security-constraint>
 
     <security-role>
-        <role-name>pnc-users-causeway-admin</role-name>
+        <role-name>pnc-app-causeway-user</role-name>
     </security-role>
     <!-- SECURITY -->
 
