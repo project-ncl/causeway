@@ -48,5 +48,6 @@ public class ReportsRestActivator extends Application {
         resources.add(ImportEndpoint.class);
         resources.add(UntagEndpoint.class);
         resources.add(MDCLoggingFilter.class);
+        resources.add(JacksonProvider.class);
     }
 }
