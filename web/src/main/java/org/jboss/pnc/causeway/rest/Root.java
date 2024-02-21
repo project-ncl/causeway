@@ -15,10 +15,14 @@
  */
 package org.jboss.pnc.causeway.rest;
 
+import org.jboss.pnc.api.dto.ComponentVersion;
+import org.jboss.pnc.causeway.config.constants.BuildInformationConstants;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.time.ZonedDateTime;
 
 /**
  *
@@ -32,6 +36,17 @@ public class Root {
     @Produces(MediaType.TEXT_HTML)
     public String getDescription() {
         return "<h1>Causeway REST API</h1>" + "\n";
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public ComponentVersion getVersion() {
+        return ComponentVersion.builder()
+                .name("Causeway")
+                .version(BuildInformationConstants.VERSION)
+                .commit(BuildInformationConstants.COMMIT_HASH)
+                .builtOn(ZonedDateTime.parse(BuildInformationConstants.BUILD_TIME))
+                .build();
     }
 
 }
