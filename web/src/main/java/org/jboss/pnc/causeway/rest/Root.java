@@ -39,6 +39,7 @@ public class Root {
     }
 
     @GET
+    @Path("/version")
     @Produces(MediaType.APPLICATION_JSON)
     public ComponentVersion getVersion() {
         return ComponentVersion.builder()
