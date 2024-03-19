@@ -98,6 +98,10 @@ public class PncImportControllerTest {
             .asList(new Request.Header("header1", "value1"), new Request.Header("header2", "value2"));
     private static final Request.Method CALLBACK_METHOD = Request.Method.PUT;
     private static final Request CALLBACK_TARGET = new Request(CALLBACK_METHOD, CALLBACK_URL, CALLBACK_HEADERS);
+    private static final Request FAKE_CALLBACK_TARGET = new Request(
+            CALLBACK_METHOD,
+            URI.create("http://haha.com"),
+            CALLBACK_HEADERS);
 
     private static final BrewNVR NVR = new BrewNVR(BREW_BUILD_NAME, BREW_BUILD_VERSION, "1");
 
@@ -221,7 +225,9 @@ public class PncImportControllerTest {
         doReturn(new BrewBuild(11, NVR)).when(brewClient).findBrewBuildOfNVR(eq(NVR));
 
         // Run import
-        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
+        // also check if positiveCallback object is used instead of the callback object
+        importController
+                .importMilestone(milestoneId, CALLBACK_TARGET, null, FAKE_CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
         verifySuccess();
@@ -248,7 +254,8 @@ public class PncImportControllerTest {
                 .importBuild(eq(NVR), eq(buildId), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
 
         // Run import
-        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
+        // also check if callback object is used when positiveCallback is null and result is success
+        importController.importMilestone(milestoneId, null, null, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
         verifySuccess();
@@ -267,7 +274,8 @@ public class PncImportControllerTest {
         doThrow(new RuntimeException(exceptionMessage)).when(pncClient).findBuildsOfProductMilestone(eq(milestoneId));
 
         // Run import
-        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
+        importController
+                .importMilestone(milestoneId, null, CALLBACK_TARGET, FAKE_CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
         MilestoneReleaseResultRest result = verifyError(true);
@@ -290,7 +298,8 @@ public class PncImportControllerTest {
         doReturn(buildRecords).when(pncClient).findBuildsOfProductMilestone(eq(milestoneId));
 
         // Run import
-        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
+        importController
+                .importMilestone(milestoneId, null, CALLBACK_TARGET, FAKE_CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
         verifyFailure();
@@ -311,7 +320,8 @@ public class PncImportControllerTest {
         doThrow(new CausewayException(exceptionMessage)).when(brewClient).findBrewBuildOfNVR(eq(NVR));
 
         // Run import
-        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
+        importController
+                .importMilestone(milestoneId, null, CALLBACK_TARGET, FAKE_CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
         MilestoneReleaseResultRest result = verifyError(false);
@@ -348,7 +358,8 @@ public class PncImportControllerTest {
                 .importBuild(eq(NVR), eq(buildId), same(KOJI_IMPORT), same(IMPORT_FILE_GENERATOR));
 
         // Run import
-        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
+        importController
+                .importMilestone(milestoneId, null, CALLBACK_TARGET, FAKE_CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
         MilestoneReleaseResultRest result = verifyCallback(ReleaseStatus.IMPORT_ERROR, true);
@@ -370,7 +381,8 @@ public class PncImportControllerTest {
         doReturn(false).when(brewClient).tagsExists(TAG_PREFIX);
 
         // Run import
-        importController.importMilestone(milestoneId, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
+        // Also test if when positive and negative callback are not set, the regular callback object is used
+        importController.importMilestone(milestoneId, null, null, CALLBACK_TARGET, CALLBACK_ID, USERNAME);
 
         // Verify
         MilestoneReleaseResultRest result = verifyFailure();
