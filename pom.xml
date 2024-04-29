@@ -229,7 +229,7 @@
       <dependency>
           <groupId>org.apache.commons</groupId>
           <artifactId>commons-compress</artifactId>
-          <version>1.21</version>
+          <version>1.26.1.redhat-00001</version>
       </dependency>
       <dependency>
         <groupId>com.redhat.red.build</groupId>
