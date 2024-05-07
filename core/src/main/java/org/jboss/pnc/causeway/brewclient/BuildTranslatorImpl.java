@@ -55,6 +55,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -430,7 +431,9 @@ public class BuildTranslatorImpl implements BuildTranslator {
                         .findAny();
                 if (!any.isPresent()) {
                     URL sourcesUrl = new URL(build.getSourcesURL());
-                    try (InputStream input = sourcesUrl.openStream()) {
+                    HttpURLConnection urlConnection = (HttpURLConnection) sourcesUrl.openConnection();
+                    urlConnection.setRequestProperty("Accept", "*/*");
+                    try (InputStream input = urlConnection.getInputStream()) {
                         return renamer.repackMaven(input, mavenBuild.getGroupId(), mavenBuild.getArtifactId(), version);
                     }
                 }
@@ -446,7 +449,9 @@ public class BuildTranslatorImpl implements BuildTranslator {
                         .findAny();
                 if (!any.isPresent()) {
                     URL sourcesUrl = new URL(build.getSourcesURL());
-                    try (InputStream input = sourcesUrl.openStream()) {
+                    HttpURLConnection urlConnection = (HttpURLConnection) sourcesUrl.openConnection();
+                    urlConnection.setRequestProperty("Accept", "*/*");
+                    try (InputStream input = urlConnection.getInputStream()) {
                         return renamer.repackNPM(input, npmBuild.getName(), version);
                     }
                 }
