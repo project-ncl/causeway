@@ -39,10 +39,18 @@ public class PncImportResourceEndpoint implements PncImportResource {
     @WithSpan
     public BrewPushMilestoneResponse importProductMilestone(
             @SpanAttribute(value = "request") BrewPushMilestone request) {
+
+        if ((request.getPositiveCallback() == null || request.getNegativeCallback() == null)
+                && request.getCallback() == null) {
+            throw new IllegalStateException("Callbacks not specified properly");
+        }
+
         String id = UUID.randomUUID().toString();
 
         pncController.importMilestone(
                 request.getContent().getMilestoneId(),
+                request.getPositiveCallback(),
+                request.getNegativeCallback(),
                 request.getCallback(),
                 id,
                 userSerivce.getUsername());

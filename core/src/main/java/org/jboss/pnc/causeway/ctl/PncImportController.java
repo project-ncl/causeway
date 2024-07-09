@@ -24,5 +24,11 @@ import org.jboss.pnc.api.dto.Request;
 @Deprecated
 public interface PncImportController {
 
-    public void importMilestone(int milestoneId, Request callback, String callbackId, String username);
+    public void importMilestone(
+            int milestoneId,
+            Request positiveCallback,
+            Request negativeCallback,
+            Request callback,
+            String callbackId,
+            String username);
 }
