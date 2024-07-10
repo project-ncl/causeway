@@ -266,6 +266,10 @@
             <artifactId>bcprov-jdk18on</artifactId>
           </exclusion>
           <exclusion>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcutil-jdk18on</artifactId>
+          </exclusion>
+          <exclusion>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>*</artifactId>
           </exclusion>
@@ -280,6 +284,11 @@
       <dependency>
         <groupId>org.bouncycastle</groupId>
         <artifactId>bcpkix-jdk18on</artifactId>
+        <version>${version.org.bouncycastle}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcutil-jdk18on</artifactId>
         <version>${version.org.bouncycastle}</version>
       </dependency>
       <!--dependency>
