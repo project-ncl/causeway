@@ -18,17 +18,19 @@ package org.jboss.pnc.causeway.brewclient;
 import com.redhat.red.build.koji.model.ImportFile;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Supplier;
 
 import lombok.Getter;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.jboss.pnc.causeway.source.RenamedSources;
 
 import lombok.Data;
@@ -40,25 +42,31 @@ import lombok.Data;
 public class SpecialImportFileGenerator extends ImportFileGenerator {
     @Getter
     private final Set<Log> logs = new HashSet<>();
-    private HttpClient client;
 
     public SpecialImportFileGenerator(RenamedSources sources) {
         super(sources);
-        client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
     }
 
     /**
      * Add log url to the generator.
-     * 
+     *
      * @param url Url of the log.
      * @param filePath Deploy path for the log.
      */
     public void addLog(String url, String filePath) throws IOException, InterruptedException {
-        URI artifactUrl = URI.create(url);
-        HttpRequest request = HttpRequest.newBuilder(artifactUrl).build();
-        byte[] log = client.send(request, HttpResponse.BodyHandlers.ofByteArray()).body();
+        logs.add(new Log(filePath, doGetRequest(url)));
+    }
 
-        logs.add(new Log(filePath, log));
+    private byte[] doGetRequest(String url) throws IOException {
+        // Apache http client should automatically redirect for GETs and also automatically retry (4 times)
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+            HttpGet get = new HttpGet(url);
+            CloseableHttpResponse response = httpClient.execute(get);
+            HttpEntity entity = response.getEntity();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            entity.writeTo(baos);
+            return baos.toByteArray();
+        }
     }
 
     @Override
