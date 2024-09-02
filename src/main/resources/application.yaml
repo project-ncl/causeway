@@ -1,0 +1,41 @@
+#
+# Copyright 2024 Red Hat, Inc.
+# SPDX-License-Identifier: Apache-2.0
+#
+
+causeway:
+  koji:
+
+  pnc:
+    builds-url: ${causeway.pnc.url}/../pnc-web/builds/
+    system-version: 3
+
+"%dev":
+  quarkus:
+    log:
+      category:
+        "org.jboss.pnc":
+          level: DEBUG
+        "org.commonjava.util.jhttpc.INTERNAL.conn":
+          level: WARN
+  causeway:
+    koji:
+      url: "http://localhost:${quarkus.wiremock.devservices.port}/kojihub"
+      web-url: "http://localhost:${quarkus.wiremock.devservices.port}/koji/buildinfo?buildID="
+      client-key-certificate-file: src/test/resources/cert/snakeoil.pem
+      client-certificate-password: password
+#      server-certificate-file: src/test/resources/cert/snakeoil.pem
+    pnc:
+      url: "http://localhost:${quarkus.wiremock.devservices.port}/pnc-rest/rest"
+
+
+"%test":
+  causeway:
+    koji:
+      url: "http://localhost:${quarkus.wiremock.devservices.port}/kojihub"
+      web-url: "http://localhost:${quarkus.wiremock.devservices.port}/koji/buildinfo?buildID="
+      client-key-certificate-file: src/test/resources/cert/snakeoil.pem
+      client-certificate-password: password
+    #      server-certificate-file: src/test/resources/cert/snakeoil.pem
+    pnc:
+      url: "http://localhost:${quarkus.wiremock.devservices.port}/pnc-rest/rest"
