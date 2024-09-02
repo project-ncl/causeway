@@ -1,0 +1,51 @@
+#
+# Copyright 2024 Red Hat, Inc.
+# SPDX-License-Identifier: Apache-2.0
+#
+
+causeway:
+  koji:
+
+  pnc:
+    builds-url: ${causeway.pnc.url}/../pnc-web/builds/
+    system-version: 3
+
+  http-client-config:
+    connect-timeout: 2000
+    request-timeout: 5000
+    force-http11: false
+    retry-config:
+      backoff-initial-delay: 1
+      backoff-max-delay: 60
+      max-retries: -1
+      max-duration: 600
+
+"%dev":
+  quarkus:
+    log:
+      category:
+        "org.jboss.pnc":
+          level: DEBUG
+        "org.commonjava.util.jhttpc.INTERNAL.conn":
+          level: WARN
+  causeway:
+    koji:
+      url: "http://localhost:${quarkus.wiremock.devservices.port}/kojihub"
+      web-url: "http://localhost:${quarkus.wiremock.devservices.port}/koji/buildinfo?buildID="
+      client-key-certificate-file: src/test/resources/cert/snakeoil.pem
+      client-certificate-password: password
+#      server-certificate-file: src/test/resources/cert/snakeoil.pem
+    pnc:
+      url: "http://localhost:${quarkus.wiremock.devservices.port}/pnc-rest/rest"
+
+
+"%test":
+  causeway:
+    koji:
+      url: "http://localhost:${quarkus.wiremock.devservices.port}/kojihub"
+      web-url: "http://localhost:${quarkus.wiremock.devservices.port}/koji/buildinfo?buildID="
+      client-key-certificate-file: src/test/resources/cert/snakeoil.pem
+      client-certificate-password: password
+    #      server-certificate-file: src/test/resources/cert/snakeoil.pem
+    pnc:
+      url: "http://localhost:${quarkus.wiremock.devservices.port}/pnc-rest/rest"
