@@ -43,11 +43,14 @@ public class ImportEndpoint implements Import {
     @Override
     @WithSpan
     public Response importBuild(@SpanAttribute(value = "request") BuildImportRequest request) {
-        controller.importBuild(
-                request.getBuild(),
-                request.getCallback(),
-                userSerivce.getUsername(),
-                request.isReimport());
+        // Use the DTO userInitiator as the user who started the push. If this is absent, use the SSO user who did the
+        // REST request instead. They are different since the SSO user is typically just the PNC-Orch service account
+        String user = request.getUserInitiator();
+        if (user == null) {
+            user = userSerivce.getUsername();
+        }
+
+        controller.importBuild(request.getBuild(), request.getCallback(), user, request.isReimport());
         return Response.accepted().build();
     }
 

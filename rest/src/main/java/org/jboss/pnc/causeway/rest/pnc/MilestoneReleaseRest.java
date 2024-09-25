@@ -30,9 +30,13 @@ import lombok.Data;
 public class MilestoneReleaseRest {
 
     private final int milestoneId;
+    private String userInitiator;
 
     @JsonCreator
-    public MilestoneReleaseRest(@JsonProperty("milestoneId") int milestoneId) {
+    public MilestoneReleaseRest(
+            @JsonProperty("milestoneId") int milestoneId,
+            @JsonProperty("userInitiator") String userInitiator) {
         this.milestoneId = milestoneId;
+        this.userInitiator = userInitiator;
     }
 }
