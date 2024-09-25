@@ -41,11 +41,14 @@ public class PncImportResourceEndpoint implements PncImportResource {
             @SpanAttribute(value = "request") BrewPushMilestone request) {
         String id = UUID.randomUUID().toString();
 
-        pncController.importMilestone(
-                request.getContent().getMilestoneId(),
-                request.getCallback(),
-                id,
-                userSerivce.getUsername());
+        // Use the DTO userInitiator as the user who started the push. If this is absent, use the SSO user who did the
+        // REST request instead. They are different since the SSO user is typically just the PNC-Orch service account
+        String user = request.getContent().getUserInitiator();
+        if (user == null) {
+            user = userSerivce.getUsername();
+        }
+
+        pncController.importMilestone(request.getContent().getMilestoneId(), request.getCallback(), id, user);
 
         return new BrewPushMilestoneResponse(new Callback(id));
     }
