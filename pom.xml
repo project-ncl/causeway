@@ -58,7 +58,7 @@
     <kojijiVersion>2.20</kojijiVersion>
     <pncmetrics.version>1.1.12</pncmetrics.version>
     <semverVersion>0.10.2</semverVersion>
-    <atlasVersion>1.1.4</atlasVersion>
+    <atlasVersion>1.1.5</atlasVersion>
     <pncVersion>2.7.6</pncVersion>
     <pncApiVersion>3.0.5-SNAPSHOT</pncApiVersion>
     <!-- OTEL Dependencies for Instrumentation -->
