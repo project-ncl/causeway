@@ -15,6 +15,7 @@
  */
 package org.jboss.pnc.causeway.rest;
 
+import lombok.extern.slf4j.Slf4j;
 import org.jboss.pnc.api.causeway.dto.push.BuildImportRequest;
 import org.jboss.pnc.causeway.ctl.ImportController;
 import org.jboss.pnc.causeway.rest.spi.Import;
@@ -27,6 +28,7 @@ import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 
 @RequestScoped
+@Slf4j
 public class ImportEndpoint implements Import {
 
     @Inject
@@ -47,6 +49,7 @@ public class ImportEndpoint implements Import {
         // REST request instead. They are different since the SSO user is typically just the PNC-Orch service account
         String user = request.getUserInitiator();
         if (user == null) {
+            log.info("Couldn't get the import user from the request. Using the fallback one");
             user = userSerivce.getUsername();
         }
 
