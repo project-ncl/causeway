@@ -24,5 +24,22 @@ import org.jboss.pnc.api.dto.Request;
 @Deprecated
 public interface PncImportController {
 
-    public void importMilestone(int milestoneId, Request callback, String callbackId, String username);
+    /**
+     * Accept positiveCallback and negativeCallback (Rex style). Also support the existing 'callback' field if
+     * positiveCallback and negativeCallback are not specified
+     * 
+     * @param milestoneId
+     * @param positiveCallback
+     * @param negativeCallback
+     * @param callback
+     * @param callbackId
+     * @param username
+     */
+    public void importMilestone(
+            int milestoneId,
+            Request positiveCallback,
+            Request negativeCallback,
+            Request callback,
+            String callbackId,
+            String username);
 }

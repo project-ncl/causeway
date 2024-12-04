@@ -39,6 +39,12 @@ public class PncImportResourceEndpoint implements PncImportResource {
     @WithSpan
     public BrewPushMilestoneResponse importProductMilestone(
             @SpanAttribute(value = "request") BrewPushMilestone request) {
+
+        if ((request.getPositiveCallback() == null || request.getNegativeCallback() == null)
+                && request.getCallback() == null) {
+            throw new IllegalStateException("Callbacks not specified properly");
+        }
+
         String id = UUID.randomUUID().toString();
 
         // Use the DTO userInitiator as the user who started the push. If this is absent, use the SSO user who did the
@@ -48,7 +54,13 @@ public class PncImportResourceEndpoint implements PncImportResource {
             user = userSerivce.getUsername();
         }
 
-        pncController.importMilestone(request.getContent().getMilestoneId(), request.getCallback(), id, user);
+        pncController.importMilestone(
+                request.getContent().getMilestoneId(),
+                request.getPositiveCallback(),
+                request.getNegativeCallback(),
+                request.getCallback(),
+                id,
+                user);
 
         return new BrewPushMilestoneResponse(new Callback(id));
     }
