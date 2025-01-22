@@ -4,6 +4,7 @@
  */
 package org.jboss.pnc.causeway;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
@@ -52,6 +53,7 @@ public class CausewayResource implements Causeway {
 
     @Override
     @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed({ "pnc-app-causeway-user" })
     public void importBuild(@Valid BuildPushRequest buildPushRequest) {
         HeartbeatConfig heartbeatConf = buildPushRequest.getHeartbeat();
         if (heartbeatConf != null) {
@@ -106,6 +108,7 @@ public class CausewayResource implements Causeway {
     }
 
     @Override
+    @RolesAllowed({ "pnc-app-causeway-user" })
     public void untagBuild(@Valid UntagRequest request) {
         controller.untagBuild(request.getBuild().getBrewBuildId(), request.getBuild().getTagPrefix());
     }
