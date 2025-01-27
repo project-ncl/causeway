@@ -123,7 +123,7 @@ public class TranslatorTest {
         // Then
 
         Condition<BuildOutput> buildArtifact = new Condition<>(
-                bo -> artifacts.getBuildArtifacts().stream().anyMatch(a -> a.getDeployPath().equals(bo.getFilename())),
+                bo -> artifacts.getBuildArtifacts().stream().anyMatch(a -> a.getDeployPath().equals("/" + bo.getFilename())),
                 "build artifact");
         Condition<BuildOutput> buildLog = new Condition<>(bo -> bo.getOutputType().equals("log"), "log");
         Condition<BuildOutput> mavenArtifact = new Condition<>(
@@ -182,7 +182,7 @@ public class TranslatorTest {
 
         // Then
         Condition<BuildOutput> buildArtifact = new Condition<>(
-                bo -> artifacts.getBuildArtifacts().stream().anyMatch(a -> a.getDeployPath().equals(bo.getFilename())),
+                bo -> artifacts.getBuildArtifacts().stream().anyMatch(a -> a.getDeployPath().equals("/" + bo.getFilename())),
                 "build artifact");
         Condition<BuildOutput> log = new Condition<>(bo -> bo.getOutputType().equals("log"), "log");
         Condition<BuildOutput> npmArtifact = new Condition<>(bo -> bo.getOutputType().equals("npm"), "npm artifact");
