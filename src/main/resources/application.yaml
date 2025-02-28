@@ -3,6 +3,21 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# I believe I need to add this so tha the extension is activated at runtime?
+quarkus:
+  oidc:
+    auth-server-url: https://keycloak-host/auth/realms/myrealm
+    client-id: client
+    credentials:
+      secret: secret
+    tls:
+      verification: none
+  oidc-client:
+    auth-server-url: http://localhost:8180/auth/realms/quarkus/
+    client-id: my-app
+    credentials:
+      secret: secret
+
 causeway:
   koji:
 
