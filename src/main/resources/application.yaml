@@ -54,5 +54,8 @@ causeway:
     #      server-certificate-file: src/test/resources/cert/snakeoil.pem
     pnc:
       url: "http://localhost:${quarkus.wiremock.devservices.port}/pnc-rest/rest"
+  quarkus:
     oidc:
+      enabled: false
+    oidc-client:
       enabled: false
