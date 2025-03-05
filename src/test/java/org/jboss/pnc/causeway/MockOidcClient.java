@@ -35,7 +35,15 @@ public class MockOidcClient implements OidcClient {
     public Uni<Tokens> getTokens(Map<String, String> additionalGrantParameters) {
         Log.warn("I am being injected");
         return Uni.createFrom()
-                .item(new Tokens("accessToken", 1L, Duration.of(5, ChronoUnit.MINUTES), "refreshToken", 1L, null));
+                .item(
+                        new Tokens(
+                                "accessToken",
+                                1L,
+                                Duration.of(5, ChronoUnit.MINUTES),
+                                "refreshToken",
+                                1L,
+                                null,
+                                "client-id"));
     }
 
     @Override
