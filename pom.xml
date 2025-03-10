@@ -134,7 +134,7 @@
       <dependency>
         <groupId>org.keycloak</groupId>
         <artifactId>keycloak-core</artifactId>
-        <version>18.0.9.redhat-00001</version>
+        <version>26.0.10.redhat-00002</version>
         <scope>provided</scope>
       </dependency>
 
