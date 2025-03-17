@@ -59,7 +59,7 @@
     <pncmetrics.version>1.1.12</pncmetrics.version>
     <semverVersion>0.10.2</semverVersion>
     <atlasVersion>1.1.5</atlasVersion>
-    <pncVersion>3.0.4</pncVersion>
+    <pncVersion>3.1.3</pncVersion>
     <pncApiVersion>3.0.5</pncApiVersion>
     <!-- OTEL Dependencies for Instrumentation -->
     <version.io.opentelemetry.instrumentation>1.32.0.redhat-00001</version.io.opentelemetry.instrumentation>
