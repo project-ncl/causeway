@@ -77,6 +77,8 @@ public interface BrewClient {
      */
     void tagBuild(String tag, BrewBuild build) throws CausewayException;
 
+    boolean isBuildDeleted(BrewBuild build) throws CausewayException;
+
     void untagBuild(String tag, BrewNVR nvr) throws CausewayException;
 
 }
