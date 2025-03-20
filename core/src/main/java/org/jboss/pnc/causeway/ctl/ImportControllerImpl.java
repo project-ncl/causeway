@@ -258,7 +258,7 @@ public class ImportControllerImpl implements ImportController {
         } else {
             if (reimport) {
                 int revision = 1;
-                while (brewBuild != null && brewClient.isBuildTagged(tagPrefix, brewBuild)) {
+                while (brewBuild != null && (brewClient.isBuildTagged(tagPrefix, brewBuild) || brewClient.isBuildDeleted(brewBuild))) {
                     nvr = getNVR(build, ++revision);
                     brewBuild = brewClient.findBrewBuildOfNVR(nvr);
                 }

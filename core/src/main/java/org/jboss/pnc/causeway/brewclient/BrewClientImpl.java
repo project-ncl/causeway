@@ -40,6 +40,8 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 
+import static com.redhat.red.build.koji.model.xmlrpc.KojiBuildState.DELETED;
+
 @ApplicationScoped
 @Slf4j
 public class BrewClientImpl implements BrewClient {
@@ -150,6 +152,20 @@ public class BrewClientImpl implements BrewClient {
             log.info("Listing tags of build id {} from user '{}'.", build.getId(), session.getUserInfo().getUserName());
             List<KojiTagInfo> tags = koji.listTags(build.getId(), session);
             return tags.stream().map(KojiTagInfo::getName).anyMatch(n -> tagName.equals(n));
+        } catch (KojiClientException ex) {
+            throw new CausewayException(ErrorMessages.failureWhileGettingTagInformation(ex), ex);
+        } finally {
+            logout(session);
+        }
+    }
+
+    @Override
+    public boolean isBuildDeleted(BrewBuild build) throws CausewayException {
+        KojiSessionInfo session = login();
+        try {
+            log.info("Checking state of build id {} from user '{}'.", build.getId(), session.getUserInfo().getUserName());
+            KojiBuildInfo buildInfo = koji.getBuildInfo(build.getId(), session);
+            return buildInfo.getBuildState() == DELETED;
         } catch (KojiClientException ex) {
             throw new CausewayException(ErrorMessages.failureWhileGettingTagInformation(ex), ex);
         } finally {
