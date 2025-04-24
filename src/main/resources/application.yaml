@@ -17,6 +17,90 @@ quarkus:
     client-id: my-app
     credentials:
       secret: secret
+  fault-tolerance:
+    "org.jboss.pnc.causeway.brewclient.BrewClientImpl/findBrewBuildOfNVR":
+      retry:
+        max-retries: ${fault-tolerance.max-retry}
+        delay: ${fault-tolerance.delay}
+        abort-on: "org.jboss.pnc.causeway.CausewayFailure"
+      exponential-backoff:
+        factor: ${fault-tolerance.factor}
+    "org.jboss.pnc.causeway.brewclient.BrewClientImpl/findBrewBuild":
+      retry:
+        max-retries: ${fault-tolerance.max-retry}
+        delay: ${fault-tolerance.delay}
+        abort-on: "org.jboss.pnc.causeway.CausewayFailure"
+      exponential-backoff:
+        factor: ${fault-tolerance.factor}
+    "org.jboss.pnc.causeway.brewclient.BrewClientImpl/tagBuild":
+      retry:
+        max-retries: ${fault-tolerance.max-retry}
+        delay: ${fault-tolerance.delay}
+        abort-on: "org.jboss.pnc.causeway.CausewayFailure"
+      exponential-backoff:
+        factor: ${fault-tolerance.factor}
+    "org.jboss.pnc.causeway.brewclient.BrewClientImpl/isBuildTagged":
+      retry:
+        max-retries: ${fault-tolerance.max-retry}
+        delay: ${fault-tolerance.delay}
+      exponential-backoff:
+        factor: ${fault-tolerance.factor}
+    "org.jboss.pnc.causeway.brewclient.BrewClientImpl/untagBuild":
+      retry:
+        max-retries: ${fault-tolerance.max-retry}
+        delay: ${fault-tolerance.delay}
+        abort-on: "org.jboss.pnc.causeway.CausewayFailure"
+      exponential-backoff:
+        factor: ${fault-tolerance.factor}
+    "org.jboss.pnc.causeway.brewclient.BrewClientImpl/importBuild":
+      retry:
+        max-retries: ${fault-tolerance.max-retry}
+        delay: ${fault-tolerance.delay}
+        abort-on: "org.jboss.pnc.causeway.CausewayFailure"
+      exponential-backoff:
+        factor: ${fault-tolerance.factor}
+    "org.jboss.pnc.causeway.brewclient.BrewClientImpl/tagsExists":
+      retry:
+        max-retries: ${fault-tolerance.max-retry}
+        delay: ${fault-tolerance.delay}
+      exponential-backoff:
+        factor: ${fault-tolerance.factor}
+    "org.jboss.pnc.causeway.pncclient.PncClientImpl/findBuild":
+      retry:
+        max-retries: ${fault-tolerance.max-retry}
+        delay: ${fault-tolerance.delay}
+      exponential-backoff:
+        factor: ${fault-tolerance.factor}
+    "org.jboss.pnc.causeway.pncclient.PncClientImpl/getBuildLog":
+      retry:
+        max-retries: ${fault-tolerance.max-retry}
+        delay: ${fault-tolerance.delay}
+      exponential-backoff:
+        factor: ${fault-tolerance.factor}
+    "org.jboss.pnc.causeway.pncclient.PncClientImpl/getAlignLog":
+      retry:
+        max-retries: ${fault-tolerance.max-retry}
+        delay: ${fault-tolerance.delay}
+      exponential-backoff:
+        factor: ${fault-tolerance.factor}
+    "org.jboss.pnc.causeway.pncclient.PncClientImpl/getSources":
+      retry:
+        max-retries: ${fault-tolerance.max-retry}
+        delay: ${fault-tolerance.delay}
+      exponential-backoff:
+        factor: ${fault-tolerance.factor}
+    "org.jboss.pnc.causeway.pncclient.PncClientImpl/findBuildArtifacts":
+      retry:
+        max-retries: ${fault-tolerance.max-retry}
+        delay: ${fault-tolerance.delay}
+      exponential-backoff:
+        factor: ${fault-tolerance.factor}
+
+
+fault-tolerance:
+  max-retry: 4
+  delay: 1000
+  factor: 4
 
 causeway:
   koji:

@@ -4,17 +4,18 @@
  */
 package org.jboss.pnc.causeway.pncclient;
 
+import io.smallrye.faulttolerance.api.ExponentialBackoff;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.faulttolerance.Retry;
 import org.jboss.pnc.causeway.CausewayConfig;
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.ErrorMessages;
 import org.jboss.pnc.causeway.impl.BurnAfterReadingFile;
 import org.jboss.pnc.client.BuildClient;
 import org.jboss.pnc.client.Configuration;
-import org.jboss.pnc.client.RemoteCollection;
 import org.jboss.pnc.client.RemoteResourceException;
 import org.jboss.pnc.dto.Artifact;
 import org.jboss.pnc.dto.Build;
@@ -24,9 +25,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Scanner;
 
 /**
  * Created by jdcasey on 2/9/16.
@@ -52,6 +51,8 @@ public class PncClientImpl implements PncClient {
         this.buildClient = new BuildClient(clientConfig);
     }
 
+    @Retry
+    @ExponentialBackoff
     @Override
     public Build findBuild(String buildId) throws CausewayException {
         try {
@@ -66,6 +67,8 @@ public class PncClientImpl implements PncClient {
         }
     }
 
+    @Retry
+    @ExponentialBackoff
     @Override
     public BurnAfterReadingFile getBuildLog(String buildId) throws CausewayException {
         Optional<InputStream> buildLog;
@@ -82,6 +85,8 @@ public class PncClientImpl implements PncClient {
         }
     }
 
+    @Retry
+    @ExponentialBackoff
     @Override
     public BurnAfterReadingFile getAlignLog(String buildId) throws CausewayException {
         Optional<InputStream> buildLog;
@@ -98,6 +103,8 @@ public class PncClientImpl implements PncClient {
         }
     }
 
+    @Retry
+    @ExponentialBackoff
     @Override
     public InputStream getSources(String id) throws CausewayException {
         try {
@@ -121,6 +128,8 @@ public class PncClientImpl implements PncClient {
         }
     }
 
+    @Retry
+    @ExponentialBackoff
     @Override
     public BuildArtifacts findBuildArtifacts(String buildId) throws CausewayException {
         try {
