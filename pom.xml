@@ -54,6 +54,8 @@
         <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.2.5</surefire-plugin.version>
+        <version.javadoc.plugin>3.11.2</version.javadoc.plugin>
+        <version.source.plugin>3.3.1</version.source.plugin>
         <atlas.version>1.1.0</atlas.version>
         <bouncycastle.version>1.69</bouncycastle.version>
         <tagSuffix />
