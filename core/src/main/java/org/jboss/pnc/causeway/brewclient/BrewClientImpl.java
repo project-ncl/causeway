@@ -163,7 +163,10 @@ public class BrewClientImpl implements BrewClient {
     public boolean isBuildDeleted(BrewBuild build) throws CausewayException {
         KojiSessionInfo session = login();
         try {
-            log.info("Checking state of build id {} from user '{}'.", build.getId(), session.getUserInfo().getUserName());
+            log.info(
+                    "Checking state of build id {} from user '{}'.",
+                    build.getId(),
+                    session.getUserInfo().getUserName());
             KojiBuildInfo buildInfo = koji.getBuildInfo(build.getId(), session);
             return buildInfo.getBuildState() == DELETED;
         } catch (KojiClientException ex) {

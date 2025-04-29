@@ -39,7 +39,7 @@ public class ReportsRestActivator extends Application {
 
     /**
      * Add all JAX-RS classes here to get activated!
-     * 
+     *
      * @param resources
      */
     public void addProjectResources(Set<Class<?>> resources) {
