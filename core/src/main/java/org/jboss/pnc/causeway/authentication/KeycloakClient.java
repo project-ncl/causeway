@@ -36,7 +36,7 @@ public class KeycloakClient {
 
     /**
      * Get a fresh access token from the OIDC server
-     * 
+     *
      * @return access token
      * @throws KeycloakClientException if there is an issue with the configuration
      */
