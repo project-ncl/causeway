@@ -5,6 +5,19 @@
 
 # I believe I need to add this so tha the extension is activated at runtime?
 quarkus:
+  log:
+    handler:
+      kafka:
+        enabled: ${KAFKA_LOG_ENABLED:false}
+        broker-list: ${KAFKA_LOG_SERVER:kafka.example.com:443}
+        topic: ${KAFKA_LOG_TOPIC:kafka-topic}
+        security-protocol: SASL_SSL
+        sasl-mechanism: SCRAM-SHA-512
+        sasl-jaas-conf: "${sasl_jaas_conf}"
+        filter-logger-name-pattern: ${KAFKA_LOG_FILTER:org.jboss.pnc.*}
+        level: INFO
+        # set this to empty because default config set the wrong path
+        ssl-truststore-location: ""
   oidc:
     auth-server-url: https://keycloak-host/auth/realms/myrealm
     client-id: client
