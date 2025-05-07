@@ -136,6 +136,12 @@
             <groupId>com.redhat.red.build</groupId>
             <artifactId>kojiji</artifactId>
             <version>2.22</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>log4j-over-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jboss.pnc</groupId>
