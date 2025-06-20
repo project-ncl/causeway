@@ -9,7 +9,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jboss.pnc.causeway</groupId>
     <artifactId>causeway</artifactId>
-    <version>4.0.2</version>
+    <version>4.0.3-SNAPSHOT</version>
 
     <name>Causeway</name>
     <description>PNC-to-Koji Bridge</description>
@@ -33,7 +33,7 @@
         <connection>scm:git:http://github.com/project-ncl/causeway.git</connection>
         <developerConnection>scm:git:git@github.com:project-ncl/causeway.git</developerConnection>
         <url>http://github.com/project-ncl/causeway</url>
-        <tag>4.0.2</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <developers>
