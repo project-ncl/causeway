@@ -4,12 +4,13 @@
  */
 package org.jboss.pnc.causeway;
 
-import io.smallrye.config.ConfigMapping;
-import io.smallrye.config.WithDefault;
-import org.jboss.pnc.common.http.PNCHttpClientConfig;
-
 import java.net.URL;
 import java.util.Set;
+
+import org.jboss.pnc.common.http.PNCHttpClientConfig;
+
+import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.WithDefault;
 
 @ConfigMapping(prefix = "causeway")
 public interface CausewayConfig {

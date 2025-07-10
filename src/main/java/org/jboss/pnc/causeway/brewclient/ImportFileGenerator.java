@@ -4,14 +4,6 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
-import com.redhat.red.build.koji.model.ImportFile;
-import lombok.extern.slf4j.Slf4j;
-import org.jboss.pnc.causeway.ErrorMessages;
-import org.jboss.pnc.causeway.impl.BurnAfterReadingFile;
-import org.jboss.pnc.common.log.MDCUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -27,6 +19,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
+
+import org.jboss.pnc.causeway.ErrorMessages;
+import org.jboss.pnc.causeway.impl.BurnAfterReadingFile;
+import org.jboss.pnc.common.log.MDCUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.redhat.red.build.koji.model.ImportFile;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;

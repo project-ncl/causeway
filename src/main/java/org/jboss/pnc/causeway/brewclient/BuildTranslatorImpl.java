@@ -4,6 +4,36 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
+import static org.jboss.pnc.api.constants.Attributes.BUILD_BREW_NAME;
+import static org.jboss.pnc.api.constants.Attributes.BUILD_BREW_VERSION;
+
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
+import org.commonjava.atlas.maven.ident.ref.ProjectVersionRef;
+import org.commonjava.atlas.maven.ident.ref.SimpleArtifactRef;
+import org.commonjava.atlas.maven.ident.ref.SimpleProjectVersionRef;
+import org.commonjava.atlas.npm.ident.ref.NpmPackageRef;
+import org.jboss.pnc.causeway.CausewayConfig;
+import org.jboss.pnc.causeway.CausewayException;
+import org.jboss.pnc.causeway.CausewayFailure;
+import org.jboss.pnc.causeway.ErrorMessages;
+import org.jboss.pnc.causeway.impl.BurnAfterReadingFile;
+import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
+import org.jboss.pnc.causeway.source.RenamedSources;
+import org.jboss.pnc.causeway.source.SourceRenamer;
+import org.jboss.pnc.dto.ArtifactRef;
+import org.jboss.pnc.enums.BuildType;
+import org.jboss.pnc.restclient.util.ArtifactUtil;
+
 import com.github.zafarkhaja.semver.Version;
 import com.redhat.red.build.koji.model.json.BuildContainer;
 import com.redhat.red.build.koji.model.json.BuildDescription;
@@ -15,34 +45,6 @@ import com.redhat.red.build.koji.model.json.KojiImport;
 import com.redhat.red.build.koji.model.json.StandardArchitecture;
 import com.redhat.red.build.koji.model.json.StandardOutputType;
 import com.redhat.red.build.koji.model.json.VerificationException;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import org.commonjava.atlas.maven.ident.ref.ProjectVersionRef;
-import org.commonjava.atlas.maven.ident.ref.SimpleArtifactRef;
-import org.commonjava.atlas.maven.ident.ref.SimpleProjectVersionRef;
-import org.commonjava.atlas.npm.ident.ref.NpmPackageRef;
-import org.jboss.pnc.causeway.CausewayConfig;
-import org.jboss.pnc.causeway.CausewayException;
-import org.jboss.pnc.causeway.CausewayFailure;
-import org.jboss.pnc.causeway.ErrorMessages;
-import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
-import org.jboss.pnc.causeway.impl.BurnAfterReadingFile;
-import org.jboss.pnc.causeway.source.RenamedSources;
-import org.jboss.pnc.causeway.source.SourceRenamer;
-import org.jboss.pnc.dto.ArtifactRef;
-import org.jboss.pnc.enums.BuildType;
-import org.jboss.pnc.restclient.util.ArtifactUtil;
-
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import static org.jboss.pnc.api.constants.Attributes.BUILD_BREW_NAME;
-import static org.jboss.pnc.api.constants.Attributes.BUILD_BREW_VERSION;
 
 /**
  *

@@ -4,14 +4,21 @@
  */
 package org.jboss.pnc.causeway.ctl;
 
-import com.redhat.red.build.koji.model.json.KojiImport;
-import io.micrometer.core.annotation.Timed;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.instrumentation.annotations.SpanAttribute;
-import io.opentelemetry.instrumentation.annotations.WithSpan;
+import static org.jboss.pnc.api.constants.Attributes.BUILD_BREW_NAME;
+import static org.jboss.pnc.api.constants.Attributes.BUILD_BREW_VERSION;
+import static org.jboss.pnc.causeway.impl.Meters.METRICS_IMPORT;
+import static org.jboss.pnc.causeway.impl.Meters.METRICS_UNTAG;
+import static org.jboss.pnc.enums.ArtifactQuality.BLACKLISTED;
+import static org.jboss.pnc.enums.ArtifactQuality.DELETED;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
+import java.util.Optional;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
+
 import org.jboss.pnc.api.causeway.dto.push.PushResult;
 import org.jboss.pnc.api.constants.MDCKeys;
 import org.jboss.pnc.api.enums.ResultStatus;
@@ -34,17 +41,13 @@ import org.jboss.pnc.dto.Build;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Iterator;
-import java.util.Optional;
+import com.redhat.red.build.koji.model.json.KojiImport;
 
-import static org.jboss.pnc.api.constants.Attributes.BUILD_BREW_NAME;
-import static org.jboss.pnc.api.constants.Attributes.BUILD_BREW_VERSION;
-import static org.jboss.pnc.causeway.impl.Meters.METRICS_IMPORT;
-import static org.jboss.pnc.causeway.impl.Meters.METRICS_UNTAG;
-import static org.jboss.pnc.enums.ArtifactQuality.BLACKLISTED;
-import static org.jboss.pnc.enums.ArtifactQuality.DELETED;
+import io.micrometer.core.annotation.Timed;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ApplicationScoped

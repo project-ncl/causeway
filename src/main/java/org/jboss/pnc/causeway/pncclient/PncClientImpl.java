@@ -4,11 +4,17 @@
  */
 package org.jboss.pnc.causeway.pncclient;
 
-import io.smallrye.faulttolerance.api.ExponentialBackoff;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.Optional;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
-import lombok.extern.slf4j.Slf4j;
+
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.jboss.pnc.causeway.CausewayConfig;
 import org.jboss.pnc.causeway.CausewayException;
@@ -20,12 +26,8 @@ import org.jboss.pnc.client.RemoteResourceException;
 import org.jboss.pnc.dto.Artifact;
 import org.jboss.pnc.dto.Build;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
-import java.util.Optional;
+import io.smallrye.faulttolerance.api.ExponentialBackoff;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created by jdcasey on 2/9/16.

@@ -4,12 +4,20 @@
  */
 package org.jboss.pnc.causeway;
 
+import java.time.ZonedDateTime;
+import java.util.concurrent.CompletionException;
+import java.util.function.Consumer;
+
+import javax.validation.Valid;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.core.MediaType;
+
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
-import lombok.extern.slf4j.Slf4j;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.context.ManagedExecutor;
 import org.jboss.pnc.api.causeway.dto.push.BuildPushRequest;
@@ -25,12 +33,7 @@ import org.jboss.pnc.causeway.ctl.ImportController;
 import org.jboss.pnc.common.concurrent.HeartbeatScheduler;
 import org.jboss.pnc.common.http.PNCHttpClient;
 
-import javax.validation.Valid;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.core.MediaType;
-import java.time.ZonedDateTime;
-import java.util.concurrent.CompletionException;
-import java.util.function.Consumer;
+import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
 @Slf4j

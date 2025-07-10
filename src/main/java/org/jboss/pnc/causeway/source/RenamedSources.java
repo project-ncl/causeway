@@ -4,18 +4,20 @@
  */
 package org.jboss.pnc.causeway.source;
 
-import com.github.zafarkhaja.semver.Version;
-import lombok.Getter;
+import static org.jboss.pnc.causeway.source.SourceRenamer.ARTIFACT_CLASSIFIER;
+import static org.jboss.pnc.causeway.source.SourceRenamer.ARTIFACT_TYPE;
+
+import java.io.IOException;
+import java.nio.file.Path;
+
 import org.commonjava.atlas.maven.ident.ref.SimpleArtifactRef;
 import org.commonjava.atlas.npm.ident.ref.NpmPackageRef;
 import org.jboss.pnc.causeway.ErrorMessages;
 import org.jboss.pnc.causeway.impl.BurnAfterReadingFile;
 
-import java.io.IOException;
-import java.nio.file.Path;
+import com.github.zafarkhaja.semver.Version;
 
-import static org.jboss.pnc.causeway.source.SourceRenamer.ARTIFACT_CLASSIFIER;
-import static org.jboss.pnc.causeway.source.SourceRenamer.ARTIFACT_TYPE;
+import lombok.Getter;
 
 public class RenamedSources extends BurnAfterReadingFile {
     @Getter

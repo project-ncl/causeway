@@ -5,6 +5,7 @@
 package org.jboss.pnc.causeway.brewclient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
