@@ -37,8 +37,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.redhat.red.build.koji.model.json.BuildOutput;
 import com.redhat.red.build.koji.model.json.BuildTool;
+import com.redhat.red.build.koji.model.json.EmptyTypeInfoExtraInfo;
 import com.redhat.red.build.koji.model.json.KojiImport;
-import com.redhat.red.build.koji.model.json.NpmTypeInfoExtraInfo;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -205,7 +205,7 @@ public class TranslatorTest {
                 .hasFieldOrPropertyWithValue("name", scope + "-" + packageName)
                 .hasFieldOrPropertyWithValue("version", version);
         assertThat(out.getBuild().getExtraInfo().getTypeInfo())
-                .hasFieldOrPropertyWithValue("npmTypeInfoExtraInfo", NpmTypeInfoExtraInfo.getInstance());
+                .hasFieldOrPropertyWithValue("npmTypeInfoExtraInfo", EmptyTypeInfoExtraInfo.getInstance());
         assertThat(out.getBuildRoots()).hasSize(1);
         assertThat(out.getBuildRoots().get(0).getBuildTools()).hasSize(3)
                 .extracting(BuildTool::getName)

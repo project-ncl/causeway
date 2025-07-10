@@ -57,7 +57,7 @@ public interface BuildTranslator {
 
     private static String extractVersion(BuildType buildType, ArtifactRef artifact) {
         return switch (buildType) {
-            case MVN, SBT, GRADLE -> ArtifactUtil.parseMavenCoordinates(artifact).getVersionString();
+            case MVN, SBT, GRADLE, MVN_RPM -> ArtifactUtil.parseMavenCoordinates(artifact).getVersionString();
             case NPM -> ArtifactUtil.parseNPMCoordinates(artifact).getVersion().toString();
         };
     }

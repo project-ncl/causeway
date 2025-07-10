@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.jboss.pnc.causeway.ErrorMessages.tagsAreMissingInKoji;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
@@ -44,6 +45,7 @@ import org.jboss.pnc.causeway.brewclient.ImportFileGenerator;
 import org.jboss.pnc.causeway.impl.BurnAfterReadingFile;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.pncclient.PncClient;
+import org.jboss.pnc.causeway.source.RenamedSources;
 import org.jboss.pnc.dto.ArtifactRef;
 import org.jboss.pnc.dto.Build;
 import org.jboss.pnc.dto.BuildConfigurationRevision;
@@ -57,7 +59,9 @@ import org.jboss.pnc.enums.SystemImageType;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import com.redhat.red.build.koji.KojiClientException;
 import com.redhat.red.build.koji.model.json.KojiImport;
+import com.redhat.red.build.koji.model.xmlrpc.KojiNVRA;
 
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -462,5 +466,28 @@ public class ImportControllerTest {
         when(brewClient.findBrewBuild(eq(id))).thenReturn(brewBuild);
         when(brewClient.isBuildTagged(eq(TAG_PREFIX), same(brewBuild))).thenReturn(tagged);
         return brewBuild;
+    }
+
+    @Test
+    public void testConvertNVR() throws KojiClientException {
+        String name = "apache-sshd";
+        String version = "2.14.0";
+        String release = "4.redhat_00005.1.el8eap";
+        KojiNVRA nvra = KojiNVRA.parseNVRA(name + "-" + version + "-" + release + ".noarch.rpm");
+        assertEquals(name, nvra.getName());
+        assertEquals(version, nvra.getVersion());
+        assertEquals(release, nvra.getRelease());
+    }
+
+    @Test
+    public void testGetSources() {
+        Map<String, String> attributes = new HashMap<>();
+        Build build = Build.builder()
+                .attributes(attributes)
+                .buildConfigRevision(BuildConfigurationRevision.builder().buildType(BuildType.MVN_RPM).build())
+                .build();
+        BuildArtifacts artifacts = new BuildArtifacts();
+        RenamedSources result = importController.getSources(build, artifacts);
+        assertNull(result);
     }
 }

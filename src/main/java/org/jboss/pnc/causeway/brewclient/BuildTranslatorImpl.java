@@ -108,8 +108,19 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 build.getBuildConfigRevision().getBuildType());
         addLog(buildLog, builder, buildRootId);
         addLog(alignLlog, builder, buildRootId);
+        if (build.getBuildConfigRevision().getBuildType() == BuildType.MVN_RPM) {
+            // Add the spec and pom as log files.
+            artifacts.getBuildArtifacts().forEach(a -> {
+                if (a.getFilename().endsWith(".spec") || a.getFilename().endsWith(".pom")) {
+                    builder.withNewOutput(buildRootId, a.getFilename())
+                            .withOutputType(StandardOutputType.log)
+                            .withFileSize(a.getSize())
+                            .withArch(StandardArchitecture.noarch)
+                            .withChecksum(MD5, a.getMd5());
+                }
+            });
+        }
         addSources(sources, builder, buildRootId);
-
         KojiImport translatedBuild = buildTranslatedBuild(builder);
         translatedBuild.getBuild().getExtraInfo().setImportInitiator(username);
         return translatedBuild;
@@ -203,6 +214,16 @@ public class BuildTranslatorImpl implements BuildTranslator {
                     outputBuilder.withNpmInfoAndType(ref);
                     break;
                 }
+                case MVN_RPM: {
+                    // Only uploading the RPMs (everything else goes as a log attachment).
+                    if (artifact.getFilename().endsWith(".rpm")) {
+                        outputBuilder.withFileSize(artifact.getSize());
+                        outputBuilder.withRpmInfoAndType();
+                        if (artifact.getFilename().endsWith("src.rpm")) {
+                            outputBuilder.withArch(StandardArchitecture.src);
+                        }
+                    }
+                }
                 default: {
                     throw new IllegalArgumentException(ErrorMessages.unknownArtifactType());
                 }
@@ -246,7 +267,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 artifacts,
                 (gav) -> renamer.repackMaven(sources, gav.getGroupId(), gav.getArtifactId(), gav.getVersionString()),
                 (npmPackage) -> renamer
-                        .repackNPM(sources, npmPackage.getName(), npmPackage.getVersion().getNormalVersion()));
+                        .repackNPM(sources, npmPackage.getName(), npmPackage.getVersion().getNormalVersion()),
+                (gav) -> null);
     }
 
     @Override
@@ -257,7 +279,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 artifacts,
                 (gav) -> renamer.getMavenDeployPath(gav.getGroupId(), gav.getArtifactId(), gav.getVersionString()),
                 (npmPackage) -> renamer
-                        .getNPMDeployPath(npmPackage.getName(), npmPackage.getVersion().getNormalVersion()));
+                        .getNPMDeployPath(npmPackage.getName(), npmPackage.getVersion().getNormalVersion()),
+                (gav) -> null);
     }
 
     private KojiImport buildTranslatedBuild(KojiImport.Builder builder) throws CausewayException {
@@ -312,7 +335,12 @@ public class BuildTranslatorImpl implements BuildTranslator {
             BuildDescription.Builder buildDescription,
             org.jboss.pnc.dto.Build build,
             BuildArtifacts artifacts) throws CausewayException {
-        buildTypeSwitch(build, artifacts, buildDescription::withMavenInfoAndType, buildDescription::withNpmInfoAndType);
+        buildTypeSwitch(
+                build,
+                artifacts,
+                buildDescription::withMavenInfoAndType,
+                buildDescription::withNpmInfoAndType,
+                buildDescription::withRpmInfoAndType);
     }
 
     private void addTool(
@@ -363,7 +391,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
             org.jboss.pnc.dto.Build build,
             BuildArtifacts artifacts,
             CausewayFunction<ProjectVersionRef, T> mavenConsumer,
-            CausewayFunction<NpmPackageRef, T> npmConsumer) throws CausewayException {
+            CausewayFunction<NpmPackageRef, T> npmConsumer,
+            CausewayFunction<ProjectVersionRef, T> rpmConsumer) throws CausewayException {
         BuildType buildType = build.getBuildConfigRevision().getBuildType();
         return switch (buildType) {
             case MVN, SBT, GRADLE -> {
@@ -373,6 +402,10 @@ public class BuildTranslatorImpl implements BuildTranslator {
             case NPM -> {
                 NpmPackageRef npmPackage = buildRootToNV(build, artifacts);
                 yield npmConsumer.apply(npmPackage);
+            }
+            case MVN_RPM -> {
+                ProjectVersionRef gav = buildRootToGAV(build, artifacts);
+                yield rpmConsumer.apply(gav);
             }
         };
     }
