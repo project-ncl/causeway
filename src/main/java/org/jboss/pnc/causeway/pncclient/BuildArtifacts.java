@@ -4,11 +4,12 @@
  */
 package org.jboss.pnc.causeway.pncclient;
 
-import lombok.Getter;
-import org.jboss.pnc.dto.ArtifactRef;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jboss.pnc.dto.ArtifactRef;
+
+import lombok.Getter;
 
 @Getter
 public final class BuildArtifacts {

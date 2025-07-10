@@ -4,9 +4,9 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
-import com.redhat.red.build.koji.model.json.KojiImport;
-import org.jboss.pnc.api.causeway.dto.push.PushResult;
 import org.jboss.pnc.causeway.CausewayException;
+
+import com.redhat.red.build.koji.model.json.KojiImport;
 
 /**
  *

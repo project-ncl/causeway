@@ -4,21 +4,22 @@
  */
 package org.jboss.pnc.causeway;
 
-import com.redhat.red.build.koji.KojiClientException;
-import com.redhat.red.build.koji.KojijiErrorInfo;
-import com.redhat.red.build.koji.model.json.KojiJsonConstants;
-import com.redhat.red.build.koji.model.json.VerificationException;
-import org.jboss.pnc.causeway.brewclient.BrewClientImpl;
-import org.jboss.pnc.causeway.brewclient.BuildTranslatorImpl;
-import org.jboss.pnc.client.RemoteResourceException;
-import org.jboss.pnc.enums.BuildType;
+import static org.jboss.pnc.api.constants.Attributes.BUILD_BREW_NAME;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 
-import static org.jboss.pnc.api.constants.Attributes.BUILD_BREW_NAME;
+import org.jboss.pnc.causeway.brewclient.BrewClientImpl;
+import org.jboss.pnc.causeway.brewclient.BuildTranslatorImpl;
+import org.jboss.pnc.client.RemoteResourceException;
+import org.jboss.pnc.enums.BuildType;
+
+import com.redhat.red.build.koji.KojiClientException;
+import com.redhat.red.build.koji.KojijiErrorInfo;
+import com.redhat.red.build.koji.model.json.KojiJsonConstants;
+import com.redhat.red.build.koji.model.json.VerificationException;
 
 public class ErrorMessages {
     private static final String KOJI_COMMUNICATION_FAILURE = "Failure while communicating with Koji: {0}";

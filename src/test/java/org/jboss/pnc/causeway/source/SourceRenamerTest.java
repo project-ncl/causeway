@@ -4,8 +4,17 @@
  */
 package org.jboss.pnc.causeway.source;
 
-import io.quarkus.test.junit.QuarkusTest;
+import static org.jboss.pnc.causeway.source.SourceRenamer.ARCHIVE_SUFFIX;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
 import jakarta.inject.Inject;
+
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
@@ -17,14 +26,7 @@ import org.jboss.pnc.dto.BuildConfigurationRevision;
 import org.jboss.pnc.enums.BuildType;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.jboss.pnc.causeway.source.SourceRenamer.ARCHIVE_SUFFIX;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 public class SourceRenamerTest {

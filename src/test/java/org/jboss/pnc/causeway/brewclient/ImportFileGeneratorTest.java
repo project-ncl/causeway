@@ -4,15 +4,13 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.redhat.red.build.koji.model.ImportFile;
-import io.quarkiverse.wiremock.devservice.ConnectWireMock;
-import io.quarkiverse.wiremock.devservice.WireMockConfigKey;
-import io.quarkus.test.junit.QuarkusTest;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.pnc.causeway.source.RenamedSources;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.head;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,13 +22,17 @@ import java.util.Collections;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.head;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.fail;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.pnc.causeway.source.RenamedSources;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.redhat.red.build.koji.model.ImportFile;
+
+import io.quarkiverse.wiremock.devservice.ConnectWireMock;
+import io.quarkiverse.wiremock.devservice.WireMockConfigKey;
+import io.quarkus.test.junit.QuarkusTest;
 
 /**
  *
