@@ -4,9 +4,6 @@
  */
 package org.jboss.pnc.causeway.impl;
 
-import lombok.Getter;
-import org.jboss.pnc.causeway.ErrorMessages;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -16,6 +13,10 @@ import java.nio.file.StandardOpenOption;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import org.jboss.pnc.causeway.ErrorMessages;
+
+import lombok.Getter;
 
 public class BurnAfterReadingFile {
     protected final Path file;

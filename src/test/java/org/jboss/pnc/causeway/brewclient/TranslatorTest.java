@@ -4,14 +4,22 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.redhat.red.build.koji.model.json.BuildOutput;
-import com.redhat.red.build.koji.model.json.BuildTool;
-import com.redhat.red.build.koji.model.json.KojiImport;
-import com.redhat.red.build.koji.model.json.NpmTypeInfoExtraInfo;
-import io.quarkus.test.junit.QuarkusTest;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Objects;
+
 import jakarta.inject.Inject;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.assertj.core.api.Condition;
@@ -25,19 +33,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Objects;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.redhat.red.build.koji.model.json.BuildOutput;
+import com.redhat.red.build.koji.model.json.BuildTool;
+import com.redhat.red.build.koji.model.json.KojiImport;
+import com.redhat.red.build.koji.model.json.NpmTypeInfoExtraInfo;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import io.quarkus.test.junit.QuarkusTest;
 
 /**
  *

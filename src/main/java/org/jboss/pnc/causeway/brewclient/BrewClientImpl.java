@@ -4,6 +4,22 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
+import static com.redhat.red.build.koji.model.xmlrpc.KojiBuildState.DELETED;
+
+import java.util.List;
+import java.util.Map;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.jboss.pnc.causeway.CausewayConfig;
+import org.jboss.pnc.causeway.CausewayException;
+import org.jboss.pnc.causeway.CausewayFailure;
+import org.jboss.pnc.causeway.ErrorMessages;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
 import com.redhat.red.build.koji.KojijiErrorInfo;
@@ -14,22 +30,9 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiNVR;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
+
 import io.smallrye.faulttolerance.api.ExponentialBackoff;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.microprofile.faulttolerance.Retry;
-import org.jboss.pnc.causeway.CausewayConfig;
-import org.jboss.pnc.causeway.CausewayException;
-import org.jboss.pnc.causeway.CausewayFailure;
-import org.jboss.pnc.causeway.ErrorMessages;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Map;
-
-import static com.redhat.red.build.koji.model.xmlrpc.KojiBuildState.DELETED;
 
 @ApplicationScoped
 @Slf4j

@@ -4,22 +4,26 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
-import com.redhat.red.build.koji.KojiClient;
-import com.redhat.red.build.koji.KojiClientException;
-import com.redhat.red.build.koji.config.KojiConfig;
-import com.redhat.red.build.koji.config.SimpleKojiConfigBuilder;
+import java.io.Closeable;
+
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
+
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordType;
 import org.eclipse.microprofile.context.ManagedExecutor;
 import org.jboss.pnc.causeway.CausewayConfig;
 import org.jboss.pnc.causeway.ErrorMessages;
-import java.io.Closeable;
+
+import com.redhat.red.build.koji.KojiClient;
+import com.redhat.red.build.koji.KojiClientException;
+import com.redhat.red.build.koji.config.KojiConfig;
+import com.redhat.red.build.koji.config.SimpleKojiConfigBuilder;
+
+import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
 @Slf4j
