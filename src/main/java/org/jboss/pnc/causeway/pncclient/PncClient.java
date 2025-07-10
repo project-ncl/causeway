@@ -25,5 +25,4 @@ public interface PncClient {
     InputStream getSources(String id) throws CausewayException;
 
     Build findBuild(String buildId);
-
 }
