@@ -4,17 +4,18 @@
  */
 package org.jboss.pnc.causeway.brewclient;
 
-import com.redhat.red.build.koji.model.json.KojiImport;
+import java.io.InputStream;
+
 import org.jboss.pnc.causeway.CausewayException;
-import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.impl.BurnAfterReadingFile;
+import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
 import org.jboss.pnc.causeway.source.RenamedSources;
 import org.jboss.pnc.dto.ArtifactRef;
 import org.jboss.pnc.dto.Build;
 import org.jboss.pnc.enums.BuildType;
 import org.jboss.pnc.restclient.util.ArtifactUtil;
 
-import java.io.InputStream;
+import com.redhat.red.build.koji.model.json.KojiImport;
 
 /**
  *
@@ -56,7 +57,7 @@ public interface BuildTranslator {
 
     private static String extractVersion(BuildType buildType, ArtifactRef artifact) {
         return switch (buildType) {
-            case MVN, SBT, GRADLE -> ArtifactUtil.parseMavenCoordinates(artifact).getVersionString();
+            case MVN, SBT, GRADLE, MVN_RPM -> ArtifactUtil.parseMavenCoordinates(artifact).getVersionString();
             case NPM -> ArtifactUtil.parseNPMCoordinates(artifact).getVersion().toString();
         };
     }

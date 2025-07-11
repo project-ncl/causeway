@@ -4,14 +4,17 @@
  */
 package org.jboss.pnc.causeway.exceptionmappers;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import lombok.extern.slf4j.Slf4j;
+
 import org.jboss.pnc.api.dto.ErrorResponse;
+
+import com.fasterxml.jackson.databind.JsonMappingException;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Provider
 @Slf4j

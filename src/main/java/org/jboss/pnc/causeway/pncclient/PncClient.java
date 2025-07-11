@@ -4,11 +4,11 @@
  */
 package org.jboss.pnc.causeway.pncclient;
 
+import java.io.InputStream;
+
 import org.jboss.pnc.causeway.CausewayException;
 import org.jboss.pnc.causeway.impl.BurnAfterReadingFile;
 import org.jboss.pnc.dto.Build;
-
-import java.io.InputStream;
 
 /**
  *
@@ -25,5 +25,4 @@ public interface PncClient {
     InputStream getSources(String id) throws CausewayException;
 
     Build findBuild(String buildId);
-
 }
