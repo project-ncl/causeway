@@ -218,7 +218,7 @@
     <dependency>
       <groupId>org.jboss.pnc</groupId>
       <artifactId>pnc-common</artifactId>
-      <version>3.2.0</version>
+      <version>3.2.2</version>
       <classifier>jakarta</classifier>
       <exclusions>
         <exclusion>
