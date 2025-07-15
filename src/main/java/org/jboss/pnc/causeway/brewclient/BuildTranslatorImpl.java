@@ -109,16 +109,14 @@ public class BuildTranslatorImpl implements BuildTranslator {
         addLog(buildLog, builder, buildRootId);
         addLog(alignLlog, builder, buildRootId);
         if (build.getBuildConfigRevision().getBuildType() == BuildType.MVN_RPM) {
-            // Add the spec and pom as log files.
-            artifacts.getBuildArtifacts().forEach(a -> {
-                if (a.getFilename().endsWith(".spec") || a.getFilename().endsWith(".pom")) {
-                    builder.withNewOutput(buildRootId, a.getFilename())
-                            .withOutputType(StandardOutputType.log)
-                            .withFileSize(a.getSize())
-                            .withArch(StandardArchitecture.noarch)
-                            .withChecksum(MD5, a.getMd5());
-                }
-            });
+            artifacts.getBuildArtifacts()
+                    .stream()
+                    .filter(a -> a.getFilename().endsWith(".spec") || a.getFilename().endsWith(".pom"))
+                    .forEach(
+                            a -> addLog(
+                                    new BurnAfterReadingFile(a.getFilename(), a.getSize(), a.getMd5()),
+                                    builder,
+                                    buildRootId));
         }
         addSources(sources, builder, buildRootId);
         KojiImport translatedBuild = buildTranslatedBuild(builder);
@@ -223,6 +221,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                             outputBuilder.withArch(StandardArchitecture.src);
                         }
                     }
+                    break;
                 }
                 default: {
                     throw new IllegalArgumentException(ErrorMessages.unknownArtifactType());
@@ -268,6 +267,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 (gav) -> renamer.repackMaven(sources, gav.getGroupId(), gav.getArtifactId(), gav.getVersionString()),
                 (npmPackage) -> renamer
                         .repackNPM(sources, npmPackage.getName(), npmPackage.getVersion().getNormalVersion()),
+                // null for MVN_RPM source deploy path as no source jar is required for wrapperRPMs as its
+                // handled via the src rpm instead.
                 (gav) -> null);
     }
 
@@ -280,6 +281,8 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 (gav) -> renamer.getMavenDeployPath(gav.getGroupId(), gav.getArtifactId(), gav.getVersionString()),
                 (npmPackage) -> renamer
                         .getNPMDeployPath(npmPackage.getName(), npmPackage.getVersion().getNormalVersion()),
+                // null for MVN_RPM source deploy path as no source jar is required for wrapperRPMs as its
+                // handled via the src rpm instead.
                 (gav) -> null);
     }
 
