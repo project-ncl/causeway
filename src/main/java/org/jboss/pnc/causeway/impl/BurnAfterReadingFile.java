@@ -35,6 +35,13 @@ public class BurnAfterReadingFile {
         this.md5 = md5;
     }
 
+    public BurnAfterReadingFile(String name, long size, String md5) {
+        this.file = null;
+        this.size = (int) size;
+        this.name = name;
+        this.md5 = md5;
+    }
+
     public static BurnAfterReadingFile fromInputStream(String name, InputStream is)
             throws IOException, NoSuchAlgorithmException {
         Path tempFile = Files.createTempFile("barf-", name);

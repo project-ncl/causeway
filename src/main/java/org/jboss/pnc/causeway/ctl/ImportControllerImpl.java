@@ -41,7 +41,9 @@ import org.jboss.pnc.dto.Build;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.red.build.koji.KojiClientException;
 import com.redhat.red.build.koji.model.json.KojiImport;
+import com.redhat.red.build.koji.model.xmlrpc.KojiNVRA;
 
 import io.micrometer.core.annotation.Timed;
 import io.opentelemetry.api.trace.SpanKind;
@@ -169,7 +171,7 @@ public class ImportControllerImpl implements ImportController {
         return brewBuild;
     }
 
-    private RenamedSources getSources(Build build, BuildArtifacts artifacts) {
+    RenamedSources getSources(Build build, BuildArtifacts artifacts) {
         String sourcesDeployPath = translator.getSourcesDeployPath(build, artifacts);
         Optional<ArtifactRef> sourceJar = artifacts.getBuildArtifacts()
                 .stream()
@@ -198,14 +200,34 @@ public class ImportControllerImpl implements ImportController {
     }
 
     BrewNVR getNVR(Build build, BuildArtifacts artifacts) throws CausewayException {
-        if (!build.getAttributes().containsKey(BUILD_BREW_NAME)) {
-            throw new CausewayFailure(ErrorMessages.missingBrewNameAttributeInBuild());
-        }
-        String version = build.getAttributes().get(BUILD_BREW_VERSION);
-        if (version == null) {
-            version = BuildTranslator.guessVersion(build, artifacts);
-        }
-        return new BrewNVR(build.getAttributes().get(BUILD_BREW_NAME), version, "1");
+        return switch (build.getBuildConfigRevision().getBuildType()) {
+            case MVN_RPM -> {
+                // If we are importing an RPM then extract the NVR from the RPM name rather than the
+                // Maven GAV.
+                ArtifactRef artifactRef = artifacts.getBuildArtifacts()
+                        .stream()
+                        .filter(a -> a.getFilename().endsWith(".rpm"))
+                        .findAny()
+                        .orElseThrow(() -> new CausewayFailure("Unable to find RPM to derive NVR from"));
+                // The 'arch' (e.g. noarch/src) doesn't matter for extracting the NVR.
+                try {
+                    KojiNVRA nvra = KojiNVRA.parseNVRA(artifactRef.getFilename());
+                    yield new BrewNVR(nvra.getName(), nvra.getVersion(), nvra.getRelease());
+                } catch (KojiClientException e) {
+                    throw new CausewayFailure(e.toString());
+                }
+            }
+            case GRADLE, SBT, MVN, NPM -> {
+                if (!build.getAttributes().containsKey(BUILD_BREW_NAME)) {
+                    throw new CausewayFailure(ErrorMessages.missingBrewNameAttributeInBuild());
+                }
+                String version = build.getAttributes().get(BUILD_BREW_VERSION);
+                if (version == null) {
+                    version = BuildTranslator.guessVersion(build, artifacts);
+                }
+                yield new BrewNVR(build.getAttributes().get(BUILD_BREW_NAME), version, "1");
+            }
+        };
     }
 
     BrewNVR getNVR(BrewNVR nvr, int revision) {
