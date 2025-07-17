@@ -182,6 +182,7 @@ public class ImportControllerImpl implements ImportController {
             try (InputStream sourcesStream = pncClient.getSources(build.getId())) {
                 return translator.getSources(build, artifacts, sourcesStream);
             } catch (IOException ex) {
+                userLog.error("Unable to download sources with buildId " + build.getId(), ex);
                 throw new CausewayException(ErrorMessages.failedToDownloadSources(ex), ex);
             }
         }

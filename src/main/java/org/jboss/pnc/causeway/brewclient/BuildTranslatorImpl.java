@@ -33,6 +33,8 @@ import org.jboss.pnc.causeway.source.SourceRenamer;
 import org.jboss.pnc.dto.ArtifactRef;
 import org.jboss.pnc.enums.BuildType;
 import org.jboss.pnc.restclient.util.ArtifactUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.zafarkhaja.semver.Version;
 import com.redhat.red.build.koji.model.json.BuildContainer;
@@ -52,6 +54,7 @@ import com.redhat.red.build.koji.model.json.VerificationException;
  */
 @ApplicationScoped
 public class BuildTranslatorImpl implements BuildTranslator {
+    private static final Logger userLog = LoggerFactory.getLogger("org.jboss.pnc._userlog_.brew-push");
     private static final String CONTENT_GENERATOR_NAME = "Project Newcastle";
     public static final String PNC = "PNC";
     private static final String MD5 = "md5";
@@ -120,6 +123,9 @@ public class BuildTranslatorImpl implements BuildTranslator {
         }
         addSources(sources, builder, buildRootId);
         KojiImport translatedBuild = buildTranslatedBuild(builder);
+        userLog.info(
+                "Added files to import {}",
+                translatedBuild.getOutputs().stream().map(BuildOutput::getFilename).toList());
         translatedBuild.getBuild().getExtraInfo().setImportInitiator(username);
         return translatedBuild;
     }

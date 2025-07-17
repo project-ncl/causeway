@@ -103,7 +103,7 @@ public class CausewayResource implements Causeway {
             log.error(e.getMessage(), e);
             resultBuilder.result(ResultStatus.SYSTEM_ERROR);
         } else {
-            log.error("Unexpected error while pushing to Brew.", e);
+            log.error("Unexpected error while pushing to Brew: " + e.getMessage(), e);
             resultBuilder.result(ResultStatus.SYSTEM_ERROR);
         }
 
