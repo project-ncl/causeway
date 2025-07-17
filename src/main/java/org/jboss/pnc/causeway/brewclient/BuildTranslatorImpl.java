@@ -199,21 +199,18 @@ public class BuildTranslatorImpl implements BuildTranslator {
             int buildRootId,
             BuildType buildType) throws CausewayException {
         for (ArtifactRef artifact : buildArtifacts) {
-            BuildOutput.Builder outputBuilder = builder
-                    .withNewOutput(buildRootId, stripLeadingSlash(artifact.getDeployPath()))
-                    .withArch(StandardArchitecture.noarch)
-                    .withChecksum(MD5, artifact.getMd5());
-
             switch (buildType) {
                 case GRADLE:
                 case SBT:
                 case MVN: {
+                    BuildOutput.Builder outputBuilder = getOutputBuilder(builder, buildRootId, artifact);
                     SimpleArtifactRef ref = ArtifactUtil.parseMavenCoordinates(artifact);
                     outputBuilder.withFileSize(artifact.getSize());
                     outputBuilder.withMavenInfoAndType(ref);
                     break;
                 }
                 case NPM: {
+                    BuildOutput.Builder outputBuilder = getOutputBuilder(builder, buildRootId, artifact);
                     NpmPackageRef ref = ArtifactUtil.parseNPMCoordinates(artifact);
                     outputBuilder.withFileSize(artifact.getSize());
                     outputBuilder.withNpmInfoAndType(ref);
@@ -222,6 +219,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 case MVN_RPM: {
                     // Only uploading the RPMs (everything else goes as a log attachment).
                     if (artifact.getFilename().endsWith(".rpm")) {
+                        BuildOutput.Builder outputBuilder = getOutputBuilder(builder, buildRootId, artifact);
                         outputBuilder.withFileSize(artifact.getSize());
                         outputBuilder.withRpmInfoAndType();
                         if (artifact.getFilename().endsWith("src.rpm")) {
@@ -418,6 +416,13 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 yield rpmConsumer.apply(gav);
             }
         };
+    }
+
+    private BuildOutput.Builder getOutputBuilder(KojiImport.Builder builder, int buildRootId, ArtifactRef artifact) {
+        return builder
+                .withNewOutput(buildRootId, stripLeadingSlash(artifact.getDeployPath()))
+                .withArch(StandardArchitecture.noarch)
+                .withChecksum(MD5, artifact.getMd5());
     }
 
     @FunctionalInterface
