@@ -175,6 +175,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 case GRADLE:
                 case NPM:
                 case SBT:
+                case MVN_RPM:
                 case MVN: {
                     componentBuilder.withFileSize(artifact.getSize());
                     break;
@@ -358,7 +359,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             Map<String, String> tools,
             String envID) throws CausewayException {
         switch (buildType) {
-            case MVN:
+            case MVN, MVN_RPM:
                 buildRootBuilder.withTool(getTool("JDK", tools, envID));
                 buildRootBuilder.withTool(getTool("MAVEN", tools, envID));
                 break;
