@@ -5,6 +5,16 @@
 
 # I believe I need to add this so tha the extension is activated at runtime?
 quarkus:
+  http:
+    limits:
+      max-body-size: 100M
+    # Add CORS
+    cors:
+      ~: true
+      origins: "/.*/"
+  # graceful shutdown in case Quarkus is still processing requests
+  shutdown:
+    timeout: 30
   log:
     handler:
       kafka:
@@ -156,3 +166,4 @@ causeway:
       enabled: false
     oidc-client:
       enabled: false
+
