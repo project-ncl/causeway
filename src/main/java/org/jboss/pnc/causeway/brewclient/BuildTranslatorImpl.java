@@ -111,16 +111,6 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 build.getBuildConfigRevision().getBuildType());
         addLog(buildLog, builder, buildRootId);
         addLog(alignLlog, builder, buildRootId);
-        if (build.getBuildConfigRevision().getBuildType() == BuildType.MVN_RPM) {
-            artifacts.getBuildArtifacts()
-                    .stream()
-                    .filter(a -> a.getFilename().endsWith(".spec") || a.getFilename().endsWith(".pom"))
-                    .forEach(
-                            a -> addLog(
-                                    new BurnAfterReadingFile(a.getFilename(), a.getSize(), a.getMd5()),
-                                    builder,
-                                    buildRootId));
-        }
         addSources(sources, builder, buildRootId);
         KojiImport translatedBuild = buildTranslatedBuild(builder);
         userLog.info(
@@ -225,6 +215,10 @@ public class BuildTranslatorImpl implements BuildTranslator {
                         if (artifact.getFilename().endsWith("src.rpm")) {
                             outputBuilder.withArch(StandardArchitecture.src);
                         }
+                    } else if (artifact.getFilename().endsWith(".spec") || artifact.getFilename().endsWith(".pom")) {
+                        BuildOutput.Builder outputBuilder = getOutputBuilder(builder, buildRootId, artifact);
+                        outputBuilder.withOutputType(StandardOutputType.log);
+                        outputBuilder.withFileSize(artifact.getSize());
                     }
                     break;
                 }
