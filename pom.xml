@@ -109,7 +109,7 @@
     <dependency>
       <groupId>org.jboss.pnc</groupId>
       <artifactId>rest-client-jakarta</artifactId>
-      <version>3.2.5-SNAPSHOT</version>
+      <version>3.2.8</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
