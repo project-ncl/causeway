@@ -9,7 +9,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jboss.pnc.causeway</groupId>
   <artifactId>causeway</artifactId>
-  <version>4.0.3-SNAPSHOT</version>
+  <version>4.0.4-SNAPSHOT</version>
 
   <name>Causeway</name>
   <description>PNC-to-Koji Bridge</description>
