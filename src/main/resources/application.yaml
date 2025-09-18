@@ -6,6 +6,8 @@
 # I believe I need to add this so tha the extension is activated at runtime?
 quarkus:
   http:
+    enable-compression: true
+    enable-decompression: true
     limits:
       max-body-size: 100M
     # Add CORS
