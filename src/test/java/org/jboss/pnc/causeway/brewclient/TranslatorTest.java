@@ -21,7 +21,7 @@ import java.util.Objects;
 import jakarta.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Condition;
 import org.jboss.pnc.causeway.impl.BurnAfterReadingFile;
 import org.jboss.pnc.causeway.pncclient.BuildArtifacts;
