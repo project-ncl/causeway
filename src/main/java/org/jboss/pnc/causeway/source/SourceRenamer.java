@@ -103,7 +103,7 @@ public class SourceRenamer {
             String archiveName = name + ARCHIVE_SUFFIX;
 
             return new RenamedSources(tempFile, path.resolve(archiveName).toString(), md5Hash, artifacType);
-        } catch (IOException | CompressorException ex) {
+        } catch (IOException ex) {
             throw new CausewayException(ErrorMessages.errorRepackingArchive(ex), ex);
         } catch (NoSuchAlgorithmException ex) {
             throw new IllegalStateException(ErrorMessages.missingMD5Support(ex), ex);
