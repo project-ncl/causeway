@@ -52,7 +52,7 @@
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
     <quarkus.platform.version>3.28.5</quarkus.platform.version>
     <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
-    <quarkus-logging-kafka.version>1.0.6</quarkus-logging-kafka.version>
+    <quarkus-logging-kafka.version>3.0.3</quarkus-logging-kafka.version>
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.2.5</surefire-plugin.version>
     <version.javadoc.plugin>3.11.2</version.javadoc.plugin>
