@@ -5,6 +5,7 @@
 package org.jboss.pnc.causeway;
 
 import java.time.ZonedDateTime;
+import java.util.UUID;
 import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
 
@@ -25,6 +26,7 @@ import org.jboss.pnc.api.causeway.dto.push.PushResult;
 import org.jboss.pnc.api.causeway.dto.untag.UntagRequest;
 import org.jboss.pnc.api.causeway.rest.Causeway;
 import org.jboss.pnc.api.dto.ComponentVersion;
+import org.jboss.pnc.api.dto.ExceptionResolution;
 import org.jboss.pnc.api.dto.HeartbeatConfig;
 import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.api.enums.ResultStatus;
@@ -97,14 +99,45 @@ public class CausewayResource implements Causeway {
             e = e.getCause();
         }
         if (e instanceof CausewayFailure) {
-            log.info("Failure: " + e.getMessage());
+            final String errorId = UUID.randomUUID().toString();
+            final ExceptionResolution exceptionResolution = ExceptionResolution.builder()
+                    .reason("Failure: " + e.getMessage())
+                    .proposal(String.format("There is an internal system error, please contact PNC team at #forum-pnc-users (with the following ID: %s)",
+                            errorId))
+                    .build();
+            log.info("[{}] Failure: {}", errorId, e.getMessage());
             resultBuilder.result(ResultStatus.FAILED);
+            resultBuilder.exceptionResolution(exceptionResolution);
         } else if (e instanceof CausewayException) {
-            log.error(e.getMessage(), e);
+            final String errorId = UUID.randomUUID().toString();
+            final ExceptionResolution exceptionResolution = ExceptionResolution.builder()
+                    .reason(
+                            String.format(
+                                    "Error in causeway: %s",
+                                    e.getMessage() == null ? errorId : e.getMessage()))
+                    .proposal(
+                            String.format(
+                                    "There is an internal system error, please contact PNC team at #forum-pnc-users (with the following ID: %s)",
+                                    errorId))
+                    .build();
+            log.error("[{}] {}", errorId, e.getMessage(), e);
             resultBuilder.result(ResultStatus.SYSTEM_ERROR);
+            resultBuilder.exceptionResolution(exceptionResolution);
         } else {
-            log.error("Unexpected error while pushing to Brew: " + e.getMessage(), e);
+            final String errorId = UUID.randomUUID().toString();
+            final ExceptionResolution exceptionResolution = ExceptionResolution.builder()
+                    .reason(
+                            String.format(
+                                    "Unexpected error while pushing to Brew: %s",
+                                    e.getMessage() == null ? errorId : e.getMessage()))
+                    .proposal(
+                            String.format(
+                                    "There is an internal system error, please contact PNC team at #forum-pnc-users (with the following ID: %s)",
+                                    errorId))
+                    .build();
+            log.error("[{}] Unexpected error while pushing to Brew: {}", errorId, e.getMessage(), e);
             resultBuilder.result(ResultStatus.SYSTEM_ERROR);
+            resultBuilder.exceptionResolution(exceptionResolution);
         }
 
         return resultBuilder.build();
