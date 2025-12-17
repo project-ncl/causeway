@@ -94,23 +94,25 @@ public class CausewayResource implements Causeway {
     }
 
     private static PushResult handleError(Throwable e, String buildId) {
-        PushResult.PushResultBuilder resultBuilder = PushResult.builder().buildId(buildId);
+        final String errorId = UUID.randomUUID().toString();
+        final ResultStatus resultStatus;
+        final ExceptionResolution exceptionResolution;
         if (e instanceof CompletionException) {
             e = e.getCause();
         }
         if (e instanceof CausewayFailure) {
-            final String errorId = UUID.randomUUID().toString();
-            final ExceptionResolution exceptionResolution = ExceptionResolution.builder()
-                    .reason("Failure: " + e.getMessage())
-                    .proposal(String.format("There is an internal system error, please contact PNC team at #forum-pnc-users (with the following ID: %s)",
-                            errorId))
-                    .build();
             log.info("[{}] Failure: {}", errorId, e.getMessage());
-            resultBuilder.result(ResultStatus.FAILED);
-            resultBuilder.exceptionResolution(exceptionResolution);
+            exceptionResolution = ExceptionResolution.builder()
+                    .reason("Failure: " + e.getMessage())
+                    .proposal(
+                            String.format(
+                                    "There is an internal system error, please contact PNC team at #forum-pnc-users (with the following ID: %s)",
+                                    errorId))
+                    .build();
+            resultStatus = ResultStatus.FAILED;
         } else if (e instanceof CausewayException) {
-            final String errorId = UUID.randomUUID().toString();
-            final ExceptionResolution exceptionResolution = ExceptionResolution.builder()
+            log.error("[{}] {}", errorId, e.getMessage(), e);
+            exceptionResolution = ExceptionResolution.builder()
                     .reason(
                             String.format(
                                     "Error in causeway: %s",
@@ -120,12 +122,10 @@ public class CausewayResource implements Causeway {
                                     "There is an internal system error, please contact PNC team at #forum-pnc-users (with the following ID: %s)",
                                     errorId))
                     .build();
-            log.error("[{}] {}", errorId, e.getMessage(), e);
-            resultBuilder.result(ResultStatus.SYSTEM_ERROR);
-            resultBuilder.exceptionResolution(exceptionResolution);
+            resultStatus = ResultStatus.SYSTEM_ERROR;
         } else {
-            final String errorId = UUID.randomUUID().toString();
-            final ExceptionResolution exceptionResolution = ExceptionResolution.builder()
+            log.error("[{}] Unexpected error while pushing to Brew: {}", errorId, e.getMessage(), e);
+            exceptionResolution = ExceptionResolution.builder()
                     .reason(
                             String.format(
                                     "Unexpected error while pushing to Brew: %s",
@@ -135,11 +135,12 @@ public class CausewayResource implements Causeway {
                                     "There is an internal system error, please contact PNC team at #forum-pnc-users (with the following ID: %s)",
                                     errorId))
                     .build();
-            log.error("[{}] Unexpected error while pushing to Brew: {}", errorId, e.getMessage(), e);
-            resultBuilder.result(ResultStatus.SYSTEM_ERROR);
-            resultBuilder.exceptionResolution(exceptionResolution);
+            resultStatus = ResultStatus.SYSTEM_ERROR;
         }
 
+        final PushResult.PushResultBuilder resultBuilder = PushResult.builder().buildId(buildId);
+        resultBuilder.result(resultStatus);
+        resultBuilder.exceptionResolution(exceptionResolution);
         return resultBuilder.build();
     }
 
