@@ -5,6 +5,7 @@
 package org.jboss.pnc.causeway;
 
 import java.time.ZonedDateTime;
+import java.util.UUID;
 import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
 
@@ -25,6 +26,7 @@ import org.jboss.pnc.api.causeway.dto.push.PushResult;
 import org.jboss.pnc.api.causeway.dto.untag.UntagRequest;
 import org.jboss.pnc.api.causeway.rest.Causeway;
 import org.jboss.pnc.api.dto.ComponentVersion;
+import org.jboss.pnc.api.dto.ExceptionResolution;
 import org.jboss.pnc.api.dto.HeartbeatConfig;
 import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.api.enums.ResultStatus;
@@ -92,21 +94,53 @@ public class CausewayResource implements Causeway {
     }
 
     private static PushResult handleError(Throwable e, String buildId) {
-        PushResult.PushResultBuilder resultBuilder = PushResult.builder().buildId(buildId);
+        final String errorId = UUID.randomUUID().toString();
+        final ResultStatus resultStatus;
+        final ExceptionResolution exceptionResolution;
         if (e instanceof CompletionException) {
             e = e.getCause();
         }
         if (e instanceof CausewayFailure) {
-            log.info("Failure: " + e.getMessage());
-            resultBuilder.result(ResultStatus.FAILED);
+            log.info("[{}] Failure: {}", errorId, e.getMessage());
+            exceptionResolution = ExceptionResolution.builder()
+                    .reason("Failure: " + e.getMessage())
+                    .proposal(
+                            String.format(
+                                    "There is an internal system error, please contact PNC team at #forum-pnc-users (with the following ID: %s)",
+                                    errorId))
+                    .build();
+            resultStatus = ResultStatus.FAILED;
         } else if (e instanceof CausewayException) {
-            log.error(e.getMessage(), e);
-            resultBuilder.result(ResultStatus.SYSTEM_ERROR);
+            log.error("[{}] {}", errorId, e.getMessage(), e);
+            exceptionResolution = ExceptionResolution.builder()
+                    .reason(
+                            String.format(
+                                    "Error in causeway: %s",
+                                    e.getMessage() == null ? errorId : e.getMessage()))
+                    .proposal(
+                            String.format(
+                                    "There is an internal system error, please contact PNC team at #forum-pnc-users (with the following ID: %s)",
+                                    errorId))
+                    .build();
+            resultStatus = ResultStatus.SYSTEM_ERROR;
         } else {
-            log.error("Unexpected error while pushing to Brew: " + e.getMessage(), e);
-            resultBuilder.result(ResultStatus.SYSTEM_ERROR);
+            log.error("[{}] Unexpected error while pushing to Brew: {}", errorId, e.getMessage(), e);
+            exceptionResolution = ExceptionResolution.builder()
+                    .reason(
+                            String.format(
+                                    "Unexpected error while pushing to Brew: %s",
+                                    e.getMessage() == null ? errorId : e.getMessage()))
+                    .proposal(
+                            String.format(
+                                    "There is an internal system error, please contact PNC team at #forum-pnc-users (with the following ID: %s)",
+                                    errorId))
+                    .build();
+            resultStatus = ResultStatus.SYSTEM_ERROR;
         }
 
+        final PushResult.PushResultBuilder resultBuilder = PushResult.builder().buildId(buildId);
+        resultBuilder.result(resultStatus);
+        resultBuilder.exceptionResolution(exceptionResolution);
         return resultBuilder.build();
     }
 
