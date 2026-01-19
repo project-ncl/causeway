@@ -14,4 +14,4 @@ on:
 
 jobs:
     call-maven-ci:
-      uses: project-ncl/shared-github-actions/.github/workflows/maven-ci.yml@v0.0.3
+      uses: project-ncl/shared-github-actions/.github/workflows/maven-ci.yml@v0.0.6
