@@ -6,9 +6,7 @@ on:
 
 jobs:
     call-snapshot-job:
-      uses: project-ncl/shared-github-actions/.github/workflows/maven-snapshot.yml@v0.0.3
+      uses: project-ncl/shared-github-actions/.github/workflows/maven-snapshot.yml@v0.0.6
       with:
         project_name: 'project-ncl/causeway'
-      secrets:
-        SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-        SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      secrets: inherit
