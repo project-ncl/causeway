@@ -180,7 +180,7 @@ public class ImportControllerImpl implements ImportController {
                 .findAny();
         if (sourceJar.isEmpty()) {
             userLog.info("Sources at '{}' not present, generating sources file.", sourcesDeployPath);
-            try (InputStream sourcesStream = pncClient.getSources(build.getId())) {
+            try (InputStream sourcesStream = pncClient.getSources(build)) {
                 return translator.getSources(build, artifacts, sourcesStream);
             } catch (IOException ex) {
                 userLog.error("Unable to download sources with buildId " + build.getId(), ex);

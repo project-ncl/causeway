@@ -163,6 +163,8 @@ causeway:
     #      server-certificate-file: src/test/resources/cert/snakeoil.pem
     pnc:
       url: "http://localhost:${quarkus.wiremock.devservices.port}/pnc-rest/rest"
+    github:
+      github-token: token
   quarkus:
     oidc:
       enabled: false

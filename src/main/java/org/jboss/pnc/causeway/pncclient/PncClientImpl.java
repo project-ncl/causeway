@@ -4,16 +4,23 @@
  */
 package org.jboss.pnc.causeway.pncclient;
 
+import static org.jboss.pnc.common.scm.ScmUrlGeneratorProvider.determineScmProvider;
+import static org.jboss.pnc.common.scm.ScmUrlGeneratorProvider.getScmUrlGenerator;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.core.Response;
 
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.jboss.pnc.causeway.CausewayConfig;
@@ -23,6 +30,7 @@ import org.jboss.pnc.causeway.impl.BurnAfterReadingFile;
 import org.jboss.pnc.client.BuildClient;
 import org.jboss.pnc.client.Configuration;
 import org.jboss.pnc.client.RemoteResourceException;
+import org.jboss.pnc.common.scm.ScmException;
 import org.jboss.pnc.dto.Artifact;
 import org.jboss.pnc.dto.Build;
 
@@ -38,6 +46,8 @@ public class PncClientImpl implements PncClient {
 
     private final BuildClient buildClient;
 
+    private final String githubToken;
+
     @Inject
     public PncClientImpl(CausewayConfig config) {
         URL url = config.pnc().url();
@@ -48,6 +58,7 @@ public class PncClientImpl implements PncClient {
                 .addDefaultMdcToHeadersMappings()
                 .port((url.getPort() != -1) ? url.getPort() : url.getDefaultPort())
                 .build();
+        githubToken = config.github().githubToken();
 
         log.debug("Client config: " + clientConfig);
         this.buildClient = new BuildClient(clientConfig);
@@ -108,25 +119,36 @@ public class PncClientImpl implements PncClient {
     @Retry
     @ExponentialBackoff
     @Override
-    public InputStream getSources(String id) throws CausewayException {
+    public InputStream getSources(Build build) throws CausewayException {
         try {
-            log.debug("Getting sources of build with id {} from PNC", id);
-            Response response = buildClient.getInternalScmArchiveLink(id);
+            log.debug("Getting sources of build with id {} from PNC", build.getId());
+            var provider = determineScmProvider(build.getScmUrl(), build.getScmRepository().getInternalUrl());
+
+            URI uri = new URI(
+                    getScmUrlGenerator(provider)
+                            .generateTarballDownloadUrl(build.getScmUrl(), build.getScmRevision()));
+            HttpClient httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .header("Authorization", "Bearer " + githubToken)
+                    .GET()
+                    .build();
+            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
             try {
-                if (response.getStatus() >= 400) {
+                if (response.statusCode() >= 400) {
                     throw new CausewayException(
                             ErrorMessages.errorReadingBuildSources(
-                                    id,
-                                    response.getStatus(),
-                                    response.readEntity(String.class)));
+                                    build.getId(),
+                                    response.statusCode(),
+                                    new String(response.body().readAllBytes())));
                 }
-                return response.readEntity(InputStream.class);
+                return response.body();
             } catch (RuntimeException ex) {
-                response.close();
-                throw new CausewayException(ErrorMessages.errorReadingBuildSources(id, ex), ex);
+                throw new CausewayException(ErrorMessages.errorReadingBuildSources(build.getId(), ex), ex);
             }
-        } catch (RemoteResourceException ex) {
-            throw new CausewayException(ErrorMessages.errorReadingBuildSources(id, ex), ex);
+        } catch (URISyntaxException | ScmException | IOException | InterruptedException e) {
+            throw new CausewayException(ErrorMessages.errorReadingBuildSources(build.getId(), e), e);
         }
     }
 

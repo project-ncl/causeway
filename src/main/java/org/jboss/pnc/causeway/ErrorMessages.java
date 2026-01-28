@@ -376,7 +376,7 @@ public class ErrorMessages {
     /**
      * {@value ERROR_READING_BUILD_SOURCES_NO_STATUS}
      */
-    public static String errorReadingBuildSources(String buildId, RuntimeException ex) {
+    public static String errorReadingBuildSources(String buildId, Exception ex) {
         return MessageFormat.format(ERROR_READING_BUILD_SOURCES_NO_STATUS, buildId, ex);
     }
 
