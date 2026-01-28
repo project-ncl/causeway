@@ -21,6 +21,12 @@ public interface CausewayConfig {
 
     PNCHttpClientConfig httpClientConfig();
 
+    GithubSecret github();
+
+    interface GithubSecret {
+        String githubToken();
+    }
+
     interface Koji {
 
         String url();

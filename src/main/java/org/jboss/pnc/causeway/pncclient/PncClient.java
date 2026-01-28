@@ -22,7 +22,7 @@ public interface PncClient {
 
     BurnAfterReadingFile getAlignLog(String buildId) throws CausewayException;
 
-    InputStream getSources(String id) throws CausewayException;
+    InputStream getSources(Build build) throws CausewayException;
 
     Build findBuild(String buildId);
 }
