@@ -109,7 +109,7 @@
     <dependency>
       <groupId>org.jboss.pnc</groupId>
       <artifactId>rest-client-jakarta</artifactId>
-      <version>3.3.1</version>
+      <version>3.4.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -207,7 +207,7 @@
     <dependency>
       <groupId>org.jboss.pnc</groupId>
       <artifactId>pnc-api</artifactId>
-      <version>3.2.5-SNAPSHOT</version>
+      <version>3.4.0</version>
       <classifier>jakarta</classifier>
     </dependency>
     <dependency>
@@ -218,7 +218,7 @@
     <dependency>
       <groupId>org.jboss.pnc</groupId>
       <artifactId>pnc-common</artifactId>
-      <version>3.3.4</version>
+      <version>3.4.0</version>
       <classifier>jakarta</classifier>
       <exclusions>
         <exclusion>
