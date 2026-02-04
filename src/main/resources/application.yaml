@@ -6,6 +6,9 @@
 # I believe I need to add this so tha the extension is activated at runtime?
 quarkus:
   http:
+    auth:
+      # required for LDAP: build-time property
+      basic: true
     enable-compression: true
     enable-decompression: true
     limits:
@@ -42,6 +45,19 @@ quarkus:
     client-id: my-app
     credentials:
       secret: secret
+
+  security:
+    ldap:
+      # enable LDAP: build-time property
+      enabled: true
+      cache:
+        enabled: true
+        max-age: 5m
+      dir-context:
+        url: ldaps://ldap-server.com
+      identity-mapping:
+        search-base-dn: ou=company.com
+
   fault-tolerance:
     "org.jboss.pnc.causeway.brewclient.BrewClientImpl/findBrewBuildOfNVR":
       retry:
@@ -134,6 +150,11 @@ causeway:
     builds-url: ${causeway.pnc.url}/../pnc-web/builds/
     system-version: 3
 
+pnc_client_auth:
+  type: OIDC # or LDAP
+  # ldap_credentials:
+  #    path: /mnt/secrets/ldap_credentials # file must be in format: <username>:<password>
+
 "%dev":
   quarkus:
     log:
@@ -166,8 +187,17 @@ causeway:
     github:
       github-token: token
   quarkus:
+    arc:
+      # to use the Mocked one
+      exclude-types: org.jboss.pnc.quarkus.client.auth.runtime.PNCClientAuthImpl
     oidc:
       enabled: false
     oidc-client:
       enabled: false
+    http:
+      auth:
+        basic: false
+    security:
+      ldap:
+        enabled: false
 
