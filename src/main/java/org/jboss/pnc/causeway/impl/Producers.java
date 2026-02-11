@@ -4,7 +4,6 @@
  */
 package org.jboss.pnc.causeway.impl;
 
-import java.time.Duration;
 import java.util.concurrent.ScheduledExecutorService;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -14,10 +13,9 @@ import jakarta.inject.Inject;
 import org.jboss.pnc.causeway.CausewayConfig;
 import org.jboss.pnc.common.concurrent.HeartbeatScheduler;
 import org.jboss.pnc.common.http.PNCHttpClient;
+import org.jboss.pnc.quarkus.client.auth.runtime.PNCClientAuth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.quarkus.oidc.client.OidcClient;
 
 @ApplicationScoped
 public class Producers {
@@ -27,12 +25,11 @@ public class Producers {
     @Inject
     public Producers(
             ScheduledExecutorService executorService,
-            OidcClient oidcClient,
+            PNCClientAuth pncClientAuth,
             CausewayConfig causewayConfig,
             ObjectMapper objectMapper) {
         httpClient = new PNCHttpClient(objectMapper, causewayConfig.httpClientConfig());
-        httpClient
-                .setTokenSupplier(() -> oidcClient.getTokens().await().atMost(Duration.ofMinutes(1)).getAccessToken());
+        httpClient.setAuthValueSupplier(pncClientAuth::getHttpAuthorizationHeaderValue);
         heartbeatScheduler = new HeartbeatScheduler(executorService, httpClient);
     }
 
