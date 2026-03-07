@@ -57,7 +57,7 @@
     <surefire-plugin.version>3.5.5</surefire-plugin.version>
     <version.javadoc.plugin>3.12.0</version.javadoc.plugin>
     <version.source.plugin>3.4.0</version.source.plugin>
-    <atlas.version>1.1.9</atlas.version>
+    <atlas.version>1.2.1</atlas.version>
     <bouncycastle.version>1.82</bouncycastle.version>
     <tagSuffix/>
   </properties>
