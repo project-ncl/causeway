@@ -75,11 +75,25 @@
         <groupId>org.commonjava.atlas</groupId>
         <artifactId>atlas-identities</artifactId>
         <version>${atlas.version}</version>
+        <exclusions>
+          <!-- collides with Quarkus native logging -->
+          <exclusion>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.commonjava.atlas</groupId>
         <artifactId>atlas-npm-identities</artifactId>
         <version>${atlas.version}</version>
+        <exclusions>
+          <!-- collides with Quarkus native logging -->
+          <exclusion>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId>
@@ -100,6 +114,11 @@
       <artifactId>kojiji</artifactId>
       <version>2.25</version>
       <exclusions>
+        <!-- collides with Quarkus native logging -->
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>log4j-over-slf4j</artifactId>
