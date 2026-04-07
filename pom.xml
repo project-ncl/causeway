@@ -294,17 +294,6 @@
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
-      <id>jboss-snapshots</id>
-      <url>https://repository.jboss.org/nexus/content/repositories/snapshots</url>
-    </repository>
-
-    <repository>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
       <id>central-portal-snapshots</id>
       <name>Central Portal Snapshots</name>
       <url>https://central.sonatype.com/repository/maven-snapshots/</url>
