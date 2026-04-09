@@ -9,7 +9,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jboss.pnc.causeway</groupId>
   <artifactId>causeway</artifactId>
-  <version>4.0.6</version>
+  <version>4.0.7-SNAPSHOT</version>
 
   <name>Causeway</name>
   <description>PNC-to-Koji Bridge</description>
@@ -39,7 +39,7 @@
   <scm>
     <connection>scm:git:http://github.com/project-ncl/causeway.git</connection>
     <developerConnection>scm:git:git@github.com:project-ncl/causeway.git</developerConnection>
-    <tag>4.0.6</tag>
+    <tag>HEAD</tag>
     <url>http://github.com/project-ncl/causeway</url>
   </scm>
 
@@ -59,7 +59,7 @@
     <version.source.plugin>3.4.0</version.source.plugin>
     <atlas.version>1.2.2</atlas.version>
     <bouncycastle.version>1.82</bouncycastle.version>
-    <tagSuffix/>
+    <tagSuffix />
   </properties>
 
   <dependencyManagement>
@@ -371,7 +371,7 @@
             </sortPom>
           </pom>
           <java>
-            <removeUnusedImports/>
+            <removeUnusedImports />
             <importOrder>
               <file>java-import-order.txt</file>
             </importOrder>
