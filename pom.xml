@@ -52,7 +52,7 @@
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
     <quarkus.platform.version>3.34.2</quarkus.platform.version>
     <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
-    <quarkus-logging-kafka.version>3.0.4-SNAPSHOT</quarkus-logging-kafka.version>
+    <quarkus-logging-kafka.version>3.0.4</quarkus-logging-kafka.version>
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.5.5</surefire-plugin.version>
     <version.javadoc.plugin>3.12.0</version.javadoc.plugin>
@@ -161,7 +161,7 @@
     <dependency>
       <groupId>org.jboss.pnc</groupId>
       <artifactId>quarkus-pnc-client-auth</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -246,7 +246,7 @@
     <dependency>
       <groupId>org.jboss.pnc</groupId>
       <artifactId>pnc-common</artifactId>
-      <version>3.4.1-SNAPSHOT</version>
+      <version>3.4.1</version>
       <classifier>jakarta</classifier>
       <exclusions>
         <exclusion>
