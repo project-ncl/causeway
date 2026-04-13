@@ -59,7 +59,7 @@
     <version.source.plugin>3.4.0</version.source.plugin>
     <atlas.version>1.2.2</atlas.version>
     <bouncycastle.version>1.82</bouncycastle.version>
-    <tagSuffix />
+    <tagSuffix/>
   </properties>
 
   <dependencyManagement>
@@ -371,7 +371,7 @@
             </sortPom>
           </pom>
           <java>
-            <removeUnusedImports />
+            <removeUnusedImports/>
             <importOrder>
               <file>java-import-order.txt</file>
             </importOrder>
