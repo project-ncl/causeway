@@ -6,6 +6,7 @@ package org.jboss.pnc.causeway.ctl;
 
 import static org.jboss.pnc.api.constants.Attributes.BUILD_BREW_NAME;
 import static org.jboss.pnc.api.constants.Attributes.BUILD_BREW_VERSION;
+import static org.jboss.pnc.api.constants.Attributes.IMAGE_MANIFEST_URL;
 import static org.jboss.pnc.causeway.impl.Meters.METRICS_IMPORT;
 import static org.jboss.pnc.causeway.impl.Meters.METRICS_UNTAG;
 import static org.jboss.pnc.enums.ArtifactQuality.BLACKLISTED;
@@ -13,6 +14,8 @@ import static org.jboss.pnc.enums.ArtifactQuality.DELETED;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -157,17 +160,36 @@ public class ImportControllerImpl implements ImportController {
     private BrewBuild translateAndImport(Build build, BuildArtifacts artifacts, BrewNVR nvr, String username) {
         BurnAfterReadingFile buildLog = pncClient.getBuildLog(build.getId());
         BurnAfterReadingFile alignLog = pncClient.getAlignLog(build.getId());
+        BurnAfterReadingFile sbom = null;
+        String url = build.getEnvironment().getAttributes().get(IMAGE_MANIFEST_URL);
+        if (url == null) {
+            userLog.error("Image manifest URL missing");
+        } else {
+            try {
+                sbom = BurnAfterReadingFile
+                        .fromInputStream("build-environment-manifest.sbom", new URL(url).openStream());
+            } catch (IOException | NoSuchAlgorithmException e) {
+                throw new CausewayException("Unable to download and add SBOM", e);
+            }
+        }
 
         RenamedSources sources = getSources(build, artifacts);
-        KojiImport kojiImport = translator.translate(nvr, build, artifacts, sources, buildLog, alignLog, username);
-        ImportFileGenerator importFiles = translator.getImportFiles(artifacts, sources, buildLog, alignLog);
+        KojiImport kojiImport = translator
+                .translate(nvr, build, artifacts, sources, buildLog, alignLog, sbom, username);
+        ImportFileGenerator importFiles = translator.getImportFiles(artifacts, sources, buildLog, alignLog, sbom);
         BrewBuild brewBuild = brewClient.importBuild(nvr, kojiImport, importFiles);
 
         long artifactSize = artifacts.getBuildArtifacts().stream().mapToLong(ArtifactRef::getSize).sum();
         meters.recordArtifactsSize(artifactSize);
         meters.recordArtifactsNumber(artifacts.getBuildArtifacts().size());
-        meters.recordLogsSize(buildLog.getSize() + alignLog.getSize());
-        meters.recordLogsNumber(2);
+        long logsSize = buildLog.getSize() + alignLog.getSize();
+        long logsNumber = 2;
+        if (sbom != null) {
+            logsSize += sbom.getSize();
+            logsNumber++;
+        }
+        meters.recordLogsSize(logsSize);
+        meters.recordLogsNumber(logsNumber);
 
         return brewBuild;
     }

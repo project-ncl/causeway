@@ -6,13 +6,9 @@ package org.jboss.pnc.causeway.brewclient;
 
 import static org.jboss.pnc.api.constants.Attributes.BUILD_BREW_NAME;
 import static org.jboss.pnc.api.constants.Attributes.BUILD_BREW_VERSION;
-import static org.jboss.pnc.api.constants.Attributes.IMAGE_MANIFEST_URL;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -77,6 +73,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             RenamedSources sources,
             BurnAfterReadingFile buildLog,
             BurnAfterReadingFile alignLlog,
+            BurnAfterReadingFile sbom,
             String username) throws CausewayException {
         String externalBuildId = String.valueOf(build.getId());
         String externalBuildUrl = null;
@@ -115,25 +112,10 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 build.getBuildConfigRevision().getBuildType());
         addLog(buildLog, builder, buildRootId);
         addLog(alignLlog, builder, buildRootId);
-        addSources(sources, builder, buildRootId);
-        // Technically the sbom could be attached for *any* brew push. If so we should
-        // probably refactor the function and perhaps look at caching the downloaded file.
-        if (build.getBuildConfigRevision().getBuildType() == BuildType.MVN_RPM) {
-            String url = build.getEnvironment().getAttributes().get(IMAGE_MANIFEST_URL);
-            if (url == null) {
-                userLog.error("Image manifest URL missing");
-            } else {
-                try {
-                    addLog(
-                            BurnAfterReadingFile
-                                    .fromInputStream("build-environment-manifest.sbom", new URL(url).openStream()),
-                            builder,
-                            buildRootId);
-                } catch (IOException | NoSuchAlgorithmException e) {
-                    throw new CausewayException("Unable to download and add SBOM", e);
-                }
-            }
+        if (sbom != null) {
+            addLog(sbom, builder, buildRootId);
         }
+        addSources(sources, builder, buildRootId);
         KojiImport translatedBuild = buildTranslatedBuild(builder);
         userLog.info(
                 "Added files to import {}",
@@ -263,9 +245,10 @@ public class BuildTranslatorImpl implements BuildTranslator {
             BuildArtifacts artifacts,
             BurnAfterReadingFile sources,
             BurnAfterReadingFile buildLog,
-            BurnAfterReadingFile alignLog) throws CausewayException {
+            BurnAfterReadingFile alignLog,
+            BurnAfterReadingFile sbom) throws CausewayException {
         try {
-            ImportFileGenerator ret = new ImportFileGenerator(sources, buildLog, alignLog);
+            ImportFileGenerator ret = new ImportFileGenerator(sources, buildLog, alignLog, sbom);
             for (ArtifactRef artifact : artifacts.getBuildArtifacts()) {
                 ret.addUrl(
                         artifact.getId(),
