@@ -136,7 +136,7 @@ public class ImportControllerTest {
 
         // Mock Brew import
         KojiImport kojiImport = mock(KojiImport.class);
-        doReturn(kojiImport).when(translator).translate(eq(MVN_NVR2), any(), any(), any(), any(), any(), any());
+        doReturn(kojiImport).when(translator).translate(eq(MVN_NVR2), any(), any(), any(), any(), any(), any(), any());
         int newKojiBuildID = 12;
         BrewBuild brewBuild = new BrewBuild(newKojiBuildID, MVN_NVR2);
         doReturn(brewBuild).when(brewClient).importBuild(eq(MVN_NVR2), same(kojiImport), same(IMPORT_FILE_GENERATOR));
@@ -318,7 +318,7 @@ public class ImportControllerTest {
         BuildConfigurationRevision bcar = createBuildConfiguration(id, env, BuildType.MVN);
 
         // Mock BuildRecord
-        Build buildRecord = createBuildRecord(buildId, bcar, MVN_BUILD_NAME, MVN_VERSION);
+        Build buildRecord = createBuildRecord(env, buildId, bcar, MVN_BUILD_NAME, MVN_VERSION);
 
         // Mock BuildArtifacts
         BuildArtifacts buildArtifacts = new BuildArtifacts();
@@ -341,7 +341,7 @@ public class ImportControllerTest {
         BuildConfigurationRevision bcar = createBuildConfiguration(id, env, BuildType.NPM);
 
         // Mock BuildRecord
-        Build buildRecord = createBuildRecord(buildId, bcar, NPM_BUILD_NAME, NPM_VERSION);
+        Build buildRecord = createBuildRecord(env, buildId, bcar, NPM_BUILD_NAME, NPM_VERSION);
 
         // Mock BuildArtifacts
         BuildArtifacts buildArtifacts = new BuildArtifacts();
@@ -384,6 +384,7 @@ public class ImportControllerTest {
     }
 
     private Build createBuildRecord(
+            Environment env,
             String buildId,
             BuildConfigurationRevision bcar,
             String brewBuildName,
@@ -406,6 +407,7 @@ public class ImportControllerTest {
                 .submitTime(submit.toInstant())
                 .startTime(start.toInstant())
                 .endTime(end.toInstant())
+                .environment(env)
                 .user(user)
                 .attributes(attributes)
                 .buildConfigRevision(bcar)
@@ -455,8 +457,8 @@ public class ImportControllerTest {
     }
 
     private void mockTranslator() throws CausewayException {
-        doReturn(KOJI_IMPORT).when(translator).translate(eq(MVN_NVR), any(), any(), any(), any(), any(), any());
-        doReturn(IMPORT_FILE_GENERATOR).when(translator).getImportFiles(any(), any(), any(), any());
+        doReturn(KOJI_IMPORT).when(translator).translate(eq(MVN_NVR), any(), any(), any(), any(), any(), any(), any());
+        doReturn(IMPORT_FILE_GENERATOR).when(translator).getImportFiles(any(), any(), any(), any(), any());
         doReturn("/path/to/sources.tar.gz").when(translator).getSourcesDeployPath(any(), any());
     }
 

@@ -27,7 +27,8 @@ public interface BuildTranslator {
             BuildArtifacts artifacts,
             BurnAfterReadingFile sources,
             BurnAfterReadingFile buildLog,
-            BurnAfterReadingFile alignLog) throws CausewayException;
+            BurnAfterReadingFile alignLog,
+            BurnAfterReadingFile sbom) throws CausewayException;
 
     KojiImport translate(
             BrewNVR nvr,
@@ -36,6 +37,7 @@ public interface BuildTranslator {
             RenamedSources sources,
             BurnAfterReadingFile buildLog,
             BurnAfterReadingFile alignLog,
+            BurnAfterReadingFile sbom,
             String username) throws CausewayException;
 
     RenamedSources getSources(Build build, BuildArtifacts artifacts, InputStream sourcesStream)

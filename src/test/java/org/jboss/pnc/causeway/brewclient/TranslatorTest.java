@@ -121,6 +121,7 @@ public class TranslatorTest {
                 sources,
                 mockBARF("foo-bar-logs"),
                 mockBARF("foo-bar-align-logs"),
+                null,
                 "joe");
 
         // Then
@@ -183,6 +184,7 @@ public class TranslatorTest {
                 sources,
                 mockBARF("foo-bar-logs"),
                 mockBARF("foo-bar-align-logs"),
+                null,
                 "joe");
 
         // Then
@@ -247,6 +249,7 @@ public class TranslatorTest {
                         sources,
                         mockBARF("foo-bar-logs"),
                         mockBARF("foo-bar-align-logs"),
+                        null,
                         "joe"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
