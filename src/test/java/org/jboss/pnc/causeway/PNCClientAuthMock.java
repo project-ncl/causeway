@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2015 Red Hat, Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package org.jboss.pnc.causeway;
 
 import java.io.IOException;

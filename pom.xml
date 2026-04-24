@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2024 Red Hat, Inc.
+    Copyright (C) 2015 Red Hat, Inc.
     SPDX-License-Identifier: Apache-2.0
 
 -->
@@ -13,18 +13,18 @@
 
   <name>Causeway</name>
   <description>PNC-to-Koji Bridge</description>
-  <url>http://github.com/project-ncl/causeway</url>
+  <url>https://github.com/project-ncl/causeway</url>
   <inceptionYear>2015</inceptionYear>
 
   <organization>
     <name>Red Hat, Inc.</name>
-    <url>http://www.redhat.com/</url>
+    <url>https://www.redhat.com/</url>
   </organization>
 
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.html</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -32,12 +32,12 @@
   <developers>
     <developer>
       <organization>RedHat</organization>
-      <organizationUrl>http://www.redhat.com</organizationUrl>
+      <organizationUrl>https://www.redhat.com</organizationUrl>
     </developer>
   </developers>
 
   <scm>
-    <connection>scm:git:http://github.com/project-ncl/causeway.git</connection>
+    <connection>scm:git:https://github.com/project-ncl/causeway.git</connection>
     <developerConnection>scm:git:git@github.com:project-ncl/causeway.git</developerConnection>
     <tag>HEAD</tag>
     <url>https://github.com/project-ncl/causeway</url>
@@ -404,10 +404,11 @@
         <configuration>
           <licenseSets>
             <licenseSet>
-              <header>LICENSE-header.txt</header>
+              <inlineHeader><![CDATA[Copyright (C) ${project.inceptionYear} Red Hat, Inc.
+SPDX-License-Identifier: Apache-2.0
+]]></inlineHeader>
               <excludes>
                 <exclude>LICENSE.txt</exclude>
-                <exclude>eclipse-codeStyle.xml</exclude>
               </excludes>
             </licenseSet>
           </licenseSets>
