@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Red Hat, Inc.
+ * Copyright (C) 2015 Red Hat, Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.pnc.causeway.pncclient;
