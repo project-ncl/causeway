@@ -5,6 +5,8 @@
 
 # I believe I need to add this so tha the extension is activated at runtime?
 quarkus:
+  application:
+    name: causeway
   http:
     auth:
       # required for LDAP: build-time property
