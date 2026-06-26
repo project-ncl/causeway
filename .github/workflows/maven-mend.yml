@@ -3,7 +3,7 @@ name: Mend CLI scan for Maven
 on:
   push:
     branches:
-      - master
+      - main
   schedule:
     - cron: "0 22 * * 0"
 
