@@ -61,6 +61,7 @@ public interface BuildTranslator {
         return switch (buildType) {
             case MVN, SBT, GRADLE, MVN_RPM -> ArtifactUtil.parseMavenCoordinates(artifact).getVersionString();
             case NPM -> ArtifactUtil.parseNPMCoordinates(artifact).getVersion().toString();
+            case RPM -> throw new UnsupportedOperationException("Not yet implemented!");
         };
     }
 

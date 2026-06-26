@@ -251,6 +251,9 @@ public class ImportControllerImpl implements ImportController {
                 }
                 yield new BrewNVR(build.getAttributes().get(BUILD_BREW_NAME), version, "1");
             }
+            case RPM -> {
+                throw new UnsupportedOperationException("Not yet implemented!");
+            }
         };
     }
 

@@ -414,6 +414,9 @@ public class BuildTranslatorImpl implements BuildTranslator {
                 ProjectVersionRef gav = buildRootToGAV(build, artifacts);
                 yield rpmConsumer.apply(gav);
             }
+            case RPM -> {
+                throw new UnsupportedOperationException("Not yet implemented");
+            }
         };
     }
 
