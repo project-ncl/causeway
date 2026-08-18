@@ -9,6 +9,7 @@ quarkus:
     pnc-rest-api:
       group-id: org.jboss.pnc
       artifact-id: rest-api
+      classifier: java-client-jakarta
   application:
     name: causeway
   http:
