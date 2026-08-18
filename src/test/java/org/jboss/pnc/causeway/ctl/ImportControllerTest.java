@@ -512,28 +512,6 @@ public class ImportControllerTest {
     }
 
     /**
-     * When there is no src.rpm at all the code must still succeed by falling
-     * back to the first available binary RPM.
-     */
-    @Test
-    public void testGetNVRForMvnRpmFallsBackToNoarchWhenNoSrcRpm() throws CausewayException {
-        Build build = createMvnRpmBuild();
-        BuildArtifacts artifacts = new BuildArtifacts();
-        artifacts.getBuildArtifacts()
-                .addAll(
-                        List.of(
-                                createRpmArtifact("1", RPM_NOARCH_MAIN),
-                                createRpmArtifact("2", RPM_SUBPKG_1)));
-
-        BrewNVR nvr = importController.getNVR(build, artifacts);
-
-        // No src.rpm — the first noarch is the main wrapper package, so its name is expected.
-        assertEquals(RPM_SRPM_NAME, nvr.getName(), "NVR name must be taken from the first .rpm when no src.rpm");
-        assertEquals(RPM_VERSION, nvr.getVersion());
-        assertEquals(RPM_RELEASE, nvr.getRelease());
-    }
-
-    /**
      * A build with MVN_RPM type but no RPM artifacts at all must throw
      * {@link CausewayFailure}.
      */
@@ -546,7 +524,7 @@ public class ImportControllerTest {
 
         assertThatThrownBy(() -> importController.getNVR(build, artifacts))
                 .isInstanceOf(CausewayFailure.class)
-                .hasMessageContaining("Unable to find RPM to derive NVR from");
+                .hasMessageContaining("Unable to find a SRC RPM to derive NVR from");
     }
 
     private Build createMvnRpmBuild() {
