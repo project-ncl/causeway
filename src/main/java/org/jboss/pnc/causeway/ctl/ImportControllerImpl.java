@@ -234,12 +234,8 @@ public class ImportControllerImpl implements ImportController {
                         .stream()
                         .filter(a -> a.getFilename().endsWith(".src.rpm"))
                         .findFirst()
-                        .or(
-                                () -> artifacts.getBuildArtifacts()
-                                        .stream()
-                                        .filter(a -> a.getFilename().endsWith(".rpm"))
-                                        .findFirst())
-                        .orElseThrow(() -> new CausewayFailure("Unable to find RPM to derive NVR from"));
+                        // No fallback to a RPM to derive NVR from
+                        .orElseThrow(() -> new CausewayFailure("Unable to find a SRC RPM to derive NVR from"));
                 try {
                     KojiNVRA nvra = KojiNVRA.parseNVRA(artifactRef.getFilename());
                     yield new BrewNVR(nvra.getName(), nvra.getVersion(), nvra.getRelease());
