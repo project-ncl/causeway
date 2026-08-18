@@ -182,6 +182,11 @@
       <artifactId>quarkus-rest-jackson</artifactId>
     </dependency>
     <dependency>
+      <!-- provides the MicroProfile REST Client used by org.jboss.pnc:rest-client -->
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-rest-client-jackson</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-health</artifactId>
     </dependency>
