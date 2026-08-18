@@ -5,6 +5,10 @@
 
 # I believe I need to add this so tha the extension is activated at runtime?
 quarkus:
+  index-dependency:
+    pnc-rest-api:
+      group-id: org.jboss.pnc
+      artifact-id: rest-api
   application:
     name: causeway
   http:
