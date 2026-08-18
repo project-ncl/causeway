@@ -26,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -99,6 +100,17 @@ public class ImportControllerTest {
     private static final String NPM_VERSION = "1.1.1-redhat-00001";
     private static final String NPM_VERSION_KOJI_STYLE = "1.1.1_redhat_00001";
     private static final String NPM_BUILD_NAME = NPM_ARTIFACT_SCOPE + "-" + NPM_ARTIFACT_NAME + "-npm";
+
+    // EAP-style RPM build constants (name-version-release)
+    private static final String RPM_SRPM_NAME = "eap7-jackson-modules-java8";
+    private static final String RPM_VERSION = "2.18.8";
+    private static final String RPM_RELEASE = "1.redhat_00003.1.el9eap";
+    private static final String RPM_SRPM = RPM_SRPM_NAME + "-" + RPM_VERSION + "-" + RPM_RELEASE + ".src.rpm";
+    private static final String RPM_NOARCH_MAIN = RPM_SRPM_NAME + "-" + RPM_VERSION + "-" + RPM_RELEASE + ".noarch.rpm";
+    private static final String RPM_SUBPKG_1 = "eap7-jackson-datatype-jsr310-" + RPM_VERSION + "-" + RPM_RELEASE
+            + ".noarch.rpm";
+    private static final String RPM_SUBPKG_2 = "eap7-jackson-module-parameter-names-" + RPM_VERSION + "-" + RPM_RELEASE
+            + ".noarch.rpm";
     private static final BrewNVR MVN_NVR = new BrewNVR(MVN_BUILD_NAME, MVN_VERSION_KOJI_STYLE, "1");
     private static final BrewNVR MVN_NVR2 = new BrewNVR(MVN_BUILD_NAME, MVN_VERSION_KOJI_STYLE, "2");
     private static final String USERNAME = "joe";
@@ -468,6 +480,106 @@ public class ImportControllerTest {
         when(brewClient.findBrewBuild(eq(id))).thenReturn(brewBuild);
         when(brewClient.isBuildTagged(eq(TAG_PREFIX), same(brewBuild))).thenReturn(tagged);
         return brewBuild;
+    }
+
+    // -----------------------------------------------------------------------
+    // getNVR tests for MVN_RPM builds
+    // -----------------------------------------------------------------------
+
+    /**
+     * When a src.rpm is present alongside subpackage RPMs the NVR name must
+     * come from the src.rpm, not from whichever subpackage stream iteration
+     * happens to be first.
+     */
+    @Test
+    public void testGetNVRForMvnRpmPrefersSrcRpm() throws CausewayException {
+        Build build = createMvnRpmBuild();
+        BuildArtifacts artifacts = new BuildArtifacts();
+        // Add subpackages first so they appear before the src.rpm in the list.
+        artifacts.getBuildArtifacts()
+                .addAll(
+                        List.of(
+                                createRpmArtifact("1", RPM_SUBPKG_1),
+                                createRpmArtifact("2", RPM_SUBPKG_2),
+                                createRpmArtifact("3", RPM_NOARCH_MAIN),
+                                createRpmArtifact("4", RPM_SRPM)));
+
+        BrewNVR nvr = importController.getNVR(build, artifacts);
+
+        assertEquals(RPM_SRPM_NAME, nvr.getName(), "NVR name must be taken from the src.rpm");
+        assertEquals(RPM_VERSION, nvr.getVersion());
+        assertEquals(RPM_RELEASE, nvr.getRelease());
+    }
+
+    /**
+     * When there is no src.rpm at all the code must still succeed by falling
+     * back to the first available binary RPM.
+     */
+    @Test
+    public void testGetNVRForMvnRpmFallsBackToNoarchWhenNoSrcRpm() throws CausewayException {
+        Build build = createMvnRpmBuild();
+        BuildArtifacts artifacts = new BuildArtifacts();
+        artifacts.getBuildArtifacts()
+                .addAll(
+                        List.of(
+                                createRpmArtifact("1", RPM_NOARCH_MAIN),
+                                createRpmArtifact("2", RPM_SUBPKG_1)));
+
+        BrewNVR nvr = importController.getNVR(build, artifacts);
+
+        // No src.rpm — the first noarch is the main wrapper package, so its name is expected.
+        assertEquals(RPM_SRPM_NAME, nvr.getName(), "NVR name must be taken from the first .rpm when no src.rpm");
+        assertEquals(RPM_VERSION, nvr.getVersion());
+        assertEquals(RPM_RELEASE, nvr.getRelease());
+    }
+
+    /**
+     * A build with MVN_RPM type but no RPM artifacts at all must throw
+     * {@link CausewayFailure}.
+     */
+    @Test
+    public void testGetNVRForMvnRpmThrowsWhenNoRpmArtifact() {
+        Build build = createMvnRpmBuild();
+        BuildArtifacts artifacts = new BuildArtifacts();
+        // Only a non-RPM artifact (e.g. a POM) — no .rpm file.
+        artifacts.getBuildArtifacts().add(createArtifact("1"));
+
+        assertThatThrownBy(() -> importController.getNVR(build, artifacts))
+                .isInstanceOf(CausewayFailure.class)
+                .hasMessageContaining("Unable to find RPM to derive NVR from");
+    }
+
+    private Build createMvnRpmBuild() {
+        SCMRepository scm = SCMRepository.builder().id("1").internalUrl("http://repo.url").build();
+        BuildConfigurationRevision bcr = BuildConfigurationRevision.builder()
+                .id("1")
+                .rev(1)
+                .scmRepository(scm)
+                .buildType(BuildType.MVN_RPM)
+                .scmRevision("r1")
+                .environment(createEnvironment(BuildType.MVN))
+                .build();
+        return Build.builder()
+                .id("rpm-build-1")
+                .status(BuildStatus.SUCCESS)
+                .environment(createEnvironment(BuildType.MVN))
+                .user(User.builder().id("1").build())
+                .attributes(Map.of())
+                .buildConfigRevision(bcr)
+                .build();
+    }
+
+    private static ArtifactRef createRpmArtifact(String id, String filename) {
+        return ArtifactRef.refBuilder()
+                .id(id)
+                .identifier(filename)
+                .filename(filename)
+                .md5("bedf8af1b107b36c72f52009e6fcc768")
+                .deployUrl("https://example.com/api/content/rpm/hosted/shared-imports/" + filename)
+                .deployPath("/" + filename)
+                .size(1024L)
+                .artifactQuality(ArtifactQuality.NEW)
+                .build();
     }
 
     @Test

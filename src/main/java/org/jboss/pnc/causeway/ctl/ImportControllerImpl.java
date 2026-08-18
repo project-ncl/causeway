@@ -227,13 +227,19 @@ public class ImportControllerImpl implements ImportController {
         return switch (build.getBuildConfigRevision().getBuildType()) {
             case MVN_RPM -> {
                 // If we are importing an RPM then extract the NVR from the RPM name rather than the
-                // Maven GAV.
+                // Maven GAV. Prefer the .src.rpm because it always carries the canonical package
+                // name; subpackages may have different names (e.g. eap7-jackson-datatype-jsr310
+                // vs the SRPM eap7-jackson-modules-java8).
                 ArtifactRef artifactRef = artifacts.getBuildArtifacts()
                         .stream()
-                        .filter(a -> a.getFilename().endsWith(".rpm"))
-                        .findAny()
+                        .filter(a -> a.getFilename().endsWith(".src.rpm"))
+                        .findFirst()
+                        .or(
+                                () -> artifacts.getBuildArtifacts()
+                                        .stream()
+                                        .filter(a -> a.getFilename().endsWith(".rpm"))
+                                        .findFirst())
                         .orElseThrow(() -> new CausewayFailure("Unable to find RPM to derive NVR from"));
-                // The 'arch' (e.g. noarch/src) doesn't matter for extracting the NVR.
                 try {
                     KojiNVRA nvra = KojiNVRA.parseNVRA(artifactRef.getFilename());
                     yield new BrewNVR(nvra.getName(), nvra.getVersion(), nvra.getRelease());
