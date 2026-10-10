@@ -131,7 +131,7 @@
     <dependency>
       <groupId>org.jboss.pnc</groupId>
       <artifactId>rest-client-jakarta</artifactId>
-      <version>3.5.19</version>
+      <version>3.5.20</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
