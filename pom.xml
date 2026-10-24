@@ -239,7 +239,7 @@
     <dependency>
       <groupId>org.jboss.pnc</groupId>
       <artifactId>pnc-api</artifactId>
-      <version>3.5.2</version>
+      <version>3.99.0</version>
       <classifier>jakarta</classifier>
     </dependency>
     <dependency>
