@@ -402,7 +402,7 @@ public class BuildTranslatorImpl implements BuildTranslator {
             CausewayFunction<ProjectVersionRef, T> rpmConsumer) throws CausewayException {
         BuildType buildType = build.getBuildConfigRevision().getBuildType();
         return switch (buildType) {
-            case MVN, SBT, GRADLE -> {
+            case MVN, SBT, GRADLE, ANT -> {
                 ProjectVersionRef gav = buildRootToGAV(build, artifacts);
                 yield mavenConsumer.apply(gav);
             }

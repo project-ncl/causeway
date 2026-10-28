@@ -243,7 +243,7 @@ public class ImportControllerImpl implements ImportController {
                     throw new CausewayFailure(e.toString());
                 }
             }
-            case GRADLE, SBT, MVN, NPM -> {
+            case GRADLE, SBT, MVN, NPM, ANT -> {
                 if (!build.getAttributes().containsKey(BUILD_BREW_NAME)) {
                     throw new CausewayFailure(ErrorMessages.missingBrewNameAttributeInBuild());
                 }
