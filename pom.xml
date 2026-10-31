@@ -164,7 +164,7 @@
     <dependency>
       <groupId>org.jboss.pnc</groupId>
       <artifactId>quarkus-pnc-client-auth</artifactId>
-      <version>1.0.0</version>
+      <version>4.0.0</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
