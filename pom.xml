@@ -58,7 +58,7 @@
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
     <quarkus.platform.version>3.40.1</quarkus.platform.version>
     <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
-    <quarkus-logging-kafka.version>3.0.5</quarkus-logging-kafka.version>
+    <quarkus-logging-kafka.version>4.0.0</quarkus-logging-kafka.version>
     <skipITs>true</skipITs>
     <atlas.version>1.2.3</atlas.version>
     <bouncycastle.version>1.86</bouncycastle.version>
