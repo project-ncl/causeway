@@ -250,7 +250,7 @@
     <dependency>
       <groupId>org.jboss.pnc</groupId>
       <artifactId>pnc-common</artifactId>
-      <version>3.5.4</version>
+      <version>4.0.0</version>
       <classifier>jakarta</classifier>
       <exclusions>
         <exclusion>
