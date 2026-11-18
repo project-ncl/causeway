@@ -5,6 +5,7 @@
 package org.jboss.pnc.causeway;
 
 import java.net.URL;
+import java.util.Optional;
 import java.util.Set;
 
 import org.jboss.pnc.common.http.PNCHttpClientConfig;
@@ -23,8 +24,14 @@ public interface CausewayConfig {
 
     GithubSecret github();
 
+    GitlabSecret gitlab();
+
     interface GithubSecret {
         String githubToken();
+    }
+
+    interface GitlabSecret {
+        Optional<String> gitlabToken();
     }
 
     interface Koji {
