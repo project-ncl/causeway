@@ -193,6 +193,8 @@ pnc_client_auth:
       url: "http://localhost:${quarkus.wiremock.devservices.port}/pnc-rest/rest"
     github:
       github-token: token
+    gitlab:
+      gitlab-token: token
   quarkus:
     arc:
       # to use the Mocked one

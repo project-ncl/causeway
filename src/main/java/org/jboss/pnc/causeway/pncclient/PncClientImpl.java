@@ -17,6 +17,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -31,6 +32,7 @@ import org.jboss.pnc.client.BuildClient;
 import org.jboss.pnc.client.Configuration;
 import org.jboss.pnc.client.RemoteResourceException;
 import org.jboss.pnc.common.scm.ScmException;
+import org.jboss.pnc.common.scm.ScmUrlGeneratorProvider.SCMProvider;
 import org.jboss.pnc.dto.Artifact;
 import org.jboss.pnc.dto.Build;
 
@@ -48,6 +50,8 @@ public class PncClientImpl implements PncClient {
 
     private final String githubToken;
 
+    private final Optional<String> gitlabToken;
+
     @Inject
     public PncClientImpl(CausewayConfig config) {
         URL url = config.pnc().url();
@@ -59,6 +63,7 @@ public class PncClientImpl implements PncClient {
                 .port((url.getPort() != -1) ? url.getPort() : url.getDefaultPort())
                 .build();
         githubToken = config.github().githubToken();
+        gitlabToken = config.gitlab().gitlabToken();
 
         log.debug("Client config: " + clientConfig);
         this.buildClient = new BuildClient(clientConfig);
@@ -128,11 +133,9 @@ public class PncClientImpl implements PncClient {
                     getScmUrlGenerator(provider)
                             .generateTarballDownloadUrl(build.getScmUrl(), build.getScmRevision()));
             HttpClient httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(uri)
-                    .header("Authorization", "Bearer " + githubToken)
-                    .GET()
-                    .build();
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(uri).GET();
+            addAuthHeader(requestBuilder, provider);
+            HttpRequest request = requestBuilder.build();
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
             try {
@@ -150,6 +153,38 @@ public class PncClientImpl implements PncClient {
         } catch (URISyntaxException | ScmException | IOException | InterruptedException e) {
             throw new CausewayException(ErrorMessages.errorReadingBuildSources(build.getId(), e), e);
         }
+    }
+
+    private void addAuthHeader(HttpRequest.Builder requestBuilder, SCMProvider provider) {
+        authHeaderFor(provider, githubToken, gitlabToken)
+                .ifPresent(header -> requestBuilder.header(header.getKey(), header.getValue()));
+    }
+
+    /**
+     * Determines the authentication header to use when downloading sources, based on the detected SCM provider.
+     *
+     * <ul>
+     * <li>GitLab uses the {@code PRIVATE-TOKEN} header with the configured GitLab token (personal, project or group
+     * access token).</li>
+     * <li>GitHub and Gerrit use the {@code Authorization: Bearer} header with the configured GitHub token.</li>
+     * </ul>
+     *
+     * When the relevant token is not configured (or blank), no header is returned, which still allows downloading
+     * sources from public repositories.
+     *
+     * @return the header name/value pair to add, or empty if no authentication should be sent
+     */
+    static Optional<Map.Entry<String, String>> authHeaderFor(
+            SCMProvider provider,
+            String githubToken,
+            Optional<String> gitlabToken) {
+        return switch (provider) {
+            case GITLAB -> gitlabToken.filter(token -> !token.isBlank())
+                    .map(token -> Map.entry("PRIVATE-TOKEN", token));
+            case GITHUB, GERRIT -> (githubToken != null && !githubToken.isBlank())
+                    ? Optional.of(Map.entry("Authorization", "Bearer " + githubToken))
+                    : Optional.empty();
+        };
     }
 
     @Retry
