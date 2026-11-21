@@ -61,7 +61,7 @@
     <quarkus-logging-kafka.version>4.0.0</quarkus-logging-kafka.version>
     <skipITs>true</skipITs>
     <atlas.version>1.2.3</atlas.version>
-    <bouncycastle.version>1.86</bouncycastle.version>
+    <bouncycastle.version>1.87</bouncycastle.version>
     <tagSuffix/>
   </properties>
 
